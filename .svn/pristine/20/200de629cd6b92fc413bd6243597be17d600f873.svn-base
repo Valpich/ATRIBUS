@@ -1,0 +1,44 @@
+package fr.eseo.atribus.timers;
+
+import fr.eseo.atribus.dao.NotificationDao;
+import fr.eseo.atribus.entities.Utilisateur;
+
+import org.springframework.beans.factory.access.BeanFactoryReference;
+import org.springframework.beans.factory.access.SingletonBeanFactoryLocator;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
+
+import java.util.Set;
+import java.util.logging.Logger;
+
+import javax.servlet.ServletContext;
+
+@Service
+public class NotificationUpdater {
+  private static final Logger LOGGER = Logger.getLogger(NotificationUpdater.class.getName());
+
+  @Autowired(required = true)
+  ServletContext servletContext;
+
+  NotificationDao notificationDao;
+
+  public NotificationUpdater() {
+    NotificationUpdater.LOGGER.info("Instantiation du rafraichisseur de notifications");
+    final BeanFactoryReference bf =
+        SingletonBeanFactoryLocator.getInstance().useBeanFactory("beansDao");
+    /* Récupération d'une instance de notre DAO Notification */
+    this.notificationDao = (NotificationDao) bf.getFactory().getBean("notificationDao");
+  }
+
+  /**
+   * Mise à jour automatique des notifications toutes les secondes.
+   */
+  @SuppressWarnings("unchecked")
+  @Scheduled(fixedDelay = 1000)
+  public void executer() {
+    for (Utilisateur utilisateur : (Set<Utilisateur>) servletContext.getAttribute("utilisateurs")) {
+      utilisateur.setNotifications(notificationDao.trouverToutesLesNotification(utilisateur));
+    }
+  }
+}

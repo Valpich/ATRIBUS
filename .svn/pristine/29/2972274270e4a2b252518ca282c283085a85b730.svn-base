@@ -1,0 +1,12 @@
+package fr.eseo.atribus.listeners;
+
+public class ErreurListenerException extends RuntimeException {
+
+  private static final long serialVersionUID = 1L;
+
+  public ErreurListenerException(String string) {
+   super(string);
+  }
+
+
+}

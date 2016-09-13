@@ -1,0 +1,208 @@
+package fr.eseo.atribus.forms;
+
+import fr.eseo.atribus.dao.DaoException;
+import fr.eseo.atribus.dao.EnseignantDao;
+import fr.eseo.atribus.dao.MatiereDao;
+import fr.eseo.atribus.dao.UeDao;
+import fr.eseo.atribus.entities.EnseignantRefMatiere;
+import fr.eseo.atribus.entities.Matiere;
+import fr.eseo.atribus.entities.UniteEnseignement;
+
+import org.springframework.beans.factory.access.BeanFactoryReference;
+import org.springframework.beans.factory.access.SingletonBeanFactoryLocator;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.servlet.http.HttpServletRequest;
+
+public class ModifierMatiereUeForm {
+  
+  private static final Logger LOGGER = Logger.getLogger(ModifierUeForm.class.getName());
+  private static final String EXCEPTION = "Exception";
+  
+  private static final String CHAMP_ID_MATIERE_A_MODIFIER = "idMatiereAModifier";
+  private static final String CHAMP_NOM_MATIERE = "nomNouvelleMatiere";
+  private static final String CHAMP_ID_ENSEIGNANT = "idEnseignantNouvelleMatiere";
+  private static final String CHAMP_UE = "idNouvelleUe";
+  private static final String CHAMP_COEFFICIANT = "coefficient";
+  
+  private Map<String, String> erreurs = new HashMap<>();
+  private String resultat;
+      
+  MatiereDao matiereDao;
+  EnseignantDao enseignantDao;
+  UeDao ueDao;
+  
+  /**
+   * Constructeur.
+   */
+  public ModifierMatiereUeForm() {
+    
+    final BeanFactoryReference bf =
+        SingletonBeanFactoryLocator.getInstance().useBeanFactory("beansDao");
+    
+    this.matiereDao = (MatiereDao) bf.getFactory().getBean("matiereDao");
+    this.enseignantDao = (EnseignantDao) bf.getFactory().getBean("enseignantDao");
+    this.ueDao = (UeDao) bf.getFactory().getBean("ueDao");
+    
+  }
+  
+  /**
+   * Méthode qui va permettre de modifier une matière suivant 
+   * les champs qui ont été rempli par l'utilisateur.
+   * @param request requête
+   */
+  public void modifierMatiereUe(HttpServletRequest request) {
+
+    // On récupère les champs de la requête
+    final int idAncienneMatiere = Integer.parseInt(ModifierMatiereUeForm.getValeurChamp(request,
+        ModifierMatiereUeForm.CHAMP_ID_MATIERE_A_MODIFIER));
+    final String nomMatiere =
+        ModifierMatiereUeForm.getValeurChamp(request, ModifierMatiereUeForm.CHAMP_NOM_MATIERE);
+    final String coefficiant =
+        ModifierMatiereUeForm.getValeurChamp(request, ModifierMatiereUeForm.CHAMP_COEFFICIANT);
+    final String idEnseignant =
+        ModifierMatiereUeForm.getValeurChamp(request, ModifierMatiereUeForm.CHAMP_ID_ENSEIGNANT);
+    final String idUe =
+        ModifierMatiereUeForm.getValeurChamp(request, ModifierMatiereUeForm.CHAMP_UE);
+    
+    try {
+    
+      final Matiere matiere = this.matiereDao.trouverParId(idAncienneMatiere);
+      
+      this.traiterDonnees(nomMatiere, coefficiant, idEnseignant, idUe);
+      
+      if (this.getErreurs().isEmpty()) {
+        
+        final UniteEnseignement ue = this.ueDao.trouverUeParId(Integer.parseInt(idUe));
+        final EnseignantRefMatiere erm = new EnseignantRefMatiere(
+            this.enseignantDao.trouverParIdUtilisateur(Integer.parseInt(idEnseignant)));  
+        final int idErm = this.enseignantDao.trouverParIdUtilisateur(erm.getId()).getIdEnseignant();
+        
+        erm.setIdEnseignantRefMatiere(idErm);
+        
+        matiere.setNom(nomMatiere);
+        matiere.setCoefficient(Float.parseFloat(coefficiant));
+        matiere.setUe(ue);
+        matiere.setErm(erm);
+        
+        this.matiereDao.modifierMatiereParId(matiere);
+        
+        resultat = "succes";
+          
+      } else {
+        resultat = "erreur";
+      }
+      
+    } catch (final DaoException daoEx) {
+      this.resultat = "erreurDao";
+      ModifierMatiereUeForm.LOGGER.log(Level.INFO, EXCEPTION, daoEx);
+    }
+
+  }
+  
+  /**
+   * Méthode qui permet de vérifier que les données récupérées sont correctes.
+   * @param nomMatiere nom de la matiere
+   * @param coefficiant coefficiant
+   * @param idEnseignant l'id de l'enseignant
+   * @param idUe l'id de l'UE
+   */
+  public void traiterDonnees(String nomMatiere, String coefficiant, String idEnseignant,
+      String idUe) {
+
+    try {
+      this.validationNomMatiere(nomMatiere);
+    } catch (final FormValidationException fve) {
+      this.setErreur("matiere", fve.getMessage());
+      ModifierMatiereUeForm.LOGGER.log(Level.INFO, EXCEPTION, fve);
+    }
+    
+    try {
+      this.validationCoefficiant(coefficiant);
+    } catch (final FormValidationException fve) {
+      this.setErreur("coefficiant", fve.getMessage());
+      ModifierMatiereUeForm.LOGGER.log(Level.INFO, EXCEPTION, fve);
+    }
+    
+    try {
+      this.validationEnseignant(idEnseignant);;
+    } catch (final FormValidationException fve) {
+      this.setErreur("enseignant", fve.getMessage());
+      ModifierMatiereUeForm.LOGGER.log(Level.INFO, EXCEPTION, fve);
+    }
+    
+    try {
+      this.validationUe(idUe);
+    } catch (final FormValidationException fve) {
+      this.setErreur("ue", fve.getMessage());
+      ModifierMatiereUeForm.LOGGER.log(Level.INFO, EXCEPTION, fve);
+    }
+
+  }
+  
+  private void validationNomMatiere(String nom) throws FormValidationException {
+    if (nom == null || nom.length() < 3) {
+      throw new FormValidationException("Veuillez remplir une matiere avec plus de 3 caractères.");
+    }
+  }
+  
+  private void validationCoefficiant(String coefficiant) throws FormValidationException {
+    try {
+      if (Float.parseFloat(coefficiant) < 0) {
+        throw new FormValidationException("Merci d'inscrire un nombre de point ECTS supérieur à 0");
+      }
+    } catch (final NumberFormatException nfe) {
+      throw new FormValidationException("Le nombre d'ECTS inscrit est invalide");
+    }
+  }
+
+  private void validationEnseignant(String idEnseignant) throws FormValidationException {
+    try {
+      if (this.enseignantDao.trouverParIdUtilisateur(Integer.parseInt(idEnseignant)) == null) {
+        throw new FormValidationException("L'enseignant référant renseigné est incorrecte");
+      }
+    } catch (final NumberFormatException nfe) {
+      throw new FormValidationException("L'ID de l'enseignant est invalide");
+    }
+  }
+  
+  private void validationUe(String idUe) throws FormValidationException {
+    try {
+      if (this.ueDao.trouverUeParId(Integer.parseInt(idUe)) == null) {
+        throw new FormValidationException("L'unité d'enseignement inscrit est incorrecte");
+      }
+    } catch (final NumberFormatException nfe) {
+      throw new FormValidationException("L'ID de l'unité d'enseignement est invalide");
+    }
+  }
+  
+  public String getResultat() {
+    return this.resultat;
+  }
+
+  public Map<String, String> getErreurs() {
+    return this.erreurs;
+  }
+
+  public void setResultat(String resultat) {
+    this.resultat = resultat;
+  }
+
+  private void setErreur(String champ, String message) {
+    this.erreurs.put(champ, message);
+  }
+
+  protected static String getValeurChamp(HttpServletRequest request, String nomChamp) {
+    final String valeur = request.getParameter(nomChamp);
+    if (valeur == null || valeur.trim().length() == 0) {
+      return null;
+    } else {
+      return valeur.trim();
+    }
+  }
+
+}

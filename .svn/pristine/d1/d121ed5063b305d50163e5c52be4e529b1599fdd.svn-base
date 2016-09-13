@@ -1,0 +1,32 @@
+package fr.eseo.atribus.timer;
+
+import static org.testng.Assert.assertNotNull;
+
+import fr.eseo.atribus.beans.Mail;
+import fr.eseo.atribus.timers.TimerConversionNotificationEnMail;
+
+import org.springframework.mock.web.MockServletContext;
+import org.testng.annotations.Test;
+
+public class TimerConversionNotificationEnMailTest {
+
+  TimerConversionNotificationEnMail timerConversionNotificationEnMail;
+
+  @Test
+  public void TimerConversionNotificationEnMail() {
+    timerConversionNotificationEnMail = new TimerConversionNotificationEnMail();
+    assertNotNull(timerConversionNotificationEnMail);
+  }
+
+  @Test
+  public void executer() {
+    MockServletContext servletContext = new MockServletContext();
+    timerConversionNotificationEnMail.setServletContext(servletContext);
+    assertNotNull(timerConversionNotificationEnMail.getServletContext());
+    timerConversionNotificationEnMail.setMail(new Mail("", "", "", ""));
+    assertNotNull(timerConversionNotificationEnMail.getMail());
+    timerConversionNotificationEnMail.executer();
+    assertNotNull(timerConversionNotificationEnMail);
+    assertNotNull(timerConversionNotificationEnMail);
+  }
+}

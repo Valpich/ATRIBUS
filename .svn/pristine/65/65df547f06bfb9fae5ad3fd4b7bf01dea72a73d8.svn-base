@@ -1,0 +1,88 @@
+package fr.eseo.atribus.forms;
+
+import fr.eseo.atribus.dao.DaoException;
+import fr.eseo.atribus.entities.Eleve;
+import fr.eseo.atribus.entities.Examen;
+
+import java.util.List;
+import java.util.logging.Level;
+
+/**
+ * La classe RepondreExamenForm.
+ */
+public class RepondreExamenForm extends ExamenForm {
+
+  /**
+   * Repondre à l'examen.
+   *
+   * @param eleve l'élève
+   * @param reponses les réponses
+   * @param examenString le nom de l'examen
+   * @param autoEvaluation l'auto évaluation
+   * @return Le paramètre int
+   */
+  public int repondre(Eleve eleve, List<String> reponses, String examenString,
+      Boolean autoEvaluation) {
+    final Examen examen = this.examenDao.trouverParNom(examenString);
+    try {
+      if (examen == null || examen.getAutoEvaluation()) {
+        this.erreurs.put("mauvaisExamen", "Examen invalide");
+      } else {
+        this.traiterDonnees(eleve, reponses, examen);
+      }
+      if (this.erreurs.isEmpty()) {
+        this.evaluationDao.repondre(eleve, reponses, examen, autoEvaluation);
+        this.resultat = "Succès de l'ajout des réponses l'examen.";
+        return 1;
+      } else {
+        this.resultat = "Échec de l'ajout des réponses l'examen.";
+      }
+    } catch (final DaoException ebdd) {
+      this.resultat = "Échec de l'ajout des réponses de examen : une erreur imprévue est survenue,"
+          + " merci de réessayer dans quelques instants.";
+      ExamenForm.LOGGER.log(Level.INFO, EXCEPTION, ebdd);
+    }
+
+    return -1;
+
+  }
+
+  /**
+   * Traiter les données.
+   *
+   * @param eleve l'eleve
+   * @param reponses les reponses
+   * @param examen l'examen
+   */
+  private void traiterDonnees(Eleve eleve, List<String> reponses, Examen examen) {
+    try {
+      this.validationReponses(reponses, examen);
+    } catch (final FormValidationException fve) {
+      ExamenForm.LOGGER.log(Level.INFO, EXCEPTION, fve);
+      this.setErreur("nbReponses", fve.getMessage());
+    }
+    try {
+      this.validationEleve(eleve);
+    } catch (final FormValidationException fve) {
+      ExamenForm.LOGGER.log(Level.INFO, EXCEPTION, fve);
+      this.setErreur("eleve", fve.getMessage());
+    }
+  }
+
+  /**
+   * Validation des réponses de l'examen.
+   *
+   * @param reponses les réponses
+   * @param examen l'examen
+   * @throws FormValidationException de type form validation exception
+   */
+  private void validationReponses(List<String> reponses, Examen examen)
+      throws FormValidationException {
+    if (reponses.size() != examen.getExercices().size()) {
+      throw new FormValidationException(
+          "Le nombre de réponses ne correspond pas au nombre de questions.");
+    }
+  }
+
+}
+

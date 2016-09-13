@@ -1,0 +1,32 @@
+package fr.eseo.atribus.controller;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.servlet.ModelAndView;
+
+import javax.servlet.http.HttpServletRequest;
+
+/**
+ * Servlet implementation class IndexController.
+ */
+@Controller
+public class IndexController {
+  private static final String INDEX = "index";
+  public static final String ATT_SESSION_USER = "sessionUtilisateur";
+
+  /**
+   * @param request.
+   * @return .
+   */
+  @RequestMapping(value = { "/index", "/" }, method = RequestMethod.GET)
+  public ModelAndView afficherIndex(HttpServletRequest request) {
+    if (request.getSession().getAttribute(ATT_SESSION_USER) == null) {
+      return new ModelAndView("redirect:/connexion");
+    } else {
+      return new ModelAndView(INDEX);
+    }
+  }
+
+
+}

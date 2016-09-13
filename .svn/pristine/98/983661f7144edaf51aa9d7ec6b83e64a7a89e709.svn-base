@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>AddCompetenceForm.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Atribus</a> &gt; <a href="index.source.html" class="el_package">fr.eseo.atribus.forms</a> &gt; <span class="el_source">AddCompetenceForm.java</span></div><h1>AddCompetenceForm.java</h1><pre class="source lang-java linenums">package fr.eseo.atribus.forms;
+
+import fr.eseo.atribus.dao.CompetenceDao;
+import fr.eseo.atribus.dao.DaoException;
+import fr.eseo.atribus.entities.Competence;
+
+import org.springframework.beans.factory.access.BeanFactoryReference;
+import org.springframework.beans.factory.access.SingletonBeanFactoryLocator;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.servlet.http.HttpServletRequest;
+
+public class AddCompetenceForm {
+
+<span class="nc" id="L19">  private static final Logger LOGGER = Logger.getLogger(AddCompetenceForm.class.getName());</span>
+  private static final String EXCEPTION = &quot;Exception&quot;;
+
+  private static final String CHAMP_NOM = &quot;nomCompetence&quot;;
+  private static final String CHAMP_PARENT_ID = &quot;parentId&quot;;
+  private static final String CHAMP_PROFONDEUR = &quot;profondeur&quot;;
+
+<span class="nc" id="L26">  private final Map&lt;String, String&gt; erreurs = new HashMap&lt;&gt;();</span>
+  private String resultat;
+  private final CompetenceDao competenceDao;
+
+  /**
+   * Instantiation de la classe AddCompetenceForm.
+   */
+<span class="nc" id="L33">  public AddCompetenceForm() {</span>
+    final BeanFactoryReference bf =
+<span class="nc" id="L35">        SingletonBeanFactoryLocator.getInstance().useBeanFactory(&quot;beansDao&quot;);</span>
+    /* Récupération d'une instance de notre DAO Competence */
+<span class="nc" id="L37">    this.competenceDao = (CompetenceDao) bf.getFactory().getBean(&quot;competenceDao&quot;);</span>
+<span class="nc" id="L38">  }</span>
+
+  public Map&lt;String, String&gt; getErreurs() {
+<span class="nc" id="L41">    return this.erreurs;</span>
+  }
+
+  private void setErreur(String champ, String message) {
+<span class="nc" id="L45">    this.erreurs.put(champ, message);</span>
+<span class="nc" id="L46">  }</span>
+
+  private void setResultat(String resultat) {
+<span class="nc" id="L49">    this.resultat = resultat;</span>
+<span class="nc" id="L50">  }</span>
+
+  /**
+   * Méthode qui permet l'ajout d'une compétence via un formulaire dans la BDD.
+   * 
+   * @param request Formulaire
+   */
+  public Competence ajouterCompetence(HttpServletRequest request) {
+
+<span class="nc" id="L59">    final String nomChamp = AddCompetenceForm.getValeurChamp(request, AddCompetenceForm.CHAMP_NOM);</span>
+<span class="nc" id="L60">    final String parentIdChamp =</span>
+<span class="nc" id="L61">        AddCompetenceForm.getValeurChamp(request, AddCompetenceForm.CHAMP_PARENT_ID);</span>
+<span class="nc" id="L62">    final String profondeurChamp =</span>
+<span class="nc" id="L63">        AddCompetenceForm.getValeurChamp(request, AddCompetenceForm.CHAMP_PROFONDEUR);</span>
+<span class="nc" id="L64">    final Competence competence = new Competence();</span>
+
+    try {
+
+<span class="nc" id="L68">      this.traiterLesChamps(nomChamp, parentIdChamp, profondeurChamp);</span>
+
+<span class="nc bnc" id="L70" title="All 2 branches missed.">      if (this.erreurs.isEmpty()) {</span>
+
+<span class="nc" id="L72">        competence.setNom(nomChamp);</span>
+<span class="nc" id="L73">        competence.setIdParent(Integer.parseInt(parentIdChamp));</span>
+<span class="nc" id="L74">        competence.setProfondeur(Integer.parseInt(profondeurChamp));</span>
+<span class="nc" id="L75">        this.competenceDao.ajouterCompetence(competence);</span>
+<span class="nc" id="L76">        this.setResultat(&quot;success&quot;);</span>
+
+      } else {
+<span class="nc" id="L79">        this.setResultat(&quot;echec&quot;);</span>
+      }
+
+<span class="nc" id="L82">    } catch (final DaoException daoEx) {</span>
+<span class="nc" id="L83">      this.setResultat(&quot;echecDao&quot;);</span>
+<span class="nc" id="L84">      AddCompetenceForm.LOGGER.log(Level.INFO, EXCEPTION, daoEx);</span>
+<span class="nc" id="L85">    }</span>
+
+<span class="nc" id="L87">    return competence;</span>
+
+  }
+  
+  /**
+   * Modifie une compétence.
+   * @param request requete.
+   * @return la compétence modifiée
+   */
+  public Competence modifierCompetence(HttpServletRequest request) {
+
+<span class="nc" id="L98">    final String nomChamp = AddCompetenceForm.getValeurChamp(request, AddCompetenceForm.CHAMP_NOM);</span>
+<span class="nc" id="L99">    final String parentIdChamp =</span>
+<span class="nc" id="L100">        AddCompetenceForm.getValeurChamp(request, AddCompetenceForm.CHAMP_PARENT_ID);</span>
+<span class="nc" id="L101">    final String profondeurChamp =</span>
+<span class="nc" id="L102">        AddCompetenceForm.getValeurChamp(request, AddCompetenceForm.CHAMP_PROFONDEUR);</span>
+<span class="nc" id="L103">    final String nomAncienneCompetence =</span>
+<span class="nc" id="L104">        AddCompetenceForm.getValeurChamp(request, &quot;nomAncienneCompetence&quot;);</span>
+<span class="nc" id="L105">    final Competence competence = new Competence();</span>
+
+    try {
+
+<span class="nc" id="L109">      this.traiterLesChamps(nomChamp, parentIdChamp, profondeurChamp);</span>
+
+<span class="nc bnc" id="L111" title="All 2 branches missed.">      if (this.erreurs.isEmpty()) {</span>
+
+<span class="nc" id="L113">        competence.setNom(nomChamp);</span>
+<span class="nc" id="L114">        competence.setIdParent(Integer.parseInt(parentIdChamp));</span>
+<span class="nc" id="L115">        competence.setProfondeur(Integer.parseInt(profondeurChamp));</span>
+        
+<span class="nc" id="L117">        Competence ancienneCompetence =</span>
+<span class="nc" id="L118">            this.competenceDao.trouverUniqueParNom(nomAncienneCompetence);</span>
+        
+<span class="nc" id="L120">        this.competenceDao.modifierCompetence(competence, ancienneCompetence);</span>
+        
+<span class="nc" id="L122">        this.setResultat(&quot;success&quot;);</span>
+
+<span class="nc" id="L124">      } else {</span>
+<span class="nc" id="L125">        this.setResultat(&quot;echec&quot;);</span>
+      }
+
+<span class="nc" id="L128">    } catch (final DaoException daoEx) {</span>
+<span class="nc" id="L129">      this.setResultat(&quot;echecDao&quot;);</span>
+<span class="nc" id="L130">      AddCompetenceForm.LOGGER.log(Level.INFO, EXCEPTION, daoEx);</span>
+<span class="nc" id="L131">    }</span>
+
+<span class="nc" id="L133">    return competence;</span>
+
+  }
+
+  private void traiterLesChamps(String nom, String parentId, String profondeur) {
+
+    try {
+<span class="nc" id="L140">      this.validationNom(nom);</span>
+<span class="nc" id="L141">    } catch (final FormValidationException fve) {</span>
+<span class="nc" id="L142">      AddCompetenceForm.LOGGER.log(Level.INFO, EXCEPTION, fve);</span>
+<span class="nc" id="L143">      this.setErreur(&quot;nom&quot;, fve.getMessage());</span>
+<span class="nc" id="L144">    }</span>
+
+    try {
+<span class="nc" id="L147">      this.validationParentId(parentId);</span>
+<span class="nc" id="L148">    } catch (final FormValidationException fve) {</span>
+<span class="nc" id="L149">      AddCompetenceForm.LOGGER.log(Level.INFO, EXCEPTION, fve);</span>
+<span class="nc" id="L150">      this.setErreur(&quot;parentId&quot;, fve.getMessage());</span>
+<span class="nc" id="L151">    }</span>
+
+    try {
+<span class="nc" id="L154">      this.validationProfondeur(profondeur);</span>
+<span class="nc" id="L155">    } catch (final FormValidationException fve) {</span>
+<span class="nc" id="L156">      AddCompetenceForm.LOGGER.log(Level.INFO, EXCEPTION, fve);</span>
+<span class="nc" id="L157">      this.setErreur(&quot;profondeur&quot;, fve.getMessage());</span>
+<span class="nc" id="L158">    }</span>
+
+<span class="nc" id="L160">  }</span>
+
+  private void validationNom(String nom) throws FormValidationException {
+<span class="nc bnc" id="L163" title="All 4 branches missed.">    if (nom == null || nom.length() &lt; 3) {</span>
+<span class="nc" id="L164">      throw new FormValidationException(</span>
+          &quot;Le nom de la compétence doit comporter au moins 3 caractères.&quot;);
+    }
+<span class="nc bnc" id="L167" title="All 2 branches missed.">    if (this.competenceDao.trouverUniqueParNom(nom) != null) {</span>
+<span class="nc" id="L168">      throw new FormValidationException(&quot;Cet examen existe déjà, merci d'en créer un autre.&quot;);</span>
+    }
+<span class="nc" id="L170">  }</span>
+
+  private void validationParentId(String parentId) throws FormValidationException {
+    try {
+<span class="nc bnc" id="L174" title="All 4 branches missed.">      if (Integer.parseInt(parentId) &lt; 0 || Integer.parseInt(parentId) &gt; 20) {</span>
+<span class="nc" id="L175">        throw new FormValidationException(&quot;Merci d'inscrire un id parent compris entre 0 et 20.&quot;);</span>
+      }
+<span class="nc" id="L177">    } catch (final NumberFormatException nfe) {</span>
+<span class="nc" id="L178">      this.setErreur(AddCompetenceForm.CHAMP_PARENT_ID, nfe.getMessage());</span>
+<span class="nc" id="L179">      throw new FormValidationException(&quot;Le chiffre inscrit est invalide.&quot;);</span>
+<span class="nc" id="L180">    }</span>
+<span class="nc" id="L181">  }</span>
+
+  private void validationProfondeur(String profondeur) throws FormValidationException {
+    try {
+<span class="nc bnc" id="L185" title="All 4 branches missed.">      if (Integer.parseInt(profondeur) &lt; 0 || Integer.parseInt(profondeur) &gt; 20) {</span>
+<span class="nc" id="L186">        throw new FormValidationException(</span>
+            &quot;Merci d'inscrire une profondeur comprise entre 0 et 20.&quot;);
+      }
+<span class="nc" id="L189">    } catch (final NumberFormatException nfe) {</span>
+<span class="nc" id="L190">      this.setErreur(AddCompetenceForm.CHAMP_PROFONDEUR, nfe.getMessage());</span>
+<span class="nc" id="L191">      throw new FormValidationException(&quot;Le chiffre inscrit est invalide.&quot;);</span>
+<span class="nc" id="L192">    }</span>
+<span class="nc" id="L193">  }</span>
+
+  private static String getValeurChamp(HttpServletRequest request, String nomChamp) {
+<span class="nc" id="L196">    final String valeur = request.getParameter(nomChamp);</span>
+<span class="nc bnc" id="L197" title="All 4 branches missed.">    if (valeur == null || valeur.trim().length() == 0) {</span>
+<span class="nc" id="L198">      return null;</span>
+    } else {
+<span class="nc" id="L200">      return valeur.trim();</span>
+    }
+  }
+
+  public String getResultat() {
+<span class="nc" id="L205">    return this.resultat;</span>
+  }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.6.201602180812</span></div></body></html>

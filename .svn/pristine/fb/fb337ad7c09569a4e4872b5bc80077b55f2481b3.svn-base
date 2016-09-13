@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>SupprimerUtilisateurForm.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Atribus</a> &gt; <a href="index.source.html" class="el_package">fr.eseo.atribus.forms</a> &gt; <span class="el_source">SupprimerUtilisateurForm.java</span></div><h1>SupprimerUtilisateurForm.java</h1><pre class="source lang-java linenums">package fr.eseo.atribus.forms;
+
+import fr.eseo.atribus.dao.DaoException;
+import fr.eseo.atribus.dao.UtilisateurDao;
+
+import org.springframework.beans.factory.access.BeanFactoryReference;
+import org.springframework.beans.factory.access.SingletonBeanFactoryLocator;
+
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.servlet.http.HttpServletRequest;
+
+public class SupprimerUtilisateurForm extends UtilisateurForm {
+<span class="nc" id="L16">  private static final Logger LOGGER = Logger.getLogger(SupprimerUtilisateurForm.class.getName());</span>
+
+  /**
+   * Traitement du formulaire de suppression d'un utilisateur.
+   */
+<span class="nc" id="L21">  public SupprimerUtilisateurForm() {</span>
+    final BeanFactoryReference bf =
+<span class="nc" id="L23">        SingletonBeanFactoryLocator.getInstance().useBeanFactory(&quot;beansDao&quot;);</span>
+    /* Récupération d'une instance de notre DAO Utilisateur */
+<span class="nc" id="L25">    this.utilisateurDao = (UtilisateurDao) bf.getFactory().getBean(&quot;utilisateurDao&quot;);</span>
+<span class="nc" id="L26">  }</span>
+
+  public String getResultat() {
+<span class="nc" id="L29">    return this.resultat;</span>
+  }
+
+  public Map&lt;String, String&gt; getErreurs() {
+<span class="nc" id="L33">    return this.erreurs;</span>
+  }
+
+  /**
+   * Suppression d'un utilisateur.
+   * 
+   * @param request .
+   */
+  public void supprimerUtilisateur(HttpServletRequest request) {
+<span class="nc" id="L42">    final String login =</span>
+<span class="nc" id="L43">        UtilisateurForm.getValeurChamp(request, UtilisateurForm.NOM_BOUTON_SUPPRIMER2);</span>
+
+    try {
+<span class="nc" id="L46">      this.traiterLogin(login);</span>
+<span class="nc bnc" id="L47" title="All 2 branches missed.">      if (this.erreurs.isEmpty()) {</span>
+<span class="nc bnc" id="L48" title="All 2 branches missed.">        if (this.utilisateurDao.supprimerParLogin(login) &gt; 0) {</span>
+<span class="nc" id="L49">          this.resultat = &quot;Succès de la suppression.&quot;;</span>
+        } else {
+<span class="nc" id="L51">          this.resultat = &quot;Echec de la suppression.&quot;;</span>
+        }
+      }
+<span class="nc" id="L54">    } catch (final DaoException bdde) {</span>
+<span class="nc" id="L55">      SupprimerUtilisateurForm.LOGGER.log(Level.INFO, &quot;Exception&quot;, bdde);</span>
+<span class="nc" id="L56">      this.resultat = &quot;Échec de la suppression : une erreur imprévue est survenue,&quot;</span>
+          + &quot; merci de réessayer dans quelques instants.&quot;;
+<span class="nc" id="L58">    }</span>
+<span class="nc" id="L59">  }</span>
+
+
+  private void traiterLogin(String login) {
+    try {
+<span class="nc" id="L64">      this.validationLogin(login);</span>
+<span class="nc" id="L65">    } catch (final FormValidationException fve) {</span>
+<span class="nc" id="L66">      SupprimerUtilisateurForm.LOGGER.log(Level.INFO, EXCEPTION, fve);</span>
+<span class="nc" id="L67">      this.setErreur(UtilisateurForm.NOM_BOUTON_SUPPRIMER, fve.getMessage());</span>
+<span class="nc" id="L68">    }</span>
+<span class="nc" id="L69">  }</span>
+
+  private void validationLogin(String login) throws FormValidationException {
+<span class="nc bnc" id="L72" title="All 4 branches missed.">    if (login == null || login.length() &lt; 5) {</span>
+<span class="nc" id="L73">      throw new FormValidationException(</span>
+          &quot;Le nom d'utilisateur doit contenir au moins 5 caractères.&quot;);
+<span class="nc bnc" id="L75" title="All 2 branches missed.">    } else if (this.utilisateurDao.trouverParLogin(login) == null) {</span>
+<span class="nc" id="L76">      throw new FormValidationException(&quot;Utilisateur non trouvé dans la base de données.&quot;);</span>
+    }
+<span class="nc" id="L78">  }</span>
+
+  public UtilisateurDao getUtilisateurBdd() {
+<span class="nc" id="L81">    return this.utilisateurDao;</span>
+  }
+
+  public void setResultat(String resultat) {
+<span class="nc" id="L85">    this.resultat = resultat;</span>
+<span class="nc" id="L86">  }</span>
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.6.201602180812</span></div></body></html>

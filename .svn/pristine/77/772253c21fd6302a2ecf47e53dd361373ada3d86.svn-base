@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>StartupSpring.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Atribus</a> &gt; <a href="index.source.html" class="el_package">fr.eseo.atribus.listeners</a> &gt; <span class="el_source">StartupSpring.java</span></div><h1>StartupSpring.java</h1><pre class="source lang-java linenums">package fr.eseo.atribus.listeners;
+
+
+import fr.eseo.atribus.beans.Mail;
+import fr.eseo.atribus.beans.MessagesParDefaut;
+import fr.eseo.atribus.dao.AdminSystDao;
+import fr.eseo.atribus.entities.AdminSyst;
+import fr.eseo.atribus.entities.Utilisateur;
+
+import org.springframework.beans.factory.access.BeanFactoryReference;
+import org.springframework.beans.factory.access.SingletonBeanFactoryLocator;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.event.ContextClosedEvent;
+import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.context.event.EventListener;
+import org.springframework.stereotype.Component;
+
+import java.sql.Driver;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.mail.MessagingException;
+import javax.servlet.ServletContext;
+
+@Component
+<span class="nc" id="L31">class StartupSpring {</span>
+
+<span class="nc" id="L33">  private static final Logger LOGGER = Logger.getLogger(StartupSpring.class.getName());</span>
+
+  @Autowired
+  private Mail mail;
+  @Autowired
+  private MessagesParDefaut messages;
+  @Autowired
+  ServletContext context;
+
+  @EventListener({ ContextRefreshedEvent.class })
+  void chargementDuContexte() {
+<span class="nc" id="L44">    this.context.setAttribute(&quot;utilisateurs&quot;, new HashSet&lt;Utilisateur&gt;());</span>
+<span class="nc" id="L45">    StartupSpring.LOGGER.info(&quot;Application ATRIBUS online !&quot;);</span>
+<span class="nc" id="L46">  }</span>
+
+  @EventListener({ ContextClosedEvent.class })
+  void desturctionDuContexte() {
+<span class="nc" id="L50">    StartupSpring.LOGGER.info(&quot;Début de la destruction du contexte d'ATRIBUS&quot;);</span>
+    /** new Thread(() -&gt; prevenirLesAdministrateursArretAtribus()).start(); */
+    try {
+<span class="nc" id="L53">      StartupSpring.LOGGER</span>
+<span class="nc" id="L54">          .info(&quot;Appel de la fonction permettant l'arrêt des connections sur MySQL.&quot;);</span>
+<span class="nc" id="L55">      com.mysql.jdbc.AbandonedConnectionCleanupThread.shutdown();</span>
+<span class="nc" id="L56">    } catch (final InterruptedException ie) {</span>
+<span class="nc" id="L57">      StartupSpring.LOGGER.info(</span>
+          &quot;Erreur lors de l'appel de la fonction permettant l'arrêt des connections sur MySQL.&quot;);
+<span class="nc" id="L59">      Thread.currentThread().interrupt();</span>
+<span class="nc" id="L60">    }</span>
+<span class="nc" id="L61">    final ClassLoader cl = Thread.currentThread().getContextClassLoader();</span>
+<span class="nc" id="L62">    final Enumeration&lt;Driver&gt; drivers = DriverManager.getDrivers();</span>
+<span class="nc bnc" id="L63" title="All 2 branches missed.">    while (drivers.hasMoreElements()) {</span>
+<span class="nc" id="L64">      final Driver driver = drivers.nextElement();</span>
+<span class="nc bnc" id="L65" title="All 2 branches missed.">      if (driver.getClass().getClassLoader() == cl) {</span>
+        try {
+<span class="nc" id="L67">          StartupSpring.LOGGER.info(&quot;Suppresion du driver JDBC&quot;);</span>
+<span class="nc" id="L68">          DriverManager.deregisterDriver(driver);</span>
+<span class="nc" id="L69">        } catch (final SQLException sqle) {</span>
+<span class="nc" id="L70">          StartupSpring.LOGGER.log(Level.INFO, &quot;Exception&quot;, sqle);</span>
+<span class="nc" id="L71">        }</span>
+      } else {
+<span class="nc" id="L73">        StartupSpring.LOGGER.info(&quot;Pas de driver à supprimer dans l'application.&quot;);</span>
+      }
+<span class="nc" id="L75">    }</span>
+<span class="nc" id="L76">    StartupSpring.LOGGER.info(&quot;Application ATRIBUS offline !&quot;);</span>
+<span class="nc" id="L77">  }</span>
+
+  @SuppressWarnings(&quot;unused&quot;)
+  private void prevenirLesAdministrateursArretAtribus() {
+    final BeanFactoryReference bf =
+<span class="nc" id="L82">        SingletonBeanFactoryLocator.getInstance().useBeanFactory(&quot;beansDao&quot;);</span>
+<span class="nc" id="L83">    final List&lt;AdminSyst&gt; adminSyst =</span>
+<span class="nc" id="L84">        ((AdminSystDao) bf.getFactory().getBean(&quot;adminSystDao&quot;)).recupererListe();</span>
+<span class="nc bnc" id="L85" title="All 2 branches missed.">    for (final AdminSyst admin : adminSyst) {</span>
+      try {
+<span class="nc" id="L87">        this.mail.mailAutomatiqueSsl(admin.getEmail(), &quot;Avertissement !&quot;,</span>
+<span class="nc" id="L88">            this.messages.getAdminSystProblemeTrois());</span>
+<span class="nc" id="L89">      } catch (final MessagingException me) {</span>
+<span class="nc" id="L90">        StartupSpring.LOGGER.log(Level.INFO, &quot;Exception&quot;, me);</span>
+<span class="nc" id="L91">      }</span>
+<span class="nc" id="L92">    }</span>
+<span class="nc" id="L93">  }</span>
+
+  public Mail getMail() {
+<span class="nc" id="L96">    return this.mail;</span>
+  }
+
+  public void setMail(Mail mail) {
+<span class="nc" id="L100">    this.mail = mail;</span>
+<span class="nc" id="L101">  }</span>
+
+  public MessagesParDefaut getMessages() {
+<span class="nc" id="L104">    return this.messages;</span>
+  }
+
+  public void setMessages(MessagesParDefaut messages) {
+<span class="nc" id="L108">    this.messages = messages;</span>
+<span class="nc" id="L109">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.6.201602180812</span></div></body></html>

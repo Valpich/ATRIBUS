@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>Monitoring.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Atribus</a> &gt; <a href="index.source.html" class="el_package">fr.eseo.atribus.aop</a> &gt; <span class="el_source">Monitoring.java</span></div><h1>Monitoring.java</h1><pre class="source lang-java linenums">package fr.eseo.atribus.aop;
+
+import org.aspectj.lang.JoinPoint.StaticPart;
+import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.AfterReturning;
+import org.aspectj.lang.annotation.Around;
+import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.Pointcut;
+import org.springframework.stereotype.Component;
+import org.springframework.util.StopWatch;
+
+import java.util.logging.Logger;
+
+@Component(&quot;monitoring&quot;)
+@Aspect
+<span class="nc" id="L16">public class Monitoring {</span>
+<span class="nc" id="L17">  private static final Logger LOGGER = Logger.getLogger(Monitoring.class.getName());</span>
+
+  @Around(&quot;monitoringPointCut()&quot;)
+  public Object executer(final ProceedingJoinPoint joinpoint) {
+<span class="nc" id="L21">    Object returnValue = null;</span>
+<span class="nc" id="L22">    final Object[] args = joinpoint.getArgs();</span>
+<span class="nc" id="L23">    final StringBuilder sb = new StringBuilder();</span>
+<span class="nc" id="L24">    sb.append(joinpoint.getSignature().toString());</span>
+<span class="nc" id="L25">    sb.append(&quot; avec les parametres : (&quot;);</span>
+<span class="nc bnc" id="L26" title="All 2 branches missed.">    for (int i = 0; i &lt; args.length; i++) {</span>
+<span class="nc" id="L27">      sb.append(args[i]);</span>
+<span class="nc bnc" id="L28" title="All 2 branches missed.">      if (i &lt; args.length - 1) {</span>
+<span class="nc" id="L29">        sb.append(&quot;, &quot;);</span>
+      }
+    }
+<span class="nc" id="L32">    sb.append(&quot;)&quot;);</span>
+<span class="nc" id="L33">    LOGGER.info(&quot;Debut methode : &quot; + sb);</span>
+<span class="nc" id="L34">    StopWatch clock = new StopWatch(getClass().getName());</span>
+    try {
+<span class="nc" id="L36">      clock.start(joinpoint.toString());</span>
+<span class="nc" id="L37">      returnValue = joinpoint.proceed();</span>
+<span class="nc" id="L38">    } catch (Throwable thw) {</span>
+<span class="nc" id="L39">      LOGGER.info(&quot;Erreur : &quot; + thw);</span>
+    } finally {
+<span class="nc" id="L41">      clock.stop();</span>
+<span class="nc" id="L42">      LOGGER.info(&quot;Temps d'execution : &quot; + clock.prettyPrint());</span>
+<span class="nc" id="L43">    }</span>
+<span class="nc" id="L44">    return returnValue;</span>
+  }
+  
+  @AfterReturning(pointcut = &quot;monitoringPointCut()&quot;, returning = &quot;result&quot;)
+  public void afficherFinTrace(final StaticPart staticPart, final Object result) {
+<span class="nc" id="L49">    String nomMethode = staticPart.getSignature().toLongString();</span>
+<span class="nc" id="L50">    LOGGER.info(&quot;Fin methode : &quot; + nomMethode + &quot; retour=&quot; + result);</span>
+<span class="nc" id="L51">  }</span>
+  
+  /**
+   * Detecte les appels du timer.
+   */
+  @Pointcut(&quot;execution(* fr.eseo.atribus.timers.TimerConversionNotificationEnMail.executer(..))&quot;)
+  public void monitoringPointCut() {
+    // Methode vide car doit être vide.
+<span class="nc" id="L59">  }</span>
+  
+  /**
+   * Detecte les appels de la dao.
+   */
+  /**
+   * @Pointcut(&quot;execution(* fr.eseo.atribus.dao.*.*(..))&quot;) public void monitoringPointCut() { //
+   * Methode vide car doit être vide. }
+   */
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.6.201602180812</span></div></body></html>

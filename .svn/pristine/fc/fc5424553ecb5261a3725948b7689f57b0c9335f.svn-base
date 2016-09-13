@@ -1,0 +1,57 @@
+package fr.eseo.atribus.forms;
+
+import fr.eseo.atribus.dao.EleveDao;
+import fr.eseo.atribus.dao.EvaluationDao;
+import fr.eseo.atribus.dao.ExamenDao;
+import fr.eseo.atribus.entities.Eleve;
+
+import org.springframework.beans.factory.access.BeanFactoryReference;
+import org.springframework.beans.factory.access.SingletonBeanFactoryLocator;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Logger;
+
+public class ExamenForm {
+  protected static final Logger LOGGER = Logger.getLogger(ExamenForm.class.getName());
+  protected static final String EXCEPTION = "Exception";
+
+  protected String resultat;
+  protected final Map<String, String> erreurs = new HashMap<>();
+  protected final ExamenDao examenDao;
+  protected final EleveDao eleveDao;
+  protected final EvaluationDao evaluationDao;
+
+  public ExamenForm() {
+    final BeanFactoryReference bf =
+        SingletonBeanFactoryLocator.getInstance().useBeanFactory("beansDao");
+    /* Récupération d'une instance de notre DAO Examen */
+    this.examenDao = (ExamenDao) bf.getFactory().getBean("examenDao");
+    /* Récupération d'une instance de notre DAO Eleve */
+    this.eleveDao = (EleveDao) bf.getFactory().getBean("eleveDao");
+    /* Récupération d'une instance de notre DAO Evaluation */
+    this.evaluationDao = (EvaluationDao) bf.getFactory().getBean("evaluationDao");
+  }
+
+  public String getResultat() {
+    return this.resultat;
+  }
+
+  public Map<String, String> getErreurs() {
+    return this.erreurs;
+  }
+  
+  protected void validationEleve(Eleve eleve) throws FormValidationException {
+    if (this.eleveDao.trouverParLoginHash(eleve.getLogin(), eleve.getPassword()) == null) {
+      throw new FormValidationException("L'eleve n'existe pas.");
+    }
+  }
+
+  /*
+   * Ajoute un message correspondant au champ spécifié à la map des erreurs.
+   */
+  protected void setErreur(String champ, String message) {
+    this.erreurs.put(champ, message);
+  }
+
+}

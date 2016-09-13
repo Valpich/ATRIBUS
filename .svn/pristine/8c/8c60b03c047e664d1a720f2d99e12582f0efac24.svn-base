@@ -1,0 +1,94 @@
+package fr.eseo.atribus.forms;
+
+import fr.eseo.atribus.dao.DaoException;
+import fr.eseo.atribus.dao.MatiereDao;
+import fr.eseo.atribus.dao.UeDao;
+import fr.eseo.atribus.entities.UniteEnseignement;
+import fr.eseo.atribus.entities.Matiere;
+import org.springframework.beans.factory.access.BeanFactoryReference;
+import org.springframework.beans.factory.access.SingletonBeanFactoryLocator;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.servlet.http.HttpServletRequest;
+
+public class ModifierUeForm extends UeFormMethods{
+  private static final Logger LOGGER =
+      Logger.getLogger(ModifierUeForm.class.getName());
+  private static final String EXCEPTION = "Exception";
+  
+  private static final String CHAMP_UE = "listeUe";
+  private static final String CHAMP_MATIERE = "nomMatiere";
+  
+  private UeDao ueDao; 
+  private MatiereDao matiereDao; 
+  private final Map<String, String> erreurs = new HashMap<>();
+  private List<UniteEnseignement> listeDesUes;
+  private List<Matiere> listeDesMatieres;
+  private String resultat;
+  
+  /*
+   * Constructeur e
+   * */
+  public ModifierUeForm(){
+    final BeanFactoryReference bf = SingletonBeanFactoryLocator.getInstance().useBeanFactory("beansDao");
+    this.ueDao = (UeDao) bf.getFactory().getBean("ueDao");
+    this.matiereDao = (MatiereDao) bf.getFactory().getBean("matiereDao"); 
+  }
+  public List<UniteEnseignement> getListeDesUes() {
+    return listeDesUes;
+  }
+  
+  public void setListeDesUes(List<UniteEnseignement> listeDesUes) {
+    this.listeDesUes = listeDesUes;
+  }
+  
+  public List<Matiere> getListeDesMatieres() {
+    return listeDesMatieres;
+  }
+  
+  public void setListeDesMatieres(List<Matiere> listeDesMatieres) {
+    this.listeDesMatieres = listeDesMatieres;
+  }
+  
+  /*
+   * Suppression d'une matière d'une UE 
+   * 
+   * */
+  public void modifierCompositionUe ( HttpServletRequest request){
+    String nomUe = UeFormMethods.getValeurChamp(request, ModifierUeForm.CHAMP_UE);
+    String nomMatiere = UeFormMethods.getValeurChamp(request, ModifierUeForm.CHAMP_MATIERE);
+    System.out.println("MCUe : "+nomUe+nomMatiere);
+    
+    try{
+      if(nomUe != null && nomMatiere != null){
+        this.ueDao.supprimerAssociationMatiereUe(nomUe, nomMatiere);
+        this.resultat ="success"; 
+        
+      }
+    }catch(final DaoException daoEx){
+      
+      this.resultat = "erreurDao";
+      ModifierUeForm.LOGGER.log(Level.INFO, EXCEPTION, daoEx );
+    }
+  }
+  /*
+   * Ajout d'une matière à une UE
+   * 
+   * */
+  public void AssocierMatiereUe(HttpServletRequest request ){
+    
+  }
+  public String getResultat() {
+    return this.resultat;
+  }
+  public Map<String, String> getErreurs() {
+    return this.erreurs;
+  }
+  
+
+}

@@ -1,0 +1,81 @@
+package fr.eseo.atribus.entities;
+
+import java.io.Serializable;
+import java.util.Map;
+
+public class UniteEnseignement implements Serializable {
+
+  private static final long serialVersionUID = 2235338214834313313L;
+
+  private int id;
+  private String nom;
+  private int nbCreditsEcts;
+  private int nbHeures;
+  private EnseignantRefUe enseignantRefUe;
+  private Promotion promotion;
+  private Map<Long, CompetenceValidable> competences;
+
+  public int getId() {
+    return this.id;
+  }
+
+  public void setId(int id) {
+    this.id = id;
+  }
+
+  public String getNom() {
+    return this.nom;
+  }
+
+  public int getNbCreditsEcts() {
+    return this.nbCreditsEcts;
+  }
+
+  public int getNbHeures() {
+    return this.nbHeures;
+  }
+
+  public EnseignantRefUe getEnseignantRefUe() {
+    return this.enseignantRefUe;
+  }
+
+  public Promotion getPromotion() {
+    return this.promotion;
+  }
+
+  public Map<Long, CompetenceValidable> getCompetences() {
+    return this.competences;
+  }
+
+  public void setNom(String nom) {
+    this.nom = nom;
+  }
+
+  public void setNbCreditsEcts(int nbCreditsEcts) {
+    this.nbCreditsEcts = nbCreditsEcts;
+  }
+
+  public void setNbHeures(int nbHeures) {
+    this.nbHeures = nbHeures;
+  }
+
+  public void setEnseignantRefUe(EnseignantRefUe enseignantRefUe) {
+    this.enseignantRefUe = enseignantRefUe;
+  }
+
+  public void setPromotion(Promotion promotion) {
+    this.promotion = promotion;
+  }
+
+  public void setCompetences(Map<Long, CompetenceValidable> competences) {
+    this.competences = competences;
+  }
+
+  @Override
+  public String toString() {
+    return "UniteEnseignement [nom=" + this.nom + ", nbCreditsEcts=" + this.nbCreditsEcts
+        + ", nbHeures=" + this.nbHeures + ", enseignantRefUe=" + this.enseignantRefUe
+        + ", promotion=" + this.promotion + ", competence=" + this.competences;
+  }
+
+}

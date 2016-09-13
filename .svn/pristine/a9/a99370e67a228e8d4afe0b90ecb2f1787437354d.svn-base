@@ -1,0 +1,67 @@
+package fr.eseo.atribus.forms;
+
+import fr.eseo.atribus.dao.CompetenceDao;
+import fr.eseo.atribus.dao.ExamenDao;
+import fr.eseo.atribus.dao.ExerciceDao;
+
+import java.util.Map;
+
+public class ExerciceFormData {
+  private String resultat;
+  private Map<String, String> erreurs;
+  private ExerciceDao exerciceBdd;
+  private ExamenDao examenBdd;
+  private CompetenceDao competenceBdd;
+  public static final String CHAMP_QUESTION = "question";
+  public static final String CHAMP_REPONSE = "reponse";
+  public static final String CHAMP_POURCENTAGE = "pourcentage";
+  public static final String CHAMP_POINTS = "points";
+  public static final String EXCEPTION = "Exception";
+  public static final String CHAMP_COMPETENCE = "choixCompetence";
+  public static final String CHAMP_EXAMEN = "choixExamen";
+
+  public ExerciceFormData(Map<String, String> erreurs) {
+    this.erreurs = erreurs;
+  }
+
+  public String getResultat() {
+    return this.resultat;
+  }
+
+  public void setResultat(String resultat) {
+    this.resultat = resultat;
+  }
+
+  public Map<String, String> getErreurs() {
+    return this.erreurs;
+  }
+
+  public void setErreurs(Map<String, String> erreurs) {
+    this.erreurs = erreurs;
+  }
+
+  public ExerciceDao getExerciceBdd() {
+    return this.exerciceBdd;
+  }
+
+  public void setExerciceBdd(ExerciceDao exerciceBdd) {
+    this.exerciceBdd = exerciceBdd;
+  }
+
+  public ExamenDao getExamenBdd() {
+    return this.examenBdd;
+  }
+
+  public void setExamenBdd(ExamenDao examenBdd) {
+    this.examenBdd = examenBdd;
+  }
+
+  public CompetenceDao getCompetenceBdd() {
+    return this.competenceBdd;
+  }
+
+  public void setCompetenceBdd(CompetenceDao competenceBdd) {
+    this.competenceBdd = competenceBdd;
+  }
+
+}

@@ -1,0 +1,240 @@
+package fr.eseo.atribus.dao;
+
+import fr.eseo.atribus.entities.CompetenceValidable;
+import fr.eseo.atribus.entities.EnseignantRefMatiere;
+import fr.eseo.atribus.entities.Matiere;
+
+import org.springframework.beans.factory.access.BeanFactoryReference;
+import org.springframework.beans.factory.access.SingletonBeanFactoryLocator;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+
+
+public class MatiereDaoImpl implements MatiereDao {
+  private final DaoFactory daoFactory;
+  private static final String SQL_INSERT =
+      "INSERT INTO matiere (nom, coefficient,id_enseignant_ref,id_unite_enseignement) VALUES (?,?,?,?)";
+  private static final String SQL_SELECT_PAR_NOM = "SELECT * FROM matiere WHERE nom =?";
+  private static final String SQL_SELECT_PAR_ID = "SELECT * FROM matiere WHERE id =?";
+  private static final String SQL_SELECT_ALL = "SELECT * FROM matiere";
+  private static final String SQL_SELECT_MATIERE_PAR_UE = "SELECT * FROM matiere where id_unite_enseignement is not null";
+  
+  private static final String SQL_SELECT_MATIERE_ASSOCIATION =
+      "SELECT * FROM matiere_associe_competence WHERE id_matiere = ?";
+
+  MatiereDaoImpl() {
+    final BeanFactoryReference bf =
+        SingletonBeanFactoryLocator.getInstance().useBeanFactory("contextDao");
+    this.daoFactory = (DaoFactory) bf.getFactory().getBean("daoFactory");
+  }
+
+  /* Implémentation de la méthode trouverParNom() définie dans l'interface MatiereBDD */
+  @Override
+  public Matiere trouverParNom(String nom) {
+    return this.trouver(MatiereDaoImpl.SQL_SELECT_PAR_NOM, nom);
+  }
+
+  /* Implémentation de la méthode trouverParId() définie dans l'interface MatiereBDD */
+  @Override
+  public Matiere trouverParId(int id) {
+    return this.trouver(MatiereDaoImpl.SQL_SELECT_PAR_ID, id);
+  }
+
+  /* Implémentation de la méthode trouverParNom() définie dans l'interface MatiereBDD */
+  @Override
+  public int trouverIdParNom(String nom) {
+    return DaoUtilitaire.trouverId(this.daoFactory, MatiereDaoImpl.SQL_SELECT_PAR_NOM, nom);
+  }
+
+  public void ajouter(Matiere matiere, int utilisateur) {
+    
+    Connection connexion = null;
+    PreparedStatement preparedStatement = null;
+    ResultSet valeursAutoGenerees = null;
+    try {
+      /* Récupération d'une connexion depuis la Factory */
+      connexion = this.daoFactory.getConnection();
+
+      preparedStatement = DaoUtilitaire.initialisationRequetePreparee(connexion,
+          MatiereDaoImpl.SQL_INSERT, true, matiere.getNom(), matiere.getCoefficient(),
+          utilisateur, 
+          matiere.getUe().getId());
+
+      final int statut = preparedStatement.executeUpdate();
+
+      /* Analyse du statut retourné par la requête d'insertion */
+      if (statut == 0) {
+        throw new DaoException(
+            "Échec de la création de la matière, aucune ligne ajoutée dans la table.");
+      }
+
+      /* Récupération de l'id auto-généré par la requête d'insertion */
+      valeursAutoGenerees = preparedStatement.getGeneratedKeys();
+      if (valeursAutoGenerees.next()) {
+        /* Puis initialisation de la propriété id du bean Matiere avec sa valeur */
+        matiere.setId(valeursAutoGenerees.getInt(1));
+      } else {
+        throw new DaoException(
+            "Échec de la création de la matière en base, aucun ID auto-généré retourné.");
+      }
+    } catch (final SQLException sqle) {
+      throw new DaoException(sqle);
+    } finally {
+      DaoUtilitaire.fermeturesSilencieuses(valeursAutoGenerees, preparedStatement, connexion);
+    }
+
+  }
+
+  /*
+   * Méthode générique utilisée pour retourner un utilisateur depuis la base de données,
+   * correspondant à la requête SQL donnée prenant en paramètres les objets passés en argument.
+   */
+  private Matiere trouver(String sql, Object... objets) {
+    Connection connexion = null;
+    PreparedStatement preparedStatement = null;
+    ResultSet resultSet = null;
+    Matiere matiere = null;
+    try {
+      /* Récupération d'une connexion depuis la Factory */
+      connexion = this.daoFactory.getConnection();
+      /*
+       * Préparation de la requête avec les objets passés en arguments (ici, uniquement un id) et
+       * exécution.
+       */
+      preparedStatement =
+          DaoUtilitaire.initialisationRequetePreparee(connexion, sql, false, objets);
+      resultSet = preparedStatement.executeQuery();
+      /* Parcours de la ligne de données retournée dans le ResultSet */
+      if (resultSet.next()) {
+        matiere = this.map(resultSet);
+      }
+    } catch (final SQLException sqle) {
+      throw new DaoException(sqle);
+    } finally {
+      DaoUtilitaire.fermeturesSilencieuses(resultSet, preparedStatement, connexion);
+    }
+    return matiere;
+  }
+
+  @Override
+  public List<Matiere> trouverToutesLesMatieres() {
+    Connection connexion = null;
+    PreparedStatement preparedStatement = null;
+    ResultSet resultSet = null;
+    ArrayList<Matiere> matieres = null;
+    try {
+      /* Récupération d'une connexion depuis la Factory */
+      connexion = this.daoFactory.getConnection();
+      /*
+       * Préparation de la requête avec les objets passés en arguments (ici, uniquement un id) et
+       * exécution.
+       */
+      preparedStatement = DaoUtilitaire.initialisationRequetePreparee(connexion,
+          MatiereDaoImpl.SQL_SELECT_ALL, false);
+      resultSet = preparedStatement.executeQuery();
+      matieres = new ArrayList<>();
+      /* Parcours de la ligne de données retournée dans le ResultSet */
+      while (resultSet.next()) {
+        matieres.add(this.map(resultSet));
+      }
+    } catch (final SQLException sqle) {
+      throw new DaoException(sqle);
+    } finally {
+      DaoUtilitaire.fermeturesSilencieuses(resultSet, preparedStatement, connexion);
+    }
+    return matieres;
+  }
+
+  private Map<Integer, Boolean> trouverToutesLesAssociations(Matiere matiere) {
+    Connection connexion = null;
+    PreparedStatement preparedStatement = null;
+    ResultSet resultSet = null;
+    Map<Integer, Boolean> idsEtValide = null;
+    try {
+      /* Récupération d'une connexion depuis la Factory */
+      connexion = this.daoFactory.getConnection();
+      /*
+       * Préparation de la requête avec les objets passés en arguments (ici, uniquement un id) et
+       * exécution.
+       */
+      preparedStatement = DaoUtilitaire.initialisationRequetePreparee(connexion,
+          MatiereDaoImpl.SQL_SELECT_MATIERE_ASSOCIATION, false, matiere.getId());
+      resultSet = preparedStatement.executeQuery();
+      idsEtValide = new HashMap<>();
+      /* Parcours de la ligne de données retournée dans le ResultSet */
+      while (resultSet.next()) {
+        idsEtValide.put(resultSet.getInt("id_competence"), resultSet.getBoolean("valide"));
+      }
+    } catch (final SQLException sqle) {
+      throw new DaoException(sqle);
+    } finally {
+      DaoUtilitaire.fermeturesSilencieuses(resultSet, preparedStatement, connexion);
+    }
+    return idsEtValide;
+  }
+
+  /*
+   * Simple méthode utilitaire permettant de faire la correspondance (le mapping) entre une ligne
+   * issue de la table des utilisateurs (un ResultSet) et un bean Matiere.
+   */
+  private Matiere map(ResultSet resultSet) throws SQLException {
+    final Matiere matiere = new Matiere();
+    matiere.setNom(resultSet.getString("nom"));
+    matiere.setCoefficient(resultSet.getInt("coefficient"));
+    matiere.setId(resultSet.getInt("id"));
+    final BeanFactoryReference bf =
+        SingletonBeanFactoryLocator.getInstance().useBeanFactory("beansDao");
+    final UeDao ueDao = (UeDao) bf.getFactory().getBean("ueDao");
+    final CompetenceDao competenceDao = (CompetenceDao) bf.getFactory().getBean("competenceDao");
+    matiere.setUe(ueDao.trouverUeParId(resultSet.getInt("id_unite_enseignement")));
+    matiere.getUe().setCompetences(
+        competenceDao.recupererAssociationCompetenceUe(resultSet.getInt("id_unite_enseignement")));
+    matiere.setCompetences(new ArrayList<>());
+    for (Map.Entry<Integer, Boolean> entry : trouverToutesLesAssociations(matiere).entrySet()) {
+      CompetenceValidable comp =
+          new CompetenceValidable(competenceDao.trouverParId(entry.getKey()));
+      comp.setValide(entry.getValue());
+      matiere.getCompetences().add(comp);
+    }
+    return matiere;
+  }
+
+  @Override
+  public List<Matiere> trouverMatiereParUe() {
+    Connection connexion = null;
+    PreparedStatement preparedStatement = null;
+    ResultSet resultSet = null;
+    ArrayList<Matiere> matieres = null;
+    try {
+      /* Récupération d'une connexion depuis la Factory */
+      connexion = this.daoFactory.getConnection();
+      /*
+       * Préparation de la requête avec les objets passés en arguments (ici, uniquement un id) et
+       * exécution.
+       */
+      preparedStatement = DaoUtilitaire.initialisationRequetePreparee(connexion,
+          MatiereDaoImpl.SQL_SELECT_ALL, false);
+      resultSet = preparedStatement.executeQuery();
+      matieres = new ArrayList<>();
+      /* Parcours de la ligne de données retournée dans le ResultSet */
+      while (resultSet.next()) {
+        matieres.add(this.map(resultSet));
+      }
+    } catch (final SQLException sqle) {
+      throw new DaoException(sqle);
+    } finally {
+      DaoUtilitaire.fermeturesSilencieuses(resultSet, preparedStatement, connexion);
+    }
+    return matieres;
+    
+  }
+
+}

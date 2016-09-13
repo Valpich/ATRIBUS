@@ -1,0 +1,44 @@
+package fr.eseo.atribus.dao;
+
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.sql.DataSource;
+
+public class DaoFactory {
+  private static final Logger LOGGER = Logger.getLogger(DaoFactory.class.getName());
+  private static final String EXCEPTION = "Exception";
+
+  private final DataSource dataSource;
+  private Connection connection;
+
+  /**
+   * Default constructor.
+   */
+  public DaoFactory(DataSource dataSource) {
+    this.dataSource = dataSource;
+    this.connection = null;
+  }
+
+  protected Connection getConnection() {
+    try {
+      if (this.connection == null || this.connection.isClosed()) {
+        this.recupererConnection();
+      }
+    } catch (final SQLException sqle) {
+      DaoFactory.LOGGER.log(Level.INFO, EXCEPTION, sqle);
+    }
+    return this.connection;
+  }
+
+  private void recupererConnection() {
+    try {
+      this.connection = this.dataSource.getConnection();
+    } catch (final SQLException sqle) {
+      DaoFactory.LOGGER.log(Level.INFO, EXCEPTION, sqle);
+    }
+  }
+
+}

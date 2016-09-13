@@ -1,0 +1,53 @@
+package fr.eseo.atribus.dao;
+
+import fr.eseo.atribus.entities.Competence;
+import fr.eseo.atribus.entities.CompetenceValidable;
+import fr.eseo.atribus.entities.Eleve;
+import fr.eseo.atribus.entities.Matiere;
+import fr.eseo.atribus.entities.UniteEnseignement;
+
+import java.util.List;
+import java.util.Map;
+
+
+public interface CompetenceDao {
+
+  void modifierCompetence(Competence competence, String nouveauNom);
+
+  void modifierCompetence(Competence competence, Competence ancienneCompetence);
+
+  void modifierCompetence(Competence competence, int profondeur);
+
+  Competence trouverParId(int idCompetence);
+
+  List<Competence> trouverParNomRequete(String sql, String nom);
+
+  List<Competence> trouverParNom(String nom);
+
+  Competence trouverUniqueParNom(String nom);
+
+  List<Competence> trouverToutesLesCompetences();
+
+  int trouverIdParNom(String nom);
+
+  List<Competence> trouverParProfondeur(int profondeur);
+
+  void ajouterCompetence(Competence competence);
+
+  void supprimerCompetenceParNom(String nom);
+
+  void associerCompetenceNiveauUe(Competence competence, UniteEnseignement ue);
+
+  Map<Long, CompetenceValidable> recupererAssociationCompetenceUe(int idUe);
+
+  Map<Competence, Integer> recupererProfilEleve(Eleve eleve);
+
+  void valider(Matiere matiere, CompetenceValidable competence);
+
+  void valider(UniteEnseignement ue, CompetenceValidable value);
+  
+  List<Competence> listeCompetencesUe(UniteEnseignement ue);
+  
+  List<Competence> listeCompetencesMatiere(Matiere matiere);
+
+}

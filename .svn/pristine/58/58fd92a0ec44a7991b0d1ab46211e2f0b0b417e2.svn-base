@@ -1,0 +1,777 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>ExamenController.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Atribus</a> &gt; <a href="index.source.html" class="el_package">fr.eseo.atribus.controller</a> &gt; <span class="el_source">ExamenController.java</span></div><h1>ExamenController.java</h1><pre class="source lang-java linenums">package fr.eseo.atribus.controller;
+
+import fr.eseo.atribus.beans.ExporteurCsv;
+import fr.eseo.atribus.dao.EleveDao;
+import fr.eseo.atribus.dao.EvaluationDao;
+import fr.eseo.atribus.dao.ExamenDao;
+import fr.eseo.atribus.dao.MatiereDao;
+import fr.eseo.atribus.entities.Competence;
+import fr.eseo.atribus.entities.Eleve;
+import fr.eseo.atribus.entities.Enseignant;
+import fr.eseo.atribus.entities.EnseignantRefMatiere;
+import fr.eseo.atribus.entities.Evaluation;
+import fr.eseo.atribus.entities.Examen;
+import fr.eseo.atribus.entities.Exercice;
+import fr.eseo.atribus.entities.Matiere;
+import fr.eseo.atribus.entities.Utilisateur;
+import fr.eseo.atribus.filters.FiltreUtilisateur;
+import fr.eseo.atribus.forms.AddExamenForm;
+import fr.eseo.atribus.forms.ModifierExamenForm;
+import fr.eseo.atribus.forms.RepondreAutoEvaluationForm;
+import fr.eseo.atribus.forms.RepondreExamenForm;
+
+import org.springframework.beans.factory.access.BeanFactoryReference;
+import org.springframework.beans.factory.access.SingletonBeanFactoryLocator;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.ModelAndView;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.UUID;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.annotation.PostConstruct;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+
+/**
+ * Servlet implementation class ExamenController.
+ */
+@Controller
+<span class="nc" id="L52">public class ExamenController {</span>
+  public static final String CONF_BDD_FACTORY = &quot;DaoFactory&quot;;
+  public static final String ATT_EXAMEN = &quot;examen&quot;;
+  public static final String ATT_CHOIX_EXAMEN = &quot;choixExamen&quot;;
+  public static final String ATT_NOM_EXAMEN = &quot;nomExamen&quot;;
+  public static final String ATT_EXAMENS = &quot;examens&quot;;
+  public static final String ATT_EVALUATIONS = &quot;evaluations&quot;;
+  public static final String ATT_FORM = &quot;form&quot;;
+  public static final String ATT_COMPETENCES = &quot;competences&quot;;
+  public static final String ATT_COMPETENCES_VIDE = &quot;competencesVide&quot;;
+  public static final String ATT_MATIERES = &quot;matieres&quot;;
+  public static final String VUE = &quot;EnseignantRefMatiere/addExamen&quot;;
+  public static final String VUE_CONSULTER = &quot;Eleve/consulterCompetencesExamen&quot;;
+  public static final String VUE_MODIFIER = &quot;EnseignantRefMatiere/modifierExamen&quot;;
+  public static final String VUE_CORRIGER = &quot;Enseignant/corrigerExamen&quot;;
+  public static final String VUE_PASSER = &quot;Eleve/passerExamen&quot;;
+  public static final String VUE_PASSER_AUTO = &quot;Eleve/passerAutoEvaluation&quot;;
+  public static final String VUE_SUPPRIMER = &quot;EnseignantRefMatiere/supprimerExamen&quot;;
+  public static final String VUE_HISTORIQUE_AUTO = &quot;EnseignantRefMatiere/historiqueAutoEvaluation&quot;;
+  public static final String ATT_SESSION_USER = &quot;sessionUtilisateur&quot;;
+  public static final String VUE_CONSULTER_NOTES = &quot;Eleve/consulterNotes&quot;;
+  public static final String VUE_AUCUNE_NOTE = &quot;Eleve/aucuneNote&quot;;
+  public static final String VUE_CONSULT_AUTOEVAL = &quot;Eleve/consulterAutoEvaluation&quot;;
+  public static final String VUE_REDIRECT_INDEX = &quot;redirect:/index&quot;;
+  public static final String REPONSES = &quot;/**REPONSES**/&quot;;
+  public static final String VALIDES = &quot;/**VALIDES**/&quot;;
+<span class="nc" id="L78">  private static final Logger LOGGER = Logger.getLogger(ExamenController.class.getName());</span>
+
+  private ExamenDao examenDao;
+  private MatiereDao matiereDao;
+  private EvaluationDao evaluationDao;
+  private EleveDao eleveDao;
+
+  /**
+   * Initialisation.
+   */
+  @PostConstruct
+  public void init() {
+    final BeanFactoryReference bf =
+<span class="nc" id="L91">        SingletonBeanFactoryLocator.getInstance().useBeanFactory(&quot;beansDao&quot;);</span>
+    /* Récupération d'une instance de notre DAO Examen */
+<span class="nc" id="L93">    this.examenDao = (ExamenDao) bf.getFactory().getBean(&quot;examenDao&quot;);</span>
+    /* Récupération d'une instance de notre DAO Matiere */
+<span class="nc" id="L95">    this.matiereDao = (MatiereDao) bf.getFactory().getBean(&quot;matiereDao&quot;);</span>
+    /* Récupération d'une instance de notre DAO Eveluation */
+<span class="nc" id="L97">    this.evaluationDao = (EvaluationDao) bf.getFactory().getBean(&quot;evaluationDao&quot;);</span>
+    /* Récupération d'une instance de notre DAO Eleve */
+<span class="nc" id="L99">    this.eleveDao = (EleveDao) bf.getFactory().getBean(&quot;eleveDao&quot;);</span>
+<span class="nc" id="L100">  }</span>
+
+
+  @RequestMapping(value = &quot;/EnseignantRefMatiere/AjouterExamen&quot;, method = RequestMethod.GET)
+  protected ModelAndView afficherAjouterExamen() {
+<span class="nc" id="L105">    final HashMap&lt;String, Object&gt; attributsRequete = new HashMap&lt;&gt;();</span>
+    // On charge la liste des matieres
+<span class="nc" id="L107">    attributsRequete.put(ExamenController.ATT_MATIERES, this.matiereDao.trouverToutesLesMatieres());</span>
+<span class="nc" id="L108">    return new ModelAndView(VUE, attributsRequete);</span>
+  }
+
+  @RequestMapping(value = &quot;/EnseignantRefMatiere/AjouterExamen&quot;, method = RequestMethod.POST)
+  protected ModelAndView ajouterExamen(HttpServletRequest request) {
+<span class="nc" id="L113">    final HashMap&lt;String, Object&gt; attributsRequete = new HashMap&lt;&gt;();</span>
+    // On charge la liste des matieres
+<span class="nc" id="L115">    attributsRequete.put(ExamenController.ATT_MATIERES, this.matiereDao.trouverToutesLesMatieres());</span>
+
+    /* Préparation de l'objet formulaire */
+<span class="nc" id="L118">    final AddExamenForm form = new AddExamenForm();</span>
+
+    /* Appel au traitement et à la validation de la requête, et récupération du bean en résultant */
+<span class="nc" id="L121">    final Examen examen = form.addExamen(request);</span>
+
+    /* Stockage du formulaire et du bean dans l'objet request */
+<span class="nc" id="L124">    attributsRequete.put(ExamenController.ATT_FORM, form);</span>
+<span class="nc" id="L125">    attributsRequete.put(ExamenController.ATT_EXAMEN, examen);</span>
+
+<span class="nc" id="L127">    return new ModelAndView(VUE, attributsRequete);</span>
+  }
+
+  @RequestMapping(value = &quot;/EnseignantRefMatiere/ModifierExamen&quot;, method = RequestMethod.GET)
+  protected ModelAndView afficherModifierExamen() {
+<span class="nc" id="L132">    final HashMap&lt;String, Object&gt; attributsRequete = new HashMap&lt;&gt;();</span>
+    // On charge la liste des examens
+<span class="nc" id="L134">    attributsRequete.put(ExamenController.ATT_EXAMENS, this.examenDao.trouverTousLesExamens());</span>
+<span class="nc" id="L135">    return new ModelAndView(VUE_MODIFIER, attributsRequete);</span>
+  }
+
+  @RequestMapping(value = &quot;/EnseignantRefMatiere/ModifierExamen&quot;, method = RequestMethod.POST)
+  protected ModelAndView modifierExamen(HttpServletRequest request) {
+<span class="nc" id="L140">    final HashMap&lt;String, Object&gt; attributsRequete = new HashMap&lt;&gt;();</span>
+    // On charge la liste des matieres
+<span class="nc" id="L142">    attributsRequete.put(ExamenController.ATT_MATIERES, this.matiereDao.trouverToutesLesMatieres());</span>
+    // On charge la liste des examens
+<span class="nc" id="L144">    attributsRequete.put(ExamenController.ATT_EXAMENS, this.examenDao.trouverTousLesExamens());</span>
+<span class="nc" id="L145">    final String nomExamen = ExamenController.getValeurChamp(request, ATT_CHOIX_EXAMEN);</span>
+<span class="nc" id="L146">    final String nomExamenModifier = ExamenController.getValeurChamp(request, ATT_NOM_EXAMEN);</span>
+<span class="nc" id="L147">    final HttpSession session = request.getSession();</span>
+<span class="nc bnc" id="L148" title="All 2 branches missed.">    if (nomExamen == null) {</span>
+<span class="nc bnc" id="L149" title="All 2 branches missed.">      if (nomExamenModifier == null) {</span>
+<span class="nc" id="L150">        session.removeAttribute(ExamenController.ATT_EXAMEN);</span>
+<span class="nc" id="L151">        return new ModelAndView(VUE_MODIFIER, attributsRequete);</span>
+      } else {
+        /* Préparation de l'objet formulaire */
+<span class="nc" id="L154">        final ModifierExamenForm form = new ModifierExamenForm();</span>
+<span class="nc" id="L155">        form.modifierExamen(request);</span>
+        /* Stockage du formulaire et du bean dans l'objet request */
+<span class="nc" id="L157">        attributsRequete.put(ExamenController.ATT_FORM, form);</span>
+<span class="nc" id="L158">        attributsRequete.put(ExamenController.ATT_EXAMENS, this.examenDao.trouverTousLesExamens());</span>
+<span class="nc" id="L159">        session.removeAttribute(ExamenController.ATT_EXAMEN);</span>
+<span class="nc" id="L160">        return new ModelAndView(VUE_MODIFIER, attributsRequete);</span>
+      }
+    } else {
+<span class="nc" id="L163">      session.setAttribute(ExamenController.ATT_EXAMEN, this.examenDao.trouverParNom(nomExamen));</span>
+<span class="nc" id="L164">      attributsRequete.put(ExamenController.ATT_EXAMEN, this.examenDao.trouverParNom(nomExamen));</span>
+    }
+<span class="nc" id="L166">    return new ModelAndView(VUE_MODIFIER, attributsRequete);</span>
+  }
+
+  @RequestMapping(value = &quot;/EnseignantRefMatiere/HistoriqueAutoEvaluation&quot;,
+      method = RequestMethod.GET)
+  protected ModelAndView afficherHistoriqueAutoEvaluation() {
+<span class="nc" id="L172">    final HashMap&lt;String, Object&gt; attributsRequete = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L173">    List&lt;Examen&gt; examens = this.examenDao.trouverTousLesExamens();</span>
+<span class="nc" id="L174">    List&lt;Examen&gt; autoEvaluations = new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L175" title="All 2 branches missed.">    for (Examen examen : examens) {</span>
+<span class="nc bnc" id="L176" title="All 4 branches missed.">      if (examen.getAutoEvaluation() &amp;&amp; !examen.getExercices().isEmpty()) {</span>
+<span class="nc" id="L177">        autoEvaluations.add(examen);</span>
+      }
+<span class="nc" id="L179">    }</span>
+    // On charge la liste des examens
+<span class="nc" id="L181">    attributsRequete.put(ExamenController.ATT_EXAMENS, autoEvaluations);</span>
+<span class="nc" id="L182">    return new ModelAndView(VUE_HISTORIQUE_AUTO, attributsRequete);</span>
+  }
+
+  @RequestMapping(value = &quot;/EnseignantRefMatiere/HistoriqueAutoEvaluation&quot;,
+      method = RequestMethod.POST)
+  protected ModelAndView historiqueAutoEvaluation(@RequestParam(&quot;choixExamen&quot;) String choixExamen,
+      @RequestParam(&quot;dateDebut&quot;) @DateTimeFormat(pattern = &quot;yyyy-MM-dd&quot;) Date dateDebut,
+      @RequestParam(&quot;dateFin&quot;) @DateTimeFormat(pattern = &quot;yyyy-MM-dd&quot;) Date dateFin) {
+<span class="nc" id="L190">    final HashMap&lt;String, Object&gt; attributsRequete = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L191">    List&lt;Examen&gt; examens = this.examenDao.trouverTousLesExamens();</span>
+<span class="nc" id="L192">    List&lt;Examen&gt; autoEvaluations = new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L193" title="All 2 branches missed.">    for (Examen examen : examens) {</span>
+<span class="nc bnc" id="L194" title="All 4 branches missed.">      if (examen.getAutoEvaluation() &amp;&amp; !examen.getExercices().isEmpty()) {</span>
+<span class="nc" id="L195">        autoEvaluations.add(examen);</span>
+      }
+<span class="nc" id="L197">    }</span>
+<span class="nc" id="L198">    Examen examen = null;</span>
+<span class="nc bnc" id="L199" title="All 2 branches missed.">    for (Examen exam : autoEvaluations) {</span>
+<span class="nc bnc" id="L200" title="All 2 branches missed.">      if (exam.getNom().equals(choixExamen)) {</span>
+<span class="nc" id="L201">        examen = exam;</span>
+      }
+<span class="nc" id="L203">    }</span>
+<span class="nc" id="L204">    int nombreUtilisation = this.examenDao.calculerHistorique(examen, dateDebut, dateFin);</span>
+    // On charge la liste des examens
+<span class="nc" id="L206">    attributsRequete.put(ExamenController.ATT_EXAMENS, autoEvaluations);</span>
+<span class="nc" id="L207">    attributsRequete.put(ExamenController.ATT_EXAMEN, examen);</span>
+<span class="nc" id="L208">    attributsRequete.put(&quot;dateDebut&quot;, dateDebut);</span>
+<span class="nc" id="L209">    attributsRequete.put(&quot;dateFin&quot;, dateFin);</span>
+<span class="nc" id="L210">    attributsRequete.put(&quot;quantite&quot;, nombreUtilisation);</span>
+<span class="nc" id="L211">    return new ModelAndView(VUE_HISTORIQUE_AUTO, attributsRequete);</span>
+  }
+
+  @RequestMapping(value = &quot;/Eleve/PasserExamen&quot;, method = RequestMethod.GET)
+  protected ModelAndView afficherPasserExamen() {
+<span class="nc" id="L216">    final HashMap&lt;String, Object&gt; attributsRequete = new HashMap&lt;&gt;();</span>
+    // On charge la liste des examens
+<span class="nc" id="L218">    List&lt;Examen&gt; examens = this.examenDao.trouverTousLesExamens();</span>
+<span class="nc" id="L219">    List&lt;Examen&gt; evaluations = new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L220" title="All 2 branches missed.">    for (Examen examen : examens) {</span>
+<span class="nc bnc" id="L221" title="All 2 branches missed.">      if (!examen.getAutoEvaluation()) {</span>
+<span class="nc" id="L222">        evaluations.add(examen);</span>
+      }
+<span class="nc" id="L224">    }</span>
+<span class="nc" id="L225">    attributsRequete.put(ExamenController.ATT_EXAMENS, evaluations);</span>
+<span class="nc" id="L226">    return new ModelAndView(VUE_PASSER, attributsRequete);</span>
+  }
+
+  @RequestMapping(value = &quot;/Eleve/PasserExamen&quot;, method = RequestMethod.POST)
+  protected ModelAndView passerExamen(@RequestParam(&quot;choixExamen&quot;) String choixExamen) {
+<span class="nc" id="L231">    final HashMap&lt;String, Object&gt; attributsRequete = new HashMap&lt;&gt;();</span>
+    // On charge la liste des examens
+<span class="nc" id="L233">    Examen examen = this.examenDao.trouverParNom(choixExamen);</span>
+<span class="nc bnc" id="L234" title="All 2 branches missed.">    if (!examen.getAutoEvaluation()) {</span>
+      // Empeche la triche en ne transmettant pas les réponses aux élèves dans la requête !
+<span class="nc bnc" id="L236" title="All 2 branches missed.">      for (Exercice exercice : examen.getExercices()) {</span>
+<span class="nc" id="L237">        exercice.setReponse(null);</span>
+<span class="nc" id="L238">      }</span>
+<span class="nc" id="L239">      attributsRequete.put(ExamenController.ATT_EXAMEN, examen);</span>
+<span class="nc" id="L240">      return new ModelAndView(VUE_PASSER, attributsRequete);</span>
+    }
+<span class="nc" id="L242">    return new ModelAndView(VUE_REDIRECT_INDEX);</span>
+  }
+
+  @RequestMapping(value = &quot;/Eleve/ValiderExamen&quot;, method = RequestMethod.POST)
+  protected ModelAndView validerExamen(HttpServletRequest request,
+      @RequestParam(&quot;choixExamen&quot;) String choixExamen,
+      @RequestParam(&quot;reponses&quot;) List&lt;String&gt; reponses) {
+<span class="nc" id="L249">    final HashMap&lt;String, Object&gt; attributsRequete = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L250">    final List&lt;Utilisateur&gt; listeUtilisateur = recupererSession(request);</span>
+<span class="nc" id="L251">    Eleve eleve = recupererEleve(listeUtilisateur);</span>
+<span class="nc bnc" id="L252" title="All 2 branches missed.">    if (eleve != null) {</span>
+<span class="nc" id="L253">      final RepondreExamenForm form = new RepondreExamenForm();</span>
+<span class="nc" id="L254">      form.repondre(eleve, reponses, choixExamen, false);</span>
+<span class="nc" id="L255">      attributsRequete.put(ATT_FORM, form);</span>
+<span class="nc" id="L256">      return new ModelAndView(VUE_PASSER, attributsRequete);</span>
+    } else {
+<span class="nc" id="L258">      return new ModelAndView(VUE_REDIRECT_INDEX);</span>
+    }
+  }
+
+  @RequestMapping(value = &quot;/Eleve/PasserAutoEvaluation&quot;, method = RequestMethod.GET)
+  protected ModelAndView afficherPasserAutoEvaluation() {
+<span class="nc" id="L264">    final HashMap&lt;String, Object&gt; attributsRequete = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L265">    List&lt;Examen&gt; examens = this.examenDao.trouverTousLesExamens();</span>
+<span class="nc" id="L266">    List&lt;Examen&gt; autoEvaluations = new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L267" title="All 2 branches missed.">    for (Examen examen : examens) {</span>
+<span class="nc bnc" id="L268" title="All 2 branches missed.">      if (examen.getAutoEvaluation()) {</span>
+<span class="nc" id="L269">        autoEvaluations.add(examen);</span>
+      }
+<span class="nc" id="L271">    }</span>
+    // On charge la liste des examens
+<span class="nc" id="L273">    attributsRequete.put(ExamenController.ATT_EXAMENS, autoEvaluations);</span>
+<span class="nc" id="L274">    return new ModelAndView(VUE_PASSER_AUTO, attributsRequete);</span>
+  }
+
+  @RequestMapping(value = &quot;/Eleve/PasserAutoEvaluation&quot;, method = RequestMethod.POST)
+  protected ModelAndView passerAutoEvaluation(@RequestParam(&quot;choixAutoEval&quot;) String choixExamen) {
+<span class="nc" id="L279">    final HashMap&lt;String, Object&gt; attributsRequete = new HashMap&lt;&gt;();</span>
+    // On charge la liste des examens
+<span class="nc" id="L281">    Examen examen = this.examenDao.trouverParNom(choixExamen);</span>
+<span class="nc bnc" id="L282" title="All 2 branches missed.">    if (examen == null) {</span>
+<span class="nc" id="L283">      return new ModelAndView(VUE_REDIRECT_INDEX);</span>
+    }
+<span class="nc bnc" id="L285" title="All 2 branches missed.">    if (examen.getAutoEvaluation()) {</span>
+<span class="nc" id="L286">      final HashMap&lt;String, List&lt;String&gt;&gt; reponses = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L287">      final HashMap&lt;String, List&lt;String&gt;&gt; reponsesValides = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L288">      parserReponsesQcm(examen, reponses, reponsesValides);</span>
+<span class="nc" id="L289">      attributsRequete.put(ExamenController.ATT_EXAMEN, examen);</span>
+<span class="nc" id="L290">      attributsRequete.put(&quot;reponsesQCM&quot;, reponses);</span>
+<span class="nc" id="L291">      return new ModelAndView(VUE_PASSER_AUTO, attributsRequete);</span>
+    }
+<span class="nc" id="L293">    return new ModelAndView(VUE_REDIRECT_INDEX);</span>
+  }
+
+  @RequestMapping(value = &quot;/Eleve/ValiderAutoEvaluation&quot;, method = RequestMethod.POST)
+  protected ModelAndView validerAutoEvaluation(HttpServletRequest request,
+      @RequestParam(&quot;choixAutoEval&quot;) String choixExamen,
+      @RequestParam(value = &quot;checkboxrep&quot;, required = false) List&lt;String&gt; reponses) {
+<span class="nc" id="L300">    final HashMap&lt;String, Object&gt; attributsRequete = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L301">    final List&lt;Utilisateur&gt; listeUtilisateur = recupererSession(request);</span>
+<span class="nc" id="L302">    Eleve eleve = recupererEleve(listeUtilisateur);</span>
+<span class="nc bnc" id="L303" title="All 2 branches missed.">    if (eleve != null) {</span>
+<span class="nc" id="L304">      final RepondreAutoEvaluationForm form = new RepondreAutoEvaluationForm();</span>
+<span class="nc" id="L305">      form.repondre(eleve, reponses, choixExamen, true);</span>
+<span class="nc" id="L306">      attributsRequete.put(ATT_FORM, form);</span>
+<span class="nc" id="L307">      return new ModelAndView(VUE_PASSER, attributsRequete);</span>
+    } else {
+<span class="nc" id="L309">      return new ModelAndView(VUE_REDIRECT_INDEX);</span>
+    }
+  }
+
+  private void parserReponsesQcm(Examen examen, final HashMap&lt;String, List&lt;String&gt;&gt; reponses,
+      final HashMap&lt;String, List&lt;String&gt;&gt; reponsesValides) {
+<span class="nc bnc" id="L315" title="All 2 branches missed.">    for (Exercice exercice : examen.getExercices()) {</span>
+<span class="nc" id="L316">      ArrayList&lt;String&gt; rep = new ArrayList&lt;&gt;();</span>
+      int index;
+<span class="nc" id="L318">      String tmpRep = exercice.getReponse();</span>
+<span class="nc bnc" id="L319" title="All 2 branches missed.">      if (tmpRep.contains(REPONSES)) {</span>
+<span class="nc" id="L320">        rep.add(tmpRep.substring(0, tmpRep.indexOf(REPONSES)));</span>
+<span class="nc" id="L321">        index = tmpRep.indexOf(REPONSES) + REPONSES.length();</span>
+<span class="nc" id="L322">        tmpRep = tmpRep.substring(index);</span>
+      } else {
+<span class="nc" id="L324">        rep.add(tmpRep.substring(0, tmpRep.indexOf(VALIDES)));</span>
+<span class="nc" id="L325">        index = tmpRep.indexOf(VALIDES) + VALIDES.length();</span>
+<span class="nc" id="L326">        tmpRep = tmpRep.substring(index);</span>
+      }
+<span class="nc" id="L328">      boolean parsingReponse = true;</span>
+<span class="nc bnc" id="L329" title="All 2 branches missed.">      while (parsingReponse) {</span>
+<span class="nc bnc" id="L330" title="All 2 branches missed.">        if (tmpRep.contains(REPONSES)) {</span>
+<span class="nc" id="L331">          rep.add(tmpRep.substring(0, tmpRep.indexOf(REPONSES)));</span>
+<span class="nc" id="L332">          index = tmpRep.indexOf(REPONSES) + REPONSES.length();</span>
+<span class="nc" id="L333">          tmpRep = tmpRep.substring(index);</span>
+        } else {
+<span class="nc" id="L335">          parsingReponse = false;</span>
+<span class="nc" id="L336">          tmpRep = parserNumeroBonnesReponses(rep, tmpRep);</span>
+        }
+      }
+<span class="nc" id="L339">      reponses.put(exercice.getQuestion(), rep);</span>
+<span class="nc" id="L340">      reponsesValides.put(exercice.getQuestion(),</span>
+<span class="nc" id="L341">          new ArrayList&lt;String&gt;(Arrays.asList(tmpRep.split(&quot;/&quot;))));</span>
+<span class="nc" id="L342">    }</span>
+<span class="nc" id="L343">  }</span>
+
+
+  private String parserNumeroBonnesReponses(ArrayList&lt;String&gt; rep, String tmpRep) {
+    int index;
+<span class="nc" id="L348">    String tmpRepDeux = tmpRep;</span>
+    try {
+<span class="nc" id="L350">      rep.add(tmpRepDeux.substring(0, tmpRepDeux.indexOf(VALIDES)));</span>
+<span class="nc" id="L351">      index = tmpRepDeux.indexOf(VALIDES) + VALIDES.length();</span>
+<span class="nc" id="L352">      tmpRepDeux = tmpRep.substring(index);</span>
+<span class="nc" id="L353">    } catch (StringIndexOutOfBoundsException sioobe) {</span>
+<span class="nc" id="L354">      ExamenController.LOGGER.log(Level.INFO, &quot;Exception&quot;, sioobe);</span>
+<span class="nc" id="L355">    }</span>
+<span class="nc" id="L356">    return tmpRepDeux;</span>
+  }
+
+  @RequestMapping(value = &quot;/Eleve/ConsulterAutoEvaluation&quot;, method = RequestMethod.GET)
+  protected ModelAndView afficherConsulterAutoEvaluation(HttpServletRequest request) {
+<span class="nc" id="L361">    final HashMap&lt;String, Object&gt; attributsRequete = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L362">    final List&lt;Examen&gt; examens = this.examenDao.trouverTousLesExamens();</span>
+<span class="nc" id="L363">    final List&lt;Utilisateur&gt; listeUtilisateur = recupererSession(request);</span>
+<span class="nc" id="L364">    Eleve eleve = recupererEleve(listeUtilisateur);</span>
+<span class="nc bnc" id="L365" title="All 2 branches missed.">    if (eleve != null) {</span>
+<span class="nc" id="L366">      final List&lt;Examen&gt; listeAutoEval = recupererAutoEvalEleve(examens, eleve);</span>
+      // On charge la liste des auto evaluation
+<span class="nc" id="L368">      attributsRequete.put(ExamenController.ATT_EXAMENS, listeAutoEval);</span>
+    }
+<span class="nc" id="L370">    return new ModelAndView(VUE_CONSULT_AUTOEVAL, attributsRequete);</span>
+  }
+
+
+  private List&lt;Examen&gt; recupererAutoEvalEleve(final List&lt;Examen&gt; examens, Eleve eleve) {
+<span class="nc" id="L375">    final List&lt;Examen&gt; listeAutoEval = new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L376" title="All 2 branches missed.">    for (Examen examen : examens) {</span>
+<span class="nc bnc" id="L377" title="All 2 branches missed.">      for (Exercice exercice : examen.getExercices()) {</span>
+<span class="nc" id="L378">        recupererAutoEvalEleve(eleve, listeAutoEval, examen, exercice);</span>
+<span class="nc" id="L379">      }</span>
+<span class="nc" id="L380">    }</span>
+<span class="nc" id="L381">    return listeAutoEval;</span>
+  }
+
+  @RequestMapping(value = &quot;/Eleve/ConsulterAutoEvaluation&quot;, method = RequestMethod.POST)
+  protected ModelAndView consulterAutoEvaluation(HttpServletRequest request,
+      @RequestParam(&quot;choixExamen&quot;) String choixExamen) {
+<span class="nc" id="L387">    final HashMap&lt;String, Object&gt; attributsRequete = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L388">    final List&lt;Examen&gt; examens = this.examenDao.trouverTousLesExamens();</span>
+<span class="nc" id="L389">    final List&lt;Utilisateur&gt; listeUtilisateur = recupererSession(request);</span>
+<span class="nc" id="L390">    Eleve eleve = recupererEleve(listeUtilisateur);</span>
+<span class="nc bnc" id="L391" title="All 2 branches missed.">    if (eleve != null) {</span>
+<span class="nc" id="L392">      final List&lt;Examen&gt; listeAutoEval = recupererAutoEvalEleve(examens, eleve);</span>
+<span class="nc" id="L393">      Examen exam = this.examenDao.trouverParNom(choixExamen);</span>
+<span class="nc" id="L394">      boolean verificationChoix = false;</span>
+<span class="nc bnc" id="L395" title="All 2 branches missed.">      for (Examen examen : listeAutoEval) {</span>
+<span class="nc bnc" id="L396" title="All 2 branches missed.">        if (examen.getId() == exam.getId()) {</span>
+<span class="nc" id="L397">          verificationChoix = true;</span>
+        }
+<span class="nc" id="L399">      }</span>
+<span class="nc bnc" id="L400" title="All 2 branches missed.">      if (verificationChoix) {</span>
+<span class="nc" id="L401">        attributsRequete.put(ExamenController.ATT_EXAMEN, exam);</span>
+<span class="nc" id="L402">        final Map&lt;Exercice, List&lt;String&gt;&gt; reponsesEleve = mapperVersEleve(eleve, exam);</span>
+<span class="nc" id="L403">        final HashMap&lt;String, List&lt;String&gt;&gt; reponses = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L404">        final HashMap&lt;String, List&lt;String&gt;&gt; reponsesValides = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L405">        parserReponsesQcm(exam, reponses, reponsesValides);</span>
+<span class="nc" id="L406">        attributsRequete.put(&quot;reponsesQCM&quot;, reponses);</span>
+<span class="nc" id="L407">        attributsRequete.put(&quot;reponsesValides&quot;, reponsesValides);</span>
+<span class="nc" id="L408">        attributsRequete.put(&quot;reponsesEleve&quot;, reponsesEleve);</span>
+<span class="nc" id="L409">        return new ModelAndView(VUE_CONSULT_AUTOEVAL, attributsRequete);</span>
+      }
+    }
+<span class="nc" id="L412">    return new ModelAndView(VUE_REDIRECT_INDEX);</span>
+  }
+
+
+  @SuppressWarnings(&quot;unchecked&quot;)
+  private List&lt;Utilisateur&gt; recupererSession(HttpServletRequest request) {
+<span class="nc" id="L418">    return (List&lt;Utilisateur&gt;) request.getSession().getAttribute(ATT_SESSION_USER);</span>
+  }
+
+
+  private Eleve recupererEleve(final List&lt;Utilisateur&gt; listeUtilisateur) {
+<span class="nc" id="L423">    Eleve eleve = null;</span>
+<span class="nc bnc" id="L424" title="All 2 branches missed.">    for (final Utilisateur utilisateur : listeUtilisateur) {</span>
+<span class="nc bnc" id="L425" title="All 2 branches missed.">      if (utilisateur.getClass().equals(Eleve.class)) {</span>
+<span class="nc" id="L426">        eleve = (Eleve) utilisateur;</span>
+      }
+<span class="nc" id="L428">    }</span>
+<span class="nc" id="L429">    return eleve;</span>
+  }
+
+
+  private Map&lt;Exercice, List&lt;String&gt;&gt; mapperVersEleve(Eleve eleve, Examen exam) {
+<span class="nc" id="L434">    final Map&lt;Exercice, List&lt;String&gt;&gt; reponsesEleve = new HashMap&lt;&gt;();</span>
+<span class="nc bnc" id="L435" title="All 2 branches missed.">    for (Exercice exercice : exam.getExercices()) {</span>
+<span class="nc" id="L436">      reponsesEleve.put(exercice, new ArrayList&lt;&gt;());</span>
+<span class="nc bnc" id="L437" title="All 2 branches missed.">      for (Evaluation evaluation : this.evaluationDao.trouverToutesLesEvaluationsEleve(eleve)) {</span>
+<span class="nc bnc" id="L438" title="All 2 branches missed.">        if (evaluation.getExercice().getId() == exercice.getId()) {</span>
+<span class="nc" id="L439">          ajouterReponseEleveListe(reponsesEleve, exercice, evaluation);</span>
+        }
+<span class="nc" id="L441">      }</span>
+<span class="nc" id="L442">    }</span>
+<span class="nc" id="L443">    return reponsesEleve;</span>
+  }
+
+
+  private void ajouterReponseEleveListe(final Map&lt;Exercice, List&lt;String&gt;&gt; reponsesEleve,
+      Exercice exercice, Evaluation evaluation) {
+<span class="nc bnc" id="L449" title="All 2 branches missed.">    for (String rep : evaluation.getReponse().split(&quot;/&quot;)) {</span>
+<span class="nc bnc" id="L450" title="All 2 branches missed.">      if (!rep.isEmpty()) {</span>
+<span class="nc" id="L451">        reponsesEleve.get(exercice).add(rep);</span>
+      }
+    }
+<span class="nc" id="L454">  }</span>
+
+  private void recupererAutoEvalEleve(Eleve eleve, final List&lt;Examen&gt; listeAutoEval, Examen examen,
+      Exercice exercice) {
+<span class="nc bnc" id="L458" title="All 2 branches missed.">    for (Evaluation evaluation : this.evaluationDao.trouverToutesLesEvaluationsEleve(eleve)) {</span>
+<span class="nc bnc" id="L459" title="All 4 branches missed.">      if (evaluation.getExercice().getId() == exercice.getId() &amp;&amp; examen.getAutoEvaluation()</span>
+<span class="nc bnc" id="L460" title="All 2 branches missed.">          &amp;&amp; !listeAutoEval.contains(examen)) {</span>
+<span class="nc" id="L461">        listeAutoEval.add(examen);</span>
+      }
+<span class="nc" id="L463">    }</span>
+<span class="nc" id="L464">  }</span>
+
+  @RequestMapping(value = &quot;/Enseignant/CorrigerExamen&quot;, method = RequestMethod.GET)
+  protected ModelAndView afficherCorrigerExamen(HttpServletRequest request) {
+<span class="nc" id="L468">    final HashMap&lt;String, Object&gt; attributsRequete = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L469">    final List&lt;Examen&gt; examens = this.examenDao.trouverTousLesExamens();</span>
+<span class="nc" id="L470">    final List&lt;Utilisateur&gt; listeUtilisateur = recupererSession(request);</span>
+<span class="nc" id="L471">    Enseignant enseignant = null;</span>
+<span class="nc" id="L472">    enseignant = recupererEnseignant(listeUtilisateur, enseignant);</span>
+<span class="nc bnc" id="L473" title="All 2 branches missed.">    if (enseignant != null) {</span>
+<span class="nc" id="L474">      final List&lt;Examen&gt; listeExamens = this.recupererListeExamensMatiere(examens, enseignant);</span>
+      // On charge la liste des examens
+<span class="nc" id="L476">      attributsRequete.put(ExamenController.ATT_EXAMENS, listeExamens);</span>
+    }
+<span class="nc" id="L478">    return new ModelAndView(VUE_CORRIGER, attributsRequete);</span>
+  }
+
+  @RequestMapping(value = &quot;/Enseignant/CorrigerExamen&quot;, method = RequestMethod.POST)
+  protected ModelAndView corrigerExamen(HttpServletRequest request,
+      @RequestParam(&quot;choixExamen&quot;) String choixExamen) {
+<span class="nc" id="L484">    final HashMap&lt;String, Object&gt; attributsRequete = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L485">    final List&lt;Utilisateur&gt; listeUtilisateur = recupererSession(request);</span>
+<span class="nc" id="L486">    Enseignant enseignant = null;</span>
+<span class="nc" id="L487">    enseignant = recupererEnseignant(listeUtilisateur, enseignant);</span>
+<span class="nc bnc" id="L488" title="All 2 branches missed.">    if (enseignant != null) {</span>
+<span class="nc" id="L489">      final Examen examen = this.examenDao.trouverParNom(choixExamen);</span>
+<span class="nc" id="L490">      final List&lt;Evaluation&gt; evaluations = this.recupererEvaluations(examen, enseignant);</span>
+<span class="nc" id="L491">      attributsRequete.put(ExamenController.ATT_EXAMEN, this.examenDao.trouverParNom(choixExamen));</span>
+<span class="nc" id="L492">      attributsRequete.put(ExamenController.ATT_EVALUATIONS, evaluations);</span>
+<span class="nc" id="L493">      final UUID idExamen = UUID.randomUUID();</span>
+<span class="nc" id="L494">      attributsRequete.put(ExamenController.ATT_CHOIX_EXAMEN, idExamen);</span>
+<span class="nc" id="L495">      request.getSession().setAttribute(ExamenController.ATT_CHOIX_EXAMEN, idExamen);</span>
+<span class="nc" id="L496">      request.getSession().setAttribute(ExamenController.ATT_EVALUATIONS, evaluations);</span>
+    }
+<span class="nc" id="L498">    return new ModelAndView(VUE_CORRIGER, attributsRequete);</span>
+  }
+
+
+  private Enseignant recupererEnseignant(final List&lt;Utilisateur&gt; listeUtilisateur,
+      Enseignant enseignant) {
+
+<span class="nc bnc" id="L505" title="All 2 branches missed.">    for (final Utilisateur utilisateur : listeUtilisateur) {</span>
+<span class="nc bnc" id="L506" title="All 2 branches missed.">      if (utilisateur.getClass().equals(Enseignant.class)) {</span>
+<span class="nc" id="L507">        return (Enseignant) utilisateur;</span>
+      }
+<span class="nc" id="L509">    }</span>
+<span class="nc" id="L510">    return enseignant;</span>
+  }
+
+  @RequestMapping(value = &quot;/Enseignant/ValiderCorrigerExamen&quot;, method = RequestMethod.POST)
+  protected ModelAndView corrigerExamen(HttpServletRequest request,
+      @RequestParam(&quot;points&quot;) List&lt;String&gt; points, @RequestParam(&quot;choixExamen&quot;) String idExamen) {
+<span class="nc" id="L516">    final HashMap&lt;String, Object&gt; attributsRequete = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L517">    final List&lt;Utilisateur&gt; listeUtilisateur = recupererSession(request);</span>
+<span class="nc" id="L518">    Enseignant enseignant = null;</span>
+<span class="nc" id="L519">    enseignant = recupererEnseignant(listeUtilisateur, enseignant);</span>
+<span class="nc bnc" id="L520" title="All 4 branches missed.">    if (enseignant != null &amp;&amp; idExamen != null) {</span>
+<span class="nc" id="L521">      final UUID idExamenSession =</span>
+<span class="nc" id="L522">          (UUID) request.getSession().getAttribute(ExamenController.ATT_CHOIX_EXAMEN);</span>
+<span class="nc bnc" id="L523" title="All 2 branches missed.">      if (idExamen.equals(idExamenSession.toString())) {</span>
+        @SuppressWarnings(&quot;unchecked&quot;)
+<span class="nc" id="L525">        final List&lt;Evaluation&gt; evaluations =</span>
+<span class="nc" id="L526">            (List&lt;Evaluation&gt;) request.getSession().getAttribute(ExamenController.ATT_EVALUATIONS);</span>
+<span class="nc" id="L527">        this.majEvaluations(points, evaluations);</span>
+<span class="nc" id="L528">        attributsRequete.put(&quot;resultatModifications&quot;, evaluations);</span>
+<span class="nc" id="L529">        request.getSession().removeAttribute(ExamenController.ATT_EVALUATIONS);</span>
+<span class="nc" id="L530">        request.getSession().removeAttribute(ExamenController.ATT_CHOIX_EXAMEN);</span>
+<span class="nc" id="L531">      } else {</span>
+<span class="nc" id="L532">        return new ModelAndView(VUE_CORRIGER, attributsRequete);</span>
+      }
+    }
+<span class="nc" id="L535">    return new ModelAndView(VUE_CORRIGER, attributsRequete);</span>
+  }
+
+  @RequestMapping(value = &quot;/EnseignantRefMatiere/SupprimerExamen&quot;, method = RequestMethod.GET)
+  protected ModelAndView afficherSupprimerExamen(HttpServletRequest request) {
+<span class="nc" id="L540">    final HashMap&lt;String, Object&gt; attributsRequete = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L541">    final List&lt;Examen&gt; examensTrier = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L542">    final List&lt;Utilisateur&gt; listeUtilisateur = recupererSession(request);</span>
+<span class="nc" id="L543">    EnseignantRefMatiere erm = recupererErm(listeUtilisateur);</span>
+<span class="nc" id="L544">    this.trierExamens(erm, this.examenDao.trouverTousLesExamens(), examensTrier);</span>
+    // On charge la liste des examens
+<span class="nc" id="L546">    attributsRequete.put(ExerciceController.ATT_EXAMENS, examensTrier);</span>
+<span class="nc" id="L547">    return new ModelAndView(VUE_SUPPRIMER, attributsRequete);</span>
+  }
+
+
+  private EnseignantRefMatiere recupererErm(final List&lt;Utilisateur&gt; listeUtilisateur) {
+<span class="nc" id="L552">    EnseignantRefMatiere erm = null;</span>
+<span class="nc bnc" id="L553" title="All 2 branches missed.">    for (final Utilisateur utilisateur : listeUtilisateur) {</span>
+<span class="nc bnc" id="L554" title="All 2 branches missed.">      if (utilisateur.getClass().equals(EnseignantRefMatiere.class)) {</span>
+<span class="nc" id="L555">        erm = (EnseignantRefMatiere) utilisateur;</span>
+      }
+<span class="nc" id="L557">    }</span>
+<span class="nc" id="L558">    return erm;</span>
+  }
+
+  @RequestMapping(value = &quot;/EnseignantRefMatiere/SupprimerExamen&quot;, method = RequestMethod.POST)
+  protected ModelAndView supprimerExamen(HttpServletRequest request,
+      @RequestParam(&quot;choixExamen&quot;) String choixExamen) {
+<span class="nc" id="L564">    final List&lt;Utilisateur&gt; listeUtilisateur = recupererSession(request);</span>
+<span class="nc" id="L565">    EnseignantRefMatiere erm = recupererErm(listeUtilisateur);</span>
+<span class="nc bnc" id="L566" title="All 2 branches missed.">    if (choixExamen != null) {</span>
+      // On charge la liste des examens
+<span class="nc" id="L568">      final List&lt;Examen&gt; examens = this.examenDao.trouverTousLesExamens();</span>
+<span class="nc" id="L569">      final List&lt;Examen&gt; examensTrier = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L570">      this.trierExamens(erm, examens, examensTrier);</span>
+<span class="nc bnc" id="L571" title="All 2 branches missed.">      for (final Examen exam : examensTrier) {</span>
+<span class="nc bnc" id="L572" title="All 2 branches missed.">        if (choixExamen.equals(exam.getNom())) {</span>
+<span class="nc" id="L573">          this.examenDao.supprimer(exam);</span>
+        }
+<span class="nc" id="L575">      }</span>
+    }
+<span class="nc" id="L577">    return this.afficherSupprimerExamen(request);</span>
+  }
+
+  @RequestMapping(value = &quot;/Eleve/ConsulterCompetencesExamen&quot;, method = RequestMethod.GET)
+  protected ModelAndView afficherConsulterCompetencesExamen() {
+<span class="nc" id="L582">    final HashMap&lt;String, Object&gt; attributsRequete = new HashMap&lt;&gt;();</span>
+    // On charge la liste des examens
+<span class="nc" id="L584">    attributsRequete.put(ExamenController.ATT_EXAMENS, this.examenDao.trouverTousLesExamens());</span>
+<span class="nc" id="L585">    return new ModelAndView(VUE_CONSULTER, attributsRequete);</span>
+  }
+
+  @RequestMapping(value = &quot;/Eleve/ConsulterCompetencesExamen&quot;, method = RequestMethod.POST)
+  protected ModelAndView afficherResultatConsulterCompetencesExamen(
+      @RequestParam(&quot;choixExamen&quot;) String choixExamen) {
+<span class="nc" id="L591">    final HashMap&lt;String, Object&gt; attributsRequete = new HashMap&lt;&gt;();</span>
+    // On charge la liste des examens
+<span class="nc" id="L593">    final Examen examen = this.examenDao.trouverParNom(choixExamen);</span>
+<span class="nc" id="L594">    final List&lt;Competence&gt; competences = new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L595" title="All 2 branches missed.">    for (final Exercice exercice : examen.getExercices()) {</span>
+      @SuppressWarnings(&quot;rawtypes&quot;)
+<span class="nc" id="L597">      final Iterator it = exercice.getCompetences().entrySet().iterator();</span>
+<span class="nc" id="L598">      this.trierCompetences(competences, it);</span>
+<span class="nc" id="L599">    }</span>
+<span class="nc bnc" id="L600" title="All 2 branches missed.">    if (competences.isEmpty()) {</span>
+<span class="nc" id="L601">      attributsRequete.put(ExamenController.ATT_COMPETENCES_VIDE, &quot; &quot;);</span>
+    } else {
+<span class="nc" id="L603">      attributsRequete.put(ExamenController.ATT_COMPETENCES, competences);</span>
+    }
+<span class="nc" id="L605">    return new ModelAndView(VUE_CONSULTER, attributsRequete);</span>
+  }
+
+  @RequestMapping(value = &quot;/Eleve/ConsulterNotes&quot;, method = RequestMethod.GET)
+  protected ModelAndView consulterNotes(HttpServletRequest request) {
+<span class="nc" id="L610">    final HttpSession session = request.getSession();</span>
+<span class="nc" id="L611">    final HashMap&lt;String, Object&gt; attributsRequete = new HashMap&lt;&gt;();</span>
+    @SuppressWarnings(&quot;unchecked&quot;)
+<span class="nc" id="L613">    final List&lt;Utilisateur&gt; listeUtilisateur =</span>
+<span class="nc" id="L614">        (List&lt;Utilisateur&gt;) session.getAttribute(FiltreUtilisateur.ATT_SESSION_USER);</span>
+<span class="nc" id="L615">    Eleve eleve = recupererEleve(listeUtilisateur);</span>
+
+<span class="nc" id="L617">    final Map&lt;Eleve, Map&lt;Examen, Float&gt;&gt; notesEleveExamens = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L618">    notesEleves(notesEleveExamens, this.eleveDao.recupererListe(),</span>
+<span class="nc" id="L619">        this.evaluationDao.trouverToutesLesEvaluations(), this.examenDao.trouverTousLesExamens());</span>
+<span class="nc" id="L620">    Map&lt;Examen, Float&gt; map = new HashMap&lt;&gt;();</span>
+<span class="nc bnc" id="L621" title="All 2 branches missed.">    if (eleve != null) {</span>
+<span class="nc bnc" id="L622" title="All 2 branches missed.">      for (Entry&lt;Eleve, Map&lt;Examen, Float&gt;&gt; entry : notesEleveExamens.entrySet()) {</span>
+<span class="nc bnc" id="L623" title="All 2 branches missed.">        if (entry.getKey().getId() == eleve.getId()) {</span>
+<span class="nc" id="L624">          map = entry.getValue();</span>
+        }
+<span class="nc" id="L626">      }</span>
+    }
+<span class="nc" id="L628">    attributsRequete.put(&quot;notesEleve&quot;, map);</span>
+<span class="nc" id="L629">    return new ModelAndView(VUE_CONSULTER_NOTES, attributsRequete);</span>
+
+  }
+
+  @RequestMapping(value = &quot;/DirecteurEtudes/ConsulterProgres&quot;, method = RequestMethod.GET)
+  protected ModelAndView afficherConsulterProgres() {
+
+<span class="nc" id="L636">    final HashMap&lt;String, Object&gt; attributsRequete = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L637">    attributsRequete.put(&quot;eleves&quot;, this.eleveDao.recupererListe());</span>
+
+<span class="nc" id="L639">    return new ModelAndView(&quot;DirecteurEtudes/consulterProgres&quot;, attributsRequete);</span>
+  }
+
+  @RequestMapping(value = &quot;/DirecteurEtudes/ConsulterProgres&quot;, method = RequestMethod.POST)
+  protected ModelAndView consulterProgres(@RequestParam(&quot;idEleve&quot;) Integer idEleve) {
+
+<span class="nc" id="L645">    final HashMap&lt;String, Object&gt; attributsRequete = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L646">    List&lt;Evaluation&gt; evaluationList = this.evaluationDao.trouverToutesLesEvaluations();</span>
+<span class="nc" id="L647">    List&lt;Evaluation&gt; evaluations = new ArrayList&lt;&gt;();</span>
+    Eleve eleve;
+
+
+<span class="nc" id="L651">    eleve = this.eleveDao.trouverParId(idEleve);</span>
+<span class="nc" id="L652">    eleve.setId(this.eleveDao.recupererIdUtilisateur(eleve));</span>
+
+<span class="nc bnc" id="L654" title="All 2 branches missed.">    for (Evaluation eval : evaluationList) {</span>
+<span class="nc bnc" id="L655" title="All 2 branches missed.">      if (eval.getEleve().getId() == eleve.getId()) {</span>
+<span class="nc" id="L656">        evaluations.add(eval);</span>
+      }
+<span class="nc" id="L658">    }</span>
+
+<span class="nc" id="L660">    eleve.setCompetenceEleve(this.eleveDao.listerCompetenceEleve(eleve));</span>
+
+<span class="nc" id="L662">    attributsRequete.put(&quot;eleveProgres&quot;, eleve);</span>
+<span class="nc" id="L663">    attributsRequete.put(&quot;competenceEleve&quot;, eleve.getCompetenceEleve());</span>
+
+<span class="nc" id="L665">    return new ModelAndView(&quot;DirecteurEtudes/progresChart&quot;, attributsRequete);</span>
+
+  }
+
+  private void trierCompetences(List&lt;Competence&gt; competences,
+      @SuppressWarnings(&quot;rawtypes&quot;) Iterator it) {
+<span class="nc bnc" id="L671" title="All 2 branches missed.">    while (it.hasNext()) {</span>
+      @SuppressWarnings(&quot;rawtypes&quot;)
+<span class="nc" id="L673">      final Map.Entry pair = (Map.Entry) it.next();</span>
+<span class="nc" id="L674">      boolean present = false;</span>
+<span class="nc bnc" id="L675" title="All 2 branches missed.">      for (final Competence competence : competences) {</span>
+<span class="nc bnc" id="L676" title="All 2 branches missed.">        if (competence.getNom().contentEquals(((Competence) pair.getValue()).getNom())) {</span>
+<span class="nc" id="L677">          present = true;</span>
+        }
+<span class="nc" id="L679">      }</span>
+<span class="nc bnc" id="L680" title="All 2 branches missed.">      if (!present) {</span>
+<span class="nc" id="L681">        competences.add((Competence) pair.getValue());</span>
+      }
+<span class="nc" id="L683">    }</span>
+<span class="nc" id="L684">  }</span>
+
+  private void trierExamens(EnseignantRefMatiere erm, final List&lt;Examen&gt; examens,
+      final List&lt;Examen&gt; examensTrier) {
+<span class="nc bnc" id="L688" title="All 2 branches missed.">    if (erm != null) {</span>
+<span class="nc bnc" id="L689" title="All 2 branches missed.">      for (final Examen examen : examens) {</span>
+<span class="nc bnc" id="L690" title="All 2 branches missed.">        if (examen.getMatiere().getId() == erm.getMatiere().getId()) {</span>
+<span class="nc" id="L691">          examensTrier.add(examen);</span>
+        }
+<span class="nc" id="L693">      }</span>
+    }
+<span class="nc" id="L695">  }</span>
+
+
+  private void majEvaluations(List&lt;String&gt; points, List&lt;Evaluation&gt; evaluations) {
+<span class="nc" id="L699">    int compteur = 0;</span>
+<span class="nc bnc" id="L700" title="All 2 branches missed.">    for (final Evaluation evaluation : evaluations) {</span>
+      try {
+<span class="nc" id="L702">        evaluation.setNote(Float.parseFloat(points.get(compteur)));</span>
+<span class="nc" id="L703">      } catch (final Exception exc) {</span>
+<span class="nc" id="L704">        ExamenController.LOGGER.log(Level.INFO, &quot;Exception&quot;, exc);</span>
+<span class="nc" id="L705">      }</span>
+<span class="nc" id="L706">      compteur++;</span>
+<span class="nc" id="L707">    }</span>
+<span class="nc" id="L708">    this.evaluationDao.majEvaluation(evaluations);</span>
+<span class="nc" id="L709">  }</span>
+
+
+  private List&lt;Evaluation&gt; recupererEvaluations(Examen examen, Enseignant enseignant) {
+<span class="nc" id="L713">    final List&lt;Evaluation&gt; listeEvaluations = new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L714" title="All 2 branches missed.">    for (final Evaluation evaluation : this.evaluationDao.trouverToutesLesEvaluations()) {</span>
+<span class="nc bnc" id="L715" title="All 2 branches missed.">      for (final Matiere matiere : enseignant.getEnseigneMatiere()) {</span>
+<span class="nc bnc" id="L716" title="All 2 branches missed.">        if (examen.getMatiere().getId() == matiere.getId()) {</span>
+<span class="nc" id="L717">          this.extraireExercice(examen, listeEvaluations, evaluation);</span>
+        }
+<span class="nc" id="L719">      }</span>
+<span class="nc" id="L720">    }</span>
+<span class="nc" id="L721">    return listeEvaluations;</span>
+  }
+
+
+  private void extraireExercice(Examen examen, List&lt;Evaluation&gt; listeEvaluations,
+      Evaluation evaluation) {
+<span class="nc bnc" id="L727" title="All 2 branches missed.">    for (final Exercice exercice : examen.getExercices()) {</span>
+<span class="nc bnc" id="L728" title="All 2 branches missed.">      if (evaluation.getExercice().getId() == exercice.getId()) {</span>
+<span class="nc" id="L729">        listeEvaluations.add(evaluation);</span>
+      }
+<span class="nc" id="L731">    }</span>
+<span class="nc" id="L732">  }</span>
+
+  private List&lt;Examen&gt; recupererListeExamensMatiere(List&lt;Examen&gt; examens, Enseignant enseignant) {
+<span class="nc" id="L735">    final List&lt;Examen&gt; listeExamens = new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L736" title="All 2 branches missed.">    for (final Examen examen : examens) {</span>
+<span class="nc bnc" id="L737" title="All 2 branches missed.">      for (final Matiere matiere : enseignant.getEnseigneMatiere()) {</span>
+<span class="nc bnc" id="L738" title="All 2 branches missed.">        if (examen.getMatiere().getId() == matiere.getId()) {</span>
+<span class="nc" id="L739">          listeExamens.add(examen);</span>
+        }
+<span class="nc" id="L741">      }</span>
+<span class="nc" id="L742">    }</span>
+<span class="nc" id="L743">    return listeExamens;</span>
+  }
+
+
+  private static void notesEleves(Map&lt;Eleve, Map&lt;Examen, Float&gt;&gt; notesEleveExamens,
+      List&lt;Eleve&gt; eleves, List&lt;Evaluation&gt; evaluations, List&lt;Examen&gt; examens) {
+
+<span class="nc" id="L750">    parcourirMapping(eleves, evaluations, examens, notesEleveExamens);</span>
+<span class="nc" id="L751">  }</span>
+
+  private static void parcourirMapping(List&lt;Eleve&gt; eleves, List&lt;Evaluation&gt; evaluations,
+      List&lt;Examen&gt; examens, Map&lt;Eleve, Map&lt;Examen, Float&gt;&gt; notesEleveExamens) {
+<span class="nc bnc" id="L755" title="All 2 branches missed.">    for (final Eleve eleve : eleves) {</span>
+<span class="nc bnc" id="L756" title="All 2 branches missed.">      for (final Examen examen : examens) {</span>
+<span class="nc bnc" id="L757" title="All 2 branches missed.">        if (!examen.getAutoEvaluation()) {</span>
+<span class="nc" id="L758">          ExporteurCsv.mapping(evaluations, notesEleveExamens, eleve, examen);</span>
+        }
+<span class="nc" id="L760">      }</span>
+<span class="nc" id="L761">    }</span>
+<span class="nc" id="L762">  }</span>
+
+
+  /*
+   * Méthode utilitaire qui retourne null si un champ est vide, et son contenu sinon.
+   */
+  private static String getValeurChamp(HttpServletRequest request, String nomChamp) {
+<span class="nc" id="L769">    final String valeur = request.getParameter(nomChamp);</span>
+<span class="nc bnc" id="L770" title="All 4 branches missed.">    if (valeur == null || valeur.trim().length() == 0) {</span>
+<span class="nc" id="L771">      return null;</span>
+    } else {
+<span class="nc" id="L773">      return valeur.trim();</span>
+    }
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.6.201602180812</span></div></body></html>

@@ -1,0 +1,3 @@
+<testsuite tests="Test integration">
+    <testcase classname="Test49Junit" name="ASuccessfulTest"/>
+</testsuite>

@@ -1,0 +1,82 @@
+package fr.eseo.atribus.controller;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
+
+import fr.eseo.atribus.dao.EnseignantRefMatiereDao;
+import fr.eseo.atribus.dao.EnseignantRefUeDao;
+import fr.eseo.atribus.dao.UtilisateurDao;
+import fr.eseo.atribus.entities.Utilisateur;
+
+import org.mockito.MockitoAnnotations;
+import org.springframework.beans.factory.access.BeanFactoryReference;
+import org.springframework.beans.factory.access.SingletonBeanFactoryLocator;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.servlet.view.InternalResourceViewResolver;
+import org.testng.annotations.BeforeTest;
+import org.testng.annotations.Test;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class NotificationControllerTest {
+
+  public static final String VUE = "EnseignantRefMatiere/addMatiere";
+
+  private MockMvc mockMvc;
+  private UtilisateurDao utilisateurDao;
+
+  /**
+   * Initialisation.
+   */
+  @BeforeTest
+  public void setup() {
+
+    final NotificationController notificationController = new NotificationController();
+    final InternalResourceViewResolver viewResolver = new InternalResourceViewResolver();
+
+    viewResolver.setPrefix("/WEB-INF/");
+    viewResolver.setSuffix(".jsp");
+    MockitoAnnotations.initMocks(this);
+
+    this.mockMvc =
+        MockMvcBuilders.standaloneSetup(notificationController).setViewResolvers(viewResolver).build();
+    final BeanFactoryReference bf =
+        SingletonBeanFactoryLocator.getInstance().useBeanFactory("beansDao");
+    this.utilisateurDao = (UtilisateurDao) bf.getFactory().getBean("utilisateurDao");
+  }
+
+  @Test
+  public void afficherNotification() throws Exception {
+
+    this.mockMvc.perform(get("/Notifications"))
+        .andExpect(status().isOk()).andExpect(view().name("gererNotification"));
+
+  }
+  
+  @Test
+  public void supprimerNotification() throws Exception {
+
+    this.mockMvc.perform(post("/Notifications").param("table_records", "1").with(request -> {
+      final List<Utilisateur> utilisateur = new ArrayList<>();
+      utilisateur.add(this.utilisateurDao.recupererListe().get(0));
+      request.getSession().setAttribute("sessionUtilisateur", utilisateur);
+      return request;
+    }))
+        .andExpect(status().isOk()).andExpect(view().name("gererNotification"));
+    
+     //  Sans avoir cocher
+    this.mockMvc.perform(post("/Notifications").with(request -> {
+      final List<Utilisateur> utilisateur = new ArrayList<>();
+      utilisateur.add(this.utilisateurDao.recupererListe().get(0));
+      request.getSession().setAttribute("sessionUtilisateur", utilisateur);
+      return request;
+    }))
+        .andExpect(status().isOk()).andExpect(view().name("gererNotification"));
+
+  }
+
+}

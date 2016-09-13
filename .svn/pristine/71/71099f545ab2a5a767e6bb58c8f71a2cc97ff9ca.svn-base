@@ -1,0 +1,54 @@
+package fr.eseo.atribus.forms;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+
+public class UeFormMethods {
+  
+  protected UeFormData data = new UeFormData(new HashMap<>());
+  
+  public UeFormMethods() {
+    super();
+  }
+  
+  protected static String getValeurChamp(HttpServletRequest request, String nomChamp) {
+    final String valeur = request.getParameter(nomChamp);
+    if (valeur == null || valeur.trim().length() == 0) {
+      return null;
+    } else {
+      return valeur.trim();
+    }
+  }
+
+  public String getResultat() {
+    return this.data.getResultat();
+  }
+
+  public Map<String, String> getErreurs() {
+    return this.data.getErreurs();
+  }
+
+  protected void validationCompetence(String competence) throws FormValidationException {
+    if (this.data.getCompetenceBdd().trouverUniqueParNom(competence) == null) {
+      throw new FormValidationException("Cette compétence n'existe pas");
+    }
+  }
+
+  protected void validationEnseignant(String enseignant) throws FormValidationException {
+    if (this.data.getEnseignantBdd().trouverParNom(enseignant) == null) {
+      throw new FormValidationException("Cet examen n'existe pas");
+    }
+  }
+  
+  protected void validationPromotion(String promotion) throws FormValidationException {
+    if (this.data.getPromotionBdd().trouverParNom(promotion) == null) {
+      throw new FormValidationException("Cette promotion n'existe pas");
+    }
+  }
+
+  protected void setErreur(String champ, String message) {
+    this.getErreurs().put(champ, message);
+  }
+}

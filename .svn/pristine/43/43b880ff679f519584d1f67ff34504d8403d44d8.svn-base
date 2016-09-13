@@ -1,0 +1,104 @@
+package fr.eseo.atribus.forms;
+
+import fr.eseo.atribus.dao.DaoException;
+import fr.eseo.atribus.dao.NotificationDao;
+import fr.eseo.atribus.entities.Notification;
+import fr.eseo.atribus.entities.Utilisateur;
+
+import org.springframework.beans.factory.access.BeanFactoryReference;
+import org.springframework.beans.factory.access.SingletonBeanFactoryLocator;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+public class SupprimerNotificationForm {
+
+  protected static final Logger LOGGER =
+      Logger.getLogger(SupprimerNotificationForm.class.getName());
+  protected static final String EXCEPTION = "Exception";
+
+  protected String resultat;
+  protected final Map<String, String> erreurs = new HashMap<>();
+  protected final NotificationDao notificationDao;
+
+  /**
+   * Constructeur.
+   */
+  public SupprimerNotificationForm() {
+    final BeanFactoryReference bf =
+        SingletonBeanFactoryLocator.getInstance().useBeanFactory("beansDao");
+    /* Récupération d'une instance de notre DAO Notification */
+    this.notificationDao = (NotificationDao) bf.getFactory().getBean("notificationDao");
+  }
+
+  public String getResultat() {
+    return this.resultat;
+  }
+
+  public Map<String, String> getErreurs() {
+    return this.erreurs;
+  }
+
+  /**
+   * Méthode qui supprime les notifications en fonction des cases cochées.
+   * 
+   * @param coches cases cochées
+   * @param utilisateur utilisateur
+   */
+  public void supprimerNotification(List<String> coches, Utilisateur utilisateur) {
+    for (String coche : coches) {
+      try {
+        Notification notification = verifierNotification(utilisateur, coche);
+        if (this.erreurs.isEmpty()) {
+          this.notificationDao.supprimer(notification);
+          utilisateur.setNotifications(notificationDao.trouverToutesLesNotification(utilisateur));
+          this.resultat = "success";
+        } else {
+          this.resultat = "error";
+        }
+      } catch (final DaoException ebdd) {
+        this.resultat = "errorDao";
+        SupprimerNotificationForm.LOGGER.log(Level.INFO, EXCEPTION, ebdd);
+      }
+    }
+  }
+
+  private Notification verifierNotification(Utilisateur utilisateur, String coche) {
+    Notification notification2 = new Notification();
+    try {
+      notification2 = this.validationDestinataire(coche, utilisateur);
+    } catch (FormValidationException fve) {
+      SupprimerNotificationForm.LOGGER.log(Level.INFO, EXCEPTION, fve);
+      this.setErreur("badId",
+          "Tentative de suppression d'une notification d'un autre utilisateur.");
+    }
+    return notification2;
+  }
+
+  protected Notification validationDestinataire(String coche, Utilisateur utilisateur)
+      throws FormValidationException {
+    Integer id;
+    try {
+      id = Integer.parseInt(coche);
+    } catch (NumberFormatException nfe) {
+      throw new FormValidationException("Impossible de récupérer l'ID.");
+    }
+    for (Notification notification : utilisateur.getNotifications()) {
+      if (id.equals(notification.getId())) {
+        return notification;
+      }
+    }
+    throw new FormValidationException("La notification ne lui était pas destinée.");
+  }
+
+  /*
+   * Ajoute un message correspondant au champ spécifié à la map des erreurs.
+   */
+  protected void setErreur(String champ, String message) {
+    this.erreurs.put(champ, message);
+  }
+
+}

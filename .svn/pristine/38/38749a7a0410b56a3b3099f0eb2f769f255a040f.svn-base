@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite guice-stage="DEVELOPMENT" name="Failed suite [Default suite]">
+  <test name="Default test(failed)">
+    <classes>
+      <class name="fr.eseo.atribus.controller.MailControllerTest">
+        <methods>
+          <include name="afficherConvoquerEtudiant"/>
+          <include name="setup"/>
+          <include name="suggererNouvelleCompetenceEnseignant"/>
+          <include name="afficherSuggererCompetenceNouvelle"/>
+          <include name="suggererAjouterCompetenceEnseignantRefMatiere"/>
+          <include name="convoquerEtudiant"/>
+          <include name="afficherSuggererCompetenceNouvelleEnseignant"/>
+          <include name="afficherSuggererCompetenceNouvelleRefUe"/>
+          <include name="suggererNouvelleCompetence"/>
+          <include name="afficherSuggererAjouterCompetenceEnseignantRefMatiere"/>
+          <include name="suggererNouvelleCompetenceRefUe"/>
+        </methods>
+      </class> <!-- fr.eseo.atribus.controller.MailControllerTest -->
+    </classes>
+  </test> <!-- Default test(failed) -->
+</suite> <!-- Failed suite [Default suite] -->

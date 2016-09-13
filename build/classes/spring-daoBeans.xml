@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:p="http://www.springframework.org/schema/p" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+        http://www.springframework.org/schema/context 
+        http://www.springframework.org/schema/context/spring-context-2.5.xsd
+        http://www.springframework.org/schema/aop
+        http://www.springframework.org/schema/aop/spring-aop-2.5.xsd">
+        
+	<!-- Déclaration des DAO -->
+
+	<bean id="adminSystDao" class="fr.eseo.atribus.dao.AdminSystDaoImpl" scope="singleton">
+	</bean>
+
+	<bean id="competenceDao" class="fr.eseo.atribus.dao.CompetenceDaoImpl" scope="singleton">
+	</bean>
+
+	<bean id="directeurEtudesDao" class="fr.eseo.atribus.dao.DirecteurEtudesDaoImpl" scope="singleton">
+	</bean>
+
+	<bean id="directeurProgrammesDao" class="fr.eseo.atribus.dao.DirecteurProgrammesDaoImpl" scope="singleton">
+	</bean>
+
+	<bean id="enseignantDao" class="fr.eseo.atribus.dao.EnseignantDaoImpl" scope="singleton">
+	</bean>
+
+	<bean id="eleveDao" class="fr.eseo.atribus.dao.EleveDaoImpl" scope="singleton">
+	</bean>
+	
+	<bean id="evaluationDao" class="fr.eseo.atribus.dao.EvaluationDaoImpl" scope="singleton">
+	</bean>
+	
+	<bean id="enseignantRefMatiereDao" class="fr.eseo.atribus.dao.EnseignantRefMatiereDaoImpl" scope="singleton">
+	</bean>
+
+	<bean id="enseignantRefUeDao" class="fr.eseo.atribus.dao.EnseignantRefUeDaoImpl" scope="singleton">
+	</bean>
+
+	<bean id="examenDao" class="fr.eseo.atribus.dao.ExamenDaoImpl" scope="singleton">
+	</bean>
+
+	<bean id="exerciceDao" class="fr.eseo.atribus.dao.ExerciceDaoImpl" scope="singleton">
+	</bean>
+
+	<bean id="matiereDao" class="fr.eseo.atribus.dao.MatiereDaoImpl" scope="singleton">
+	</bean>
+
+	<bean id="promotionDao" class="fr.eseo.atribus.dao.PromotionDaoImpl" scope="singleton">
+	</bean>
+	
+	<bean id="ressourceDao" class="fr.eseo.atribus.dao.RessourceDaoImpl" scope="singleton">
+	</bean>
+
+	<bean id="semestreDao" class="fr.eseo.atribus.dao.SemestreDaoImpl" scope="singleton">
+	</bean>
+
+	<bean id="ueDao" class="fr.eseo.atribus.dao.UeDaoImpl" scope="singleton">
+	</bean>
+
+	<bean id="utilisateurDao" class="fr.eseo.atribus.dao.UtilisateurDaoImpl" scope="singleton">
+	</bean>
+	
+	<bean id="notificationDao" class="fr.eseo.atribus.dao.NotificationDaoImpl" scope="singleton">
+	</bean>
+	
+</beans>

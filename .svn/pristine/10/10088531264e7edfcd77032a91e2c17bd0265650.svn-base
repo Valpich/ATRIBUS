@@ -1,0 +1,309 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite guice-stage="DEVELOPMENT" name="Failed suite [Default suite]">
+  <test name="Default test(failed)">
+    <classes>
+      <class name="fr.eseo.atribus.beans.ArbreCompetenceTest">
+        <methods>
+          <include name="init"/>
+        </methods>
+      </class> <!-- fr.eseo.atribus.beans.ArbreCompetenceTest -->
+      <class name="fr.eseo.atribus.entities.EnseignantRefMatiereTest">
+        <methods>
+          <include name="beforeTest"/>
+        </methods>
+      </class> <!-- fr.eseo.atribus.entities.EnseignantRefMatiereTest -->
+      <class name="fr.eseo.atribus.controller.MailControllerTest">
+        <methods>
+          <include name="setup"/>
+        </methods>
+      </class> <!-- fr.eseo.atribus.controller.MailControllerTest -->
+      <class name="fr.eseo.atribus.dao.ExamenDaoImplTest">
+        <methods>
+          <include name="beforeTest"/>
+        </methods>
+      </class> <!-- fr.eseo.atribus.dao.ExamenDaoImplTest -->
+      <class name="fr.eseo.atribus.beans.ExporteurCsvTest">
+        <methods>
+          <include name="beforeClass"/>
+        </methods>
+      </class> <!-- fr.eseo.atribus.beans.ExporteurCsvTest -->
+      <class name="fr.eseo.atribus.forms.RepondreExamenFormTest">
+        <methods>
+          <include name="beforeTest"/>
+        </methods>
+      </class> <!-- fr.eseo.atribus.forms.RepondreExamenFormTest -->
+      <class name="fr.eseo.atribus.controller.MatiereControllerTest">
+        <methods>
+          <include name="setup"/>
+        </methods>
+      </class> <!-- fr.eseo.atribus.controller.MatiereControllerTest -->
+      <class name="fr.eseo.atribus.filters.FiltreEnseignantRefMatiereTest">
+        <methods>
+          <include name="afterClass"/>
+          <include name="beforeClass"/>
+        </methods>
+      </class> <!-- fr.eseo.atribus.filters.FiltreEnseignantRefMatiereTest -->
+      <class name="fr.eseo.atribus.controller.LogsControllerTest">
+        <methods>
+          <include name="setup"/>
+        </methods>
+      </class> <!-- fr.eseo.atribus.controller.LogsControllerTest -->
+      <class name="fr.eseo.atribus.filters.FiltreEnseignantTest">
+        <methods>
+          <include name="beforeClass"/>
+          <include name="afterClass"/>
+        </methods>
+      </class> <!-- fr.eseo.atribus.filters.FiltreEnseignantTest -->
+      <class name="fr.eseo.atribus.entities.NotificationTest">
+        <methods>
+          <include name="afterClass"/>
+          <include name="beforeClass"/>
+        </methods>
+      </class> <!-- fr.eseo.atribus.entities.NotificationTest -->
+      <class name="fr.eseo.atribus.forms.AddUeFormTest">
+        <methods>
+          <include name="beforeTest"/>
+        </methods>
+      </class> <!-- fr.eseo.atribus.forms.AddUeFormTest -->
+      <class name="fr.eseo.atribus.entities.EnseignantTest">
+        <methods>
+          <include name="beforeClass"/>
+        </methods>
+      </class> <!-- fr.eseo.atribus.entities.EnseignantTest -->
+      <class name="fr.eseo.atribus.entities.DirecteurProgrammesTest">
+        <methods>
+          <include name="beforeTest"/>
+        </methods>
+      </class> <!-- fr.eseo.atribus.entities.DirecteurProgrammesTest -->
+      <class name="fr.eseo.atribus.forms.SupprimerUtilisateurFormTest">
+        <methods>
+          <include name="beforeTest"/>
+        </methods>
+      </class> <!-- fr.eseo.atribus.forms.SupprimerUtilisateurFormTest -->
+      <class name="fr.eseo.atribus.filters.FiltreAdminSystTest">
+        <methods>
+          <include name="beforeClass"/>
+          <include name="afterClass"/>
+        </methods>
+      </class> <!-- fr.eseo.atribus.filters.FiltreAdminSystTest -->
+      <class name="fr.eseo.atribus.entities.EleveTest">
+        <methods>
+          <include name="beforeTest"/>
+        </methods>
+      </class> <!-- fr.eseo.atribus.entities.EleveTest -->
+      <class name="fr.eseo.atribus.controller.ExerciceControllerTest">
+        <methods>
+          <include name="setup"/>
+        </methods>
+      </class> <!-- fr.eseo.atribus.controller.ExerciceControllerTest -->
+      <class name="fr.eseo.atribus.forms.ModifierUtilisateurFormTest">
+        <methods>
+          <include name="beforeTest"/>
+        </methods>
+      </class> <!-- fr.eseo.atribus.forms.ModifierUtilisateurFormTest -->
+      <class name="fr.eseo.atribus.beans.MessagesParDefautTest">
+        <methods>
+          <include name="init"/>
+        </methods>
+      </class> <!-- fr.eseo.atribus.beans.MessagesParDefautTest -->
+      <class name="fr.eseo.atribus.filters.FiltreDirecteurProgrammesTest">
+        <methods>
+          <include name="beforeClass"/>
+          <include name="afterClass"/>
+        </methods>
+      </class> <!-- fr.eseo.atribus.filters.FiltreDirecteurProgrammesTest -->
+      <class name="fr.eseo.atribus.filters.FiltreLimiteurRequeteApplicationTest">
+        <methods>
+          <include name="beforeClass"/>
+          <include name="afterClass"/>
+        </methods>
+      </class> <!-- fr.eseo.atribus.filters.FiltreLimiteurRequeteApplicationTest -->
+      <class name="fr.eseo.atribus.forms.AddUserFormTest">
+        <methods>
+          <include name="beforeClass"/>
+        </methods>
+      </class> <!-- fr.eseo.atribus.forms.AddUserFormTest -->
+      <class name="fr.eseo.atribus.filters.FiltreErreurRequeteTest">
+        <methods>
+          <include name="afterClass"/>
+          <include name="beforeClass"/>
+        </methods>
+      </class> <!-- fr.eseo.atribus.filters.FiltreErreurRequeteTest -->
+      <class name="fr.eseo.atribus.forms.AddMatiereFormTest">
+        <methods>
+          <include name="beforeTest"/>
+        </methods>
+      </class> <!-- fr.eseo.atribus.forms.AddMatiereFormTest -->
+      <class name="fr.eseo.atribus.filters.FiltreEleveTest">
+        <methods>
+          <include name="afterClass"/>
+          <include name="testMethodeDoFilterServletRequestServletResponseFilterChain"/>
+          <include name="beforeClass"/>
+        </methods>
+      </class> <!-- fr.eseo.atribus.filters.FiltreEleveTest -->
+      <class name="fr.eseo.atribus.controller.RessourceControllerTest">
+        <methods>
+          <include name="setup"/>
+        </methods>
+      </class> <!-- fr.eseo.atribus.controller.RessourceControllerTest -->
+      <class name="fr.eseo.atribus.controller.SimulerControllerTest">
+        <methods>
+          <include name="setup"/>
+        </methods>
+      </class> <!-- fr.eseo.atribus.controller.SimulerControllerTest -->
+      <class name="fr.eseo.atribus.forms.ModifierCompetenceFormTest">
+        <methods>
+          <include name="beforeTest"/>
+        </methods>
+      </class> <!-- fr.eseo.atribus.forms.ModifierCompetenceFormTest -->
+      <class name="fr.eseo.atribus.beans.LogsConnexionTest">
+        <methods>
+          <include name="afterClass"/>
+          <include name="beforeClass"/>
+        </methods>
+      </class> <!-- fr.eseo.atribus.beans.LogsConnexionTest -->
+      <class name="fr.eseo.atribus.forms.ModifierExerciceFormTest">
+        <methods>
+          <include name="beforeClass"/>
+        </methods>
+      </class> <!-- fr.eseo.atribus.forms.ModifierExerciceFormTest -->
+      <class name="fr.eseo.atribus.entities.AdminSystTest">
+        <methods>
+          <include name="beforeTest"/>
+        </methods>
+      </class> <!-- fr.eseo.atribus.entities.AdminSystTest -->
+      <class name="fr.eseo.atribus.forms.AssocierCompetenceUeFormTest">
+        <methods>
+          <include name="beforeTest"/>
+        </methods>
+      </class> <!-- fr.eseo.atribus.forms.AssocierCompetenceUeFormTest -->
+      <class name="fr.eseo.atribus.forms.AddExerciceFormTest">
+        <methods>
+          <include name="beforeClass"/>
+        </methods>
+      </class> <!-- fr.eseo.atribus.forms.AddExerciceFormTest -->
+      <class name="fr.eseo.atribus.filters.FiltreUtilisateurTest">
+        <methods>
+          <include name="afterClass"/>
+          <include name="beforeClass"/>
+        </methods>
+      </class> <!-- fr.eseo.atribus.filters.FiltreUtilisateurTest -->
+      <class name="fr.eseo.atribus.dao.EvaluationDaoImplTest">
+        <methods>
+          <include name="beforeTest"/>
+        </methods>
+      </class> <!-- fr.eseo.atribus.dao.EvaluationDaoImplTest -->
+      <class name="fr.eseo.atribus.forms.ConnexionFormTest">
+        <methods>
+          <include name="beforeClass"/>
+        </methods>
+      </class> <!-- fr.eseo.atribus.forms.ConnexionFormTest -->
+      <class name="fr.eseo.atribus.entities.ExerciceTest">
+        <methods>
+          <include name="beforeClass"/>
+          <include name="afterClass"/>
+        </methods>
+      </class> <!-- fr.eseo.atribus.entities.ExerciceTest -->
+      <class name="fr.eseo.atribus.entities.ExamenTest">
+        <methods>
+          <include name="beforeClass"/>
+          <include name="afterClass"/>
+        </methods>
+      </class> <!-- fr.eseo.atribus.entities.ExamenTest -->
+      <class name="fr.eseo.atribus.controller.UeControllerTest">
+        <methods>
+          <include name="setup"/>
+        </methods>
+      </class> <!-- fr.eseo.atribus.controller.UeControllerTest -->
+      <class name="fr.eseo.atribus.dao.ExerciceDaoImplTest">
+        <methods>
+          <include name="beforeTest"/>
+        </methods>
+      </class> <!-- fr.eseo.atribus.dao.ExerciceDaoImplTest -->
+      <class name="fr.eseo.atribus.filters.FiltreLimiteurRequeteUtilisateurTest">
+        <methods>
+          <include name="afterClass"/>
+          <include name="beforeClass"/>
+        </methods>
+      </class> <!-- fr.eseo.atribus.filters.FiltreLimiteurRequeteUtilisateurTest -->
+      <class name="fr.eseo.atribus.filters.FiltreEnseignantRefUETest">
+        <methods>
+          <include name="afterClass"/>
+          <include name="beforeClass"/>
+        </methods>
+      </class> <!-- fr.eseo.atribus.filters.FiltreEnseignantRefUETest -->
+      <class name="fr.eseo.atribus.forms.AddCompetenceFormTest">
+        <methods>
+          <include name="beforeTest"/>
+        </methods>
+      </class> <!-- fr.eseo.atribus.forms.AddCompetenceFormTest -->
+      <class name="fr.eseo.atribus.dao.SemestreDaoImplTest">
+        <methods>
+          <include name="beforeTest"/>
+        </methods>
+      </class> <!-- fr.eseo.atribus.dao.SemestreDaoImplTest -->
+      <class name="fr.eseo.atribus.dao.RessourceDaoImplTest">
+        <methods>
+          <include name="beforeTest"/>
+        </methods>
+      </class> <!-- fr.eseo.atribus.dao.RessourceDaoImplTest -->
+      <class name="fr.eseo.atribus.controller.LdapControlleurTest">
+        <methods>
+          <include name="setup"/>
+        </methods>
+      </class> <!-- fr.eseo.atribus.controller.LdapControlleurTest -->
+      <class name="fr.eseo.atribus.controller.IndexControllerTest">
+        <methods>
+          <include name="beforeTest"/>
+        </methods>
+      </class> <!-- fr.eseo.atribus.controller.IndexControllerTest -->
+      <class name="fr.eseo.atribus.controller.ExamenControllerTest">
+        <methods>
+          <include name="setup"/>
+        </methods>
+      </class> <!-- fr.eseo.atribus.controller.ExamenControllerTest -->
+      <class name="fr.eseo.atribus.entities.EnseignantRefUeTest">
+        <methods>
+          <include name="beforeTest"/>
+        </methods>
+      </class> <!-- fr.eseo.atribus.entities.EnseignantRefUeTest -->
+      <class name="fr.eseo.atribus.filters.FiltreDirecteurEtudesTest">
+        <methods>
+          <include name="afterClass"/>
+          <include name="beforeClass"/>
+        </methods>
+      </class> <!-- fr.eseo.atribus.filters.FiltreDirecteurEtudesTest -->
+      <class name="fr.eseo.atribus.controller.CompetencesControllerTest">
+        <methods>
+          <include name="setup"/>
+        </methods>
+      </class> <!-- fr.eseo.atribus.controller.CompetencesControllerTest -->
+      <class name="fr.eseo.atribus.forms.AddRessourceFormTest">
+        <methods>
+          <include name="beforeTest"/>
+        </methods>
+      </class> <!-- fr.eseo.atribus.forms.AddRessourceFormTest -->
+      <class name="fr.eseo.atribus.dao.CompetenceDaoImplTest">
+        <methods>
+          <include name="beforeClass"/>
+        </methods>
+      </class> <!-- fr.eseo.atribus.dao.CompetenceDaoImplTest -->
+      <class name="fr.eseo.atribus.entities.UtilisateurLdapTest">
+        <methods>
+          <include name="init"/>
+        </methods>
+      </class> <!-- fr.eseo.atribus.entities.UtilisateurLdapTest -->
+      <class name="fr.eseo.atribus.forms.AddExamenFormTest">
+        <methods>
+          <include name="beforeTest"/>
+        </methods>
+      </class> <!-- fr.eseo.atribus.forms.AddExamenFormTest -->
+      <class name="fr.eseo.atribus.controller.UtilisateurControllerTest">
+        <methods>
+          <include name="setup"/>
+        </methods>
+      </class> <!-- fr.eseo.atribus.controller.UtilisateurControllerTest -->
+    </classes>
+  </test> <!-- Default test(failed) -->
+</suite> <!-- Failed suite [Default suite] -->

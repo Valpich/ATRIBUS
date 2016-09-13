@@ -1,0 +1,82 @@
+package fr.eseo.atribus.entities;
+
+import java.io.Serializable;
+
+public class UtilisateurLdap implements Serializable {
+
+  private static final long serialVersionUID = 8177715403753444254L;
+  private String cn;
+  private String mail;
+  private String givenName;
+  private String objectClass;
+  private String userpassword;
+  private String sn;
+  private String uid;
+
+  public UtilisateurLdap() {
+    super();
+  }
+
+  public String getCn() {
+    return this.cn;
+  }
+
+  public void setCn(String cn) {
+    this.cn = cn;
+  }
+
+  public String getMail() {
+    return this.mail;
+  }
+
+  public void setMail(String mail) {
+    this.mail = mail;
+  }
+
+  public String getGivenName() {
+    return this.givenName;
+  }
+
+  public void setGivenName(String givenName) {
+    this.givenName = givenName;
+  }
+
+  public String getObjectClass() {
+    return this.objectClass;
+  }
+
+  public void setObjectClass(String objectClass) {
+    this.objectClass = objectClass;
+  }
+
+  public String getUserpassword() {
+    return this.userpassword;
+  }
+
+  public void setUserpassword(String userpassword) {
+    this.userpassword = userpassword;
+  }
+
+  public String getSn() {
+    return this.sn;
+  }
+
+  public void setSn(String sn) {
+    this.sn = sn;
+  }
+
+  public String getUid() {
+    return this.uid;
+  }
+
+  public void setUid(String uid) {
+    this.uid = uid;
+  }
+
+  @Override
+  public String toString() {
+    return "UtilisateurLdap [cn=" + this.cn + ", mail=" + this.mail + ", givenName="
+        + this.givenName + ", objectClass=" + this.objectClass + ", userpassword="
+        + this.userpassword + ", sn=" + this.sn + ", uid=" + this.uid + "]";
+  }
+}

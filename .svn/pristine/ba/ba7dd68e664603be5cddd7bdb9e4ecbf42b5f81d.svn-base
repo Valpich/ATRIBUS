@@ -1,0 +1,77 @@
+package fr.eseo.atribus.forms;
+
+import fr.eseo.atribus.dao.CompetenceDao;
+import fr.eseo.atribus.dao.EnseignantDao;
+import fr.eseo.atribus.dao.SemestreDao;
+import fr.eseo.atribus.dao.UeDao;
+
+import java.util.Map;
+
+
+public class UeFormData {
+  private String resultat;
+  private Map<String, String> erreurs;
+  private UeDao ueBdd;
+  private EnseignantDao enseignantBdd;
+  private CompetenceDao competenceBdd;
+  private SemestreDao semestreBdd;
+
+  public UeFormData(Map<String, String> erreurs) {
+    this.erreurs = erreurs;
+  }
+
+  
+  public String getResultat() {
+    return resultat;
+  }
+
+  public void setResultat(String resultat) {
+    this.resultat = resultat;
+  }
+
+  
+  public Map<String, String> getErreurs() {
+    return erreurs;
+  }
+
+  public void setErreurs(Map<String, String> erreurs) {
+    this.erreurs = erreurs;
+  }
+
+  
+  public UeDao getUeBdd() {
+    return ueBdd;
+  }
+
+  public void setUeBdd(UeDao ueBdd) {
+    this.ueBdd = ueBdd;
+  }
+
+  
+  public EnseignantDao getEnseignantBdd() {
+    return enseignantBdd;
+  }
+
+  public void setEnseignantBdd(EnseignantDao enseignantBdd) {
+    this.enseignantBdd = enseignantBdd;
+  }
+  
+
+  public CompetenceDao getCompetenceBdd() {
+    return competenceBdd;
+  }
+
+  public void setCompetenceBdd(CompetenceDao competenceBdd) {
+    this.competenceBdd = competenceBdd;
+  }
+  
+  
+  public SemestreDao getSemestreBdd() {
+    return semestreBdd;
+  }
+  
+  public void setSemestreBdd(SemestreDao semestreBdd) {
+    this.semestreBdd = semestreBdd;
+  }
+ 
+}

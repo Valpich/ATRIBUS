@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>ModifierExerciceForm.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Atribus</a> &gt; <a href="index.source.html" class="el_package">fr.eseo.atribus.forms</a> &gt; <span class="el_source">ModifierExerciceForm.java</span></div><h1>ModifierExerciceForm.java</h1><pre class="source lang-java linenums">package fr.eseo.atribus.forms;
+
+import fr.eseo.atribus.dao.CompetenceDao;
+import fr.eseo.atribus.dao.DaoException;
+import fr.eseo.atribus.dao.ExamenDao;
+import fr.eseo.atribus.dao.ExerciceDao;
+import fr.eseo.atribus.entities.Examen;
+import fr.eseo.atribus.entities.Exercice;
+
+import org.springframework.beans.factory.access.BeanFactoryReference;
+import org.springframework.beans.factory.access.SingletonBeanFactoryLocator;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.servlet.http.HttpServletRequest;
+
+public class ModifierExerciceForm extends ExerciceFormMethods {
+<span class="nc" id="L23">  private static final Logger LOGGER = Logger.getLogger(ModifierExerciceForm.class.getName());</span>
+
+<span class="nc" id="L25">  public ModifierExerciceForm() {</span>
+    final BeanFactoryReference bf =
+<span class="nc" id="L27">        SingletonBeanFactoryLocator.getInstance().useBeanFactory(&quot;beansDao&quot;);</span>
+<span class="nc" id="L28">    this.data.setExerciceBdd((ExerciceDao) bf.getFactory().getBean(&quot;exerciceDao&quot;));</span>
+<span class="nc" id="L29">    this.data.setCompetenceBdd((CompetenceDao) bf.getFactory().getBean(&quot;competenceDao&quot;));</span>
+<span class="nc" id="L30">    this.data.setExamenBdd((ExamenDao) bf.getFactory().getBean(&quot;examenDao&quot;));</span>
+<span class="nc" id="L31">  }</span>
+
+  public List&lt;Exercice&gt; modifierExercices(Examen examenAncien, HttpServletRequest request) {
+<span class="nc" id="L34">    final Map&lt;String, String[]&gt; parameters = request.getParameterMap();</span>
+<span class="nc" id="L35">    final Map&lt;Long, Map&lt;Long, String&gt;&gt; pourcentages = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L36">    final Map&lt;Long, Map&lt;Long, String&gt;&gt; competences = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L37">    final Map&lt;Long, String&gt; questions = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L38">    final Map&lt;Long, String&gt; reponses = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L39">    final Map&lt;Long, String&gt; nbPoints = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L40">    final Map&lt;Long, Long&gt; indexMaxCompetences = new HashMap&lt;&gt;();</span>
+
+<span class="nc" id="L42">    Long indexMaxQuestion = 0L;</span>
+<span class="nc bnc" id="L43" title="All 2 branches missed.">    for (final String parameter : parameters.keySet()) {</span>
+<span class="nc" id="L44">      indexMaxQuestion = this.recupererPourcentages(parameters, pourcentages, indexMaxCompetences,</span>
+          indexMaxQuestion, parameter);
+<span class="nc" id="L46">      indexMaxQuestion = this.recupererCompetences(parameters, competences, indexMaxCompetences,</span>
+          indexMaxQuestion, parameter);
+<span class="nc" id="L48">      this.recupererQuestions(request, questions, parameter);</span>
+<span class="nc" id="L49">      this.recupererReponses(request, reponses, parameter);</span>
+<span class="nc" id="L50">      this.recupererPoints(request, nbPoints, parameter);</span>
+<span class="nc" id="L51">    }</span>
+<span class="nc" id="L52">    final List&lt;Exercice&gt; exercices = new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L53" title="All 2 branches missed.">    for (Long i = new Long(1); i &lt;= competences.size(); i++) {</span>
+<span class="nc" id="L54">      exercices.add(this.traiterExercice(examenAncien.getExercices().get(i.intValue() - 1),</span>
+<span class="nc" id="L55">          questions.get(i), reponses.get(i), nbPoints.get(i), competences.get(i),</span>
+<span class="nc" id="L56">          pourcentages.get(i), examenAncien.getNom(), indexMaxCompetences.get(i)));</span>
+    }
+<span class="nc" id="L58">    return exercices;</span>
+  }
+
+  private void recupererPoints(HttpServletRequest request, final Map&lt;Long, String&gt; nbPoints,
+      String parameter) {
+    Long indexQuestion;
+<span class="nc bnc" id="L64" title="All 2 branches missed.">    if (parameter.startsWith(ExerciceFormData.CHAMP_POINTS)) {</span>
+<span class="nc" id="L65">      indexQuestion = new Long(</span>
+<span class="nc" id="L66">          Integer.parseInt(parameter.substring(parameter.indexOf(ExerciceFormData.CHAMP_POINTS)</span>
+<span class="nc" id="L67">              + ExerciceFormData.CHAMP_POINTS.length())));</span>
+<span class="nc" id="L68">      nbPoints.put(indexQuestion, ExerciceFormMethods.getValeurChamp(request,</span>
+          ExerciceFormData.CHAMP_POINTS + indexQuestion));
+    }
+<span class="nc" id="L71">  }</span>
+
+  private void recupererReponses(HttpServletRequest request, final Map&lt;Long, String&gt; reponses,
+      String parameter) {
+    Long indexQuestion;
+<span class="nc bnc" id="L76" title="All 2 branches missed.">    if (parameter.startsWith(ExerciceFormData.CHAMP_REPONSE)) {</span>
+<span class="nc" id="L77">      indexQuestion = new Long(</span>
+<span class="nc" id="L78">          Integer.parseInt(parameter.substring(parameter.indexOf(ExerciceFormData.CHAMP_REPONSE)</span>
+<span class="nc" id="L79">              + ExerciceFormData.CHAMP_REPONSE.length())));</span>
+<span class="nc" id="L80">      reponses.put(indexQuestion, ExerciceFormMethods.getValeurChamp(request,</span>
+          ExerciceFormData.CHAMP_REPONSE + indexQuestion));
+    }
+<span class="nc" id="L83">  }</span>
+
+  private void recupererQuestions(HttpServletRequest request, final Map&lt;Long, String&gt; questions,
+      String parameter) {
+    Long indexQuestion;
+<span class="nc bnc" id="L88" title="All 2 branches missed.">    if (parameter.startsWith(ExerciceFormData.CHAMP_QUESTION)) {</span>
+<span class="nc" id="L89">      indexQuestion = new Long(</span>
+<span class="nc" id="L90">          Integer.parseInt(parameter.substring(parameter.indexOf(ExerciceFormData.CHAMP_QUESTION)</span>
+<span class="nc" id="L91">              + ExerciceFormData.CHAMP_QUESTION.length())));</span>
+<span class="nc" id="L92">      questions.put(indexQuestion, ExerciceFormMethods.getValeurChamp(request,</span>
+          ExerciceFormData.CHAMP_QUESTION + indexQuestion));
+    }
+<span class="nc" id="L95">  }</span>
+
+  private Long recupererCompetences(Map&lt;String, String[]&gt; parameters,
+      final Map&lt;Long, Map&lt;Long, String&gt;&gt; competences, final Map&lt;Long, Long&gt; indexMaxCompetences,
+      Long indexMaxQuestion, String parameter) {
+    Long indexQuestion;
+<span class="nc" id="L101">    Long indexMaxQuestionTmp = indexMaxQuestion;</span>
+<span class="nc bnc" id="L102" title="All 2 branches missed.">    if (parameter.startsWith(ExerciceFormData.CHAMP_COMPETENCE)) {</span>
+<span class="nc" id="L103">      indexQuestion =</span>
+          new Long(
+              Integer
+<span class="nc" id="L106">                  .parseInt(</span>
+<span class="nc" id="L107">                      parameter.substring(</span>
+<span class="nc" id="L108">                          parameter.indexOf(ExerciceFormData.CHAMP_COMPETENCE)</span>
+<span class="nc" id="L109">                              + ExerciceFormData.CHAMP_COMPETENCE.length(),</span>
+<span class="nc" id="L110">                          parameter.indexOf(&quot;_&quot;))));</span>
+<span class="nc" id="L111">      final Long indexCompetence =</span>
+<span class="nc" id="L112">          new Long(Integer.parseInt(parameter.substring(parameter.indexOf(&quot;_&quot;) + 1)));</span>
+<span class="nc bnc" id="L113" title="All 2 branches missed.">      if (indexQuestion &gt; indexMaxQuestion) {</span>
+<span class="nc" id="L114">        indexMaxQuestionTmp = indexQuestion;</span>
+      }
+<span class="nc bnc" id="L116" title="All 2 branches missed.">      for (final String competence : parameters.get(parameter)) {</span>
+<span class="nc bnc" id="L117" title="All 2 branches missed.">        if (competences.get(indexQuestion) == null) {</span>
+<span class="nc" id="L118">          competences.put(new Long(indexQuestion), new HashMap&lt;&gt;());</span>
+        }
+<span class="nc" id="L120">        competences.get(indexQuestion).put(new Long(indexCompetence), competence);</span>
+      }
+<span class="nc bnc" id="L122" title="All 2 branches missed.">      if (indexMaxCompetences.get(indexQuestion) == null) {</span>
+<span class="nc" id="L123">        indexMaxCompetences.put(indexQuestion, indexCompetence);</span>
+      } else {
+<span class="nc bnc" id="L125" title="All 2 branches missed.">        if (indexCompetence &gt; indexMaxCompetences.get(indexQuestion)) {</span>
+<span class="nc" id="L126">          indexMaxCompetences.put(indexQuestion, indexCompetence);</span>
+        }
+      }
+    }
+<span class="nc" id="L130">    return indexMaxQuestionTmp;</span>
+  }
+
+  private Long recupererPourcentages(Map&lt;String, String[]&gt; parameters,
+      final Map&lt;Long, Map&lt;Long, String&gt;&gt; pourcentages, final Map&lt;Long, Long&gt; indexMaxCompetences,
+      Long indexMaxQuestion, String parameter) {
+    Long indexQuestion;
+<span class="nc" id="L137">    Long indexMaxQuestionTmp = indexMaxQuestion;</span>
+<span class="nc bnc" id="L138" title="All 2 branches missed.">    if (parameter.startsWith(ExerciceFormData.CHAMP_POURCENTAGE)) {</span>
+<span class="nc" id="L139">      indexQuestion =</span>
+          new Long(
+              Integer
+<span class="nc" id="L142">                  .parseInt(</span>
+<span class="nc" id="L143">                      parameter.substring(</span>
+<span class="nc" id="L144">                          parameter.indexOf(ExerciceFormData.CHAMP_POURCENTAGE)</span>
+<span class="nc" id="L145">                              + ExerciceFormData.CHAMP_POURCENTAGE.length(),</span>
+<span class="nc" id="L146">                          parameter.indexOf(&quot;_&quot;))));</span>
+<span class="nc" id="L147">      final Long indexPourcentage =</span>
+<span class="nc" id="L148">          new Long(Integer.parseInt(parameter.substring(parameter.indexOf(&quot;_&quot;) + 1)));</span>
+<span class="nc bnc" id="L149" title="All 2 branches missed.">      if (indexQuestion &gt; indexMaxQuestion) {</span>
+<span class="nc" id="L150">        indexMaxQuestionTmp = indexQuestion;</span>
+      }
+<span class="nc bnc" id="L152" title="All 2 branches missed.">      if (indexMaxCompetences.get(indexQuestion) == null) {</span>
+<span class="nc" id="L153">        indexMaxCompetences.put(indexQuestion, indexPourcentage);</span>
+      } else {
+<span class="nc bnc" id="L155" title="All 2 branches missed.">        if (indexPourcentage &gt; indexMaxCompetences.get(indexQuestion)) {</span>
+<span class="nc" id="L156">          indexMaxCompetences.put(indexQuestion, indexPourcentage);</span>
+        }
+      }
+<span class="nc bnc" id="L159" title="All 2 branches missed.">      for (final String pourcentage : parameters.get(parameter)) {</span>
+<span class="nc bnc" id="L160" title="All 2 branches missed.">        if (pourcentages.get(indexQuestion) == null) {</span>
+<span class="nc" id="L161">          pourcentages.put(new Long(indexQuestion), new HashMap&lt;&gt;());</span>
+        }
+<span class="nc" id="L163">        pourcentages.get(indexQuestion).put(new Long(indexPourcentage), pourcentage);</span>
+      }
+
+    }
+<span class="nc" id="L167">    return indexMaxQuestionTmp;</span>
+  }
+
+  private Exercice traiterExercice(Exercice ancienExercice, String question, String reponse,
+      String nbPoints, Map&lt;Long, String&gt; competences, Map&lt;Long, String&gt; pourcentages, String examen,
+      Long indexMax) {
+<span class="nc" id="L173">    final Exercice exercice = new Exercice();</span>
+<span class="nc" id="L174">    final Examen exam = new Examen();</span>
+<span class="nc" id="L175">    exam.setNom(examen);</span>
+    try {
+<span class="nc" id="L177">      this.traiterValeurs(question, reponse, nbPoints, exercice);</span>
+<span class="nc" id="L178">      this.traiterDonnees(competences, pourcentages, exercice, indexMax);</span>
+<span class="nc bnc" id="L179" title="All 2 branches missed.">      if (this.getErreurs().isEmpty()) {</span>
+<span class="nc" id="L180">        this.data.getExerciceBdd().ajouter(exercice, exam);</span>
+<span class="nc" id="L181">        this.data.getExerciceBdd().supprimer(ancienExercice);</span>
+<span class="nc" id="L182">        this.data.setResultat(&quot;Succès de la modification de l'exercice.&quot;);</span>
+      } else {
+<span class="nc" id="L184">        this.data.setResultat(&quot;Échec de la modification de l'exercice.&quot;);</span>
+      }
+<span class="nc" id="L186">    } catch (final DaoException ebdd) {</span>
+<span class="nc" id="L187">      this.data.setResultat(&quot;Échec de l'ajout de l'exercice : une erreur imprévue est survenue,&quot;</span>
+          + &quot; merci de réessayer dans quelques instants.&quot;);
+<span class="nc" id="L189">      ModifierExerciceForm.LOGGER.log(Level.INFO, ExerciceFormData.EXCEPTION, ebdd);</span>
+<span class="nc" id="L190">    }</span>
+<span class="nc bnc" id="L191" title="All 2 branches missed.">    if (&quot;Échec de l'ajout de l'exercice.&quot;.equals(this.getResultat())) {</span>
+<span class="nc" id="L192">      return ancienExercice;</span>
+    }
+<span class="nc" id="L194">    return exercice;</span>
+  }
+
+  private void traiterDonnees(Map&lt;Long, String&gt; competences, Map&lt;Long, String&gt; pourcentages,
+      Exercice exercice, Long index) {
+<span class="nc bnc" id="L199" title="All 2 branches missed.">    for (Long i = new Long(1); i &lt; index + 1; i++) {</span>
+      try {
+<span class="nc" id="L201">        this.validationPourcentage(pourcentages.get(i));</span>
+<span class="nc bnc" id="L202" title="All 2 branches missed.">        if (exercice.getPourcentages() == null) {</span>
+<span class="nc" id="L203">          exercice.setPourcentages(new HashMap&lt;&gt;());</span>
+        }
+<span class="nc" id="L205">        exercice.getPourcentages().put(new Long(i), Integer.parseInt(pourcentages.get(i)));</span>
+<span class="nc" id="L206">      } catch (final FormValidationException fve) {</span>
+<span class="nc" id="L207">        this.setErreur(ExerciceFormData.CHAMP_POURCENTAGE, fve.getMessage());</span>
+<span class="nc" id="L208">        ModifierExerciceForm.LOGGER.log(Level.INFO, ExerciceFormData.EXCEPTION, fve);</span>
+<span class="nc" id="L209">      }</span>
+    }
+<span class="nc bnc" id="L211" title="All 2 branches missed.">    for (Long i = new Long(1); i &lt; index + 1; i++) {</span>
+      try {
+<span class="nc" id="L213">        this.validationCompetence(competences.get(i));</span>
+<span class="nc bnc" id="L214" title="All 2 branches missed.">        if (exercice.getCompetences() == null) {</span>
+<span class="nc" id="L215">          exercice.setCompetences(new HashMap&lt;&gt;());</span>
+        }
+<span class="nc" id="L217">        exercice.getCompetences().put(new Long(i),</span>
+<span class="nc" id="L218">            this.data.getCompetenceBdd().trouverUniqueParNom(competences.get(i)));</span>
+<span class="nc" id="L219">      } catch (final FormValidationException fve) {</span>
+<span class="nc" id="L220">        this.setErreur(ExerciceFormData.CHAMP_COMPETENCE, fve.getMessage());</span>
+<span class="nc" id="L221">        ModifierExerciceForm.LOGGER.log(Level.INFO, ExerciceFormData.EXCEPTION, fve);</span>
+<span class="nc" id="L222">      }</span>
+    }
+<span class="nc" id="L224">  }</span>
+
+  private void traiterValeurs(String question, String reponse, String nbPoints, Exercice exercice) {
+    try {
+<span class="nc" id="L228">      this.validationQuestion(question);</span>
+<span class="nc" id="L229">      exercice.setQuestion(question);</span>
+<span class="nc" id="L230">    } catch (final FormValidationException fve) {</span>
+<span class="nc" id="L231">      this.setErreur(ExerciceFormData.CHAMP_QUESTION, fve.getMessage());</span>
+<span class="nc" id="L232">      ModifierExerciceForm.LOGGER.log(Level.INFO, ExerciceFormData.EXCEPTION, fve);</span>
+<span class="nc" id="L233">    }</span>
+    try {
+<span class="nc" id="L235">      this.validationReponse(reponse);</span>
+<span class="nc" id="L236">      exercice.setReponse(reponse);</span>
+<span class="nc" id="L237">    } catch (final FormValidationException fve) {</span>
+<span class="nc" id="L238">      this.setErreur(ExerciceFormData.CHAMP_REPONSE, fve.getMessage());</span>
+<span class="nc" id="L239">      ModifierExerciceForm.LOGGER.log(Level.INFO, ExerciceFormData.EXCEPTION, fve);</span>
+<span class="nc" id="L240">    }</span>
+    try {
+<span class="nc" id="L242">      this.validationPoints(nbPoints);</span>
+<span class="nc" id="L243">      exercice.setNbPoints(Float.parseFloat(nbPoints));</span>
+<span class="nc" id="L244">    } catch (final FormValidationException fve) {</span>
+<span class="nc" id="L245">      this.setErreur(ExerciceFormData.CHAMP_POINTS, fve.getMessage());</span>
+<span class="nc" id="L246">      ModifierExerciceForm.LOGGER.log(Level.INFO, ExerciceFormData.EXCEPTION, fve);</span>
+<span class="nc" id="L247">    }</span>
+<span class="nc" id="L248">  }</span>
+
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.6.201602180812</span></div></body></html>

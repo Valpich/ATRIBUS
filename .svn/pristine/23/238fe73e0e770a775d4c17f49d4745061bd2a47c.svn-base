@@ -1,0 +1,140 @@
+package fr.eseo.atribus.timers;
+
+import fr.eseo.atribus.beans.Mail;
+import fr.eseo.atribus.dao.NotificationDao;
+import fr.eseo.atribus.dao.UtilisateurDao;
+import fr.eseo.atribus.entities.Notification;
+import fr.eseo.atribus.entities.Utilisateur;
+
+import org.springframework.beans.factory.access.BeanFactoryReference;
+import org.springframework.beans.factory.access.SingletonBeanFactoryLocator;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
+
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.mail.MessagingException;
+import javax.servlet.ServletContext;
+
+@Service
+public class TimerConversionNotificationEnMail {
+  private static final Logger LOGGER =
+      Logger.getLogger(TimerConversionNotificationEnMail.class.getName());
+
+  @Autowired(required = true)
+  ServletContext servletContext;
+  @Autowired(required = true)
+  Mail mail;
+
+  NotificationDao notificationDao;
+  UtilisateurDao utilisateurDao;
+
+  public ServletContext getServletContext() {
+    return servletContext;
+  }
+
+  public void setServletContext(ServletContext servletContext) {
+    this.servletContext = servletContext;
+  }
+
+  public Mail getMail() {
+    return mail;
+  }
+
+  public void setMail(Mail mail) {
+    this.mail = mail;
+  }
+
+  public TimerConversionNotificationEnMail() {
+    TimerConversionNotificationEnMail.LOGGER
+        .info("Instantiation du convertisseur de notifications vers des mails");
+    final BeanFactoryReference bf =
+        SingletonBeanFactoryLocator.getInstance().useBeanFactory("beansDao");
+    /* Récupération d'une instance de notre DAO Notification */
+    this.notificationDao = (NotificationDao) bf.getFactory().getBean("notificationDao");
+    /* Récupération d'une instance de notre DAO Competence */
+    this.utilisateurDao = (UtilisateurDao) bf.getFactory().getBean("utilisateurDao");
+  }
+
+  /**
+   * Conversion automatique des notifications en mail toutes les heures.
+   */
+  @Scheduled(fixedDelay = 60 * 60 * 1000)
+  public void executer() {
+    List<Utilisateur> utilisateurs = this.utilisateurDao.recupererListe();
+    for (Utilisateur utilisateur : utilisateurs) {
+      if (utilisateur.getFrequenceNotificationMail() != 0 && !utilisateur.isNotificationMail()) {
+        for (Notification notification : utilisateur.getNotifications()) {
+          envoyerSiRequis(utilisateur, notification);
+        }
+      }
+    }
+  }
+
+  private void envoyerSiRequis(Utilisateur utilisateur, Notification notification) {
+    switch (utilisateur.getFrequenceNotificationMail()) {
+      case 1:
+        miseAJourHeure(utilisateur, notification);
+        break;
+      case 2:
+        miseAJourJournaliere(utilisateur, notification);
+        break;
+      case 3:
+        miseAJourHebdomadaire(utilisateur, notification);
+        break;
+      default:
+        break;
+    }
+  }
+
+  private void miseAJourHebdomadaire(Utilisateur utilisateur, Notification notification) {
+    Calendar cal = Calendar.getInstance();
+    cal.setTime(notification.getDateCreation());
+    int jourNotification = cal.get(Calendar.DAY_OF_YEAR);
+    Calendar calActuel = Calendar.getInstance();
+    calActuel.setTime(new Date());
+    int jourActuel = calActuel.get(Calendar.DAY_OF_YEAR);
+    if (jourNotification - jourActuel <= -7) {
+      this.conversion(notification, utilisateur);
+    }
+  }
+
+  private void miseAJourJournaliere(Utilisateur utilisateur, Notification notification) {
+    Calendar cal = Calendar.getInstance();
+    cal.setTime(notification.getDateCreation());
+    int jourNotification = cal.get(Calendar.DAY_OF_YEAR);
+    Calendar calActuel = Calendar.getInstance();
+    calActuel.setTime(new Date());
+    int jourActuel = calActuel.get(Calendar.DAY_OF_YEAR);
+    if (jourNotification - jourActuel < -1) {
+      this.conversion(notification, utilisateur);
+    }
+  }
+
+  private void miseAJourHeure(Utilisateur utilisateur, Notification notification) {
+    Calendar cal = Calendar.getInstance();
+    cal.setTime(notification.getDateCreation());
+    int heureNotification = cal.get(Calendar.HOUR_OF_DAY);
+    Calendar calActuel = Calendar.getInstance();
+    calActuel.setTime(new Date());
+    int heureActuelle = calActuel.get(Calendar.HOUR_OF_DAY);
+    if (heureNotification - heureActuelle <= -1) {
+      this.conversion(notification, utilisateur);
+    }
+  }
+
+  private void conversion(Notification notification, Utilisateur utilisateur) {
+    try {
+      mail.mailAutomatique(utilisateur.getEmail(),
+          "Notification de " + notification.getNomEmetteur() + ".", notification.getMessage());
+      this.notificationDao.supprimer(notification);
+    } catch (final MessagingException mesesx) {
+      TimerConversionNotificationEnMail.LOGGER.log(Level.INFO, "Exception", mesesx);
+    }
+  }
+}

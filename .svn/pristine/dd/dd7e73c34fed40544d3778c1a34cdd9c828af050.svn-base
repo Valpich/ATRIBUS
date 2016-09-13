@@ -1,0 +1,4 @@
+url = jdbc:mysql://localhost:3306/atribus?useUnicode=yes&characterEncoding=UTF-8
+driver = com.mysql.jdbc.Driver
+user = atribususer
+password = atribuspassword

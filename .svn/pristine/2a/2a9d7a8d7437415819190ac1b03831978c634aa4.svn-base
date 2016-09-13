@@ -1,0 +1,160 @@
+package fr.eseo.atribus.entities;
+
+import java.io.Serializable;
+import java.util.Date;
+
+// TODO: Auto-generated Javadoc
+/**
+ * The Class Notification.
+ */
+public class Notification implements Serializable {
+
+  /** La constante serialVersionUID. */
+  private static final long serialVersionUID = 6123285979153541101L;
+
+  /** La variable id. */
+  private Integer id;
+
+  /** La variable emetteur. */
+  private Integer emetteur;
+
+  /** La variable destinataire. */
+  private Integer destinataire;
+
+  /** La variable message. */
+  private String message;
+
+  /** La variable nom emetteur. */
+  private String nomEmetteur;
+
+  /** La variable date creation. */
+  private Date dateCreation;
+
+  /**
+   * Instancie un nouveau notification.
+   */
+  public Notification() {
+    super();
+  }
+
+  /**
+   * Accesseur en lecture sur le paramètre id.
+   *
+   * @return le paramètre id
+   */
+  public Integer getId() {
+    return this.id;
+  }
+
+  /**
+   * Accesseur en écriture sur le paramètre id.
+   *
+   * @param id le nouveau paramètre id
+   */
+  public void setId(Integer id) {
+    this.id = id;
+  }
+
+  /**
+   * Accesseur en lecture sur le paramètre emetteur.
+   *
+   * @return le paramètre emetteur
+   */
+  public Integer getEmetteur() {
+    return this.emetteur;
+  }
+
+  /**
+   * Accesseur en écriture sur le paramètre emetteur.
+   *
+   * @param emetteur le nouveau paramètre emetteur
+   */
+  public void setEmetteur(Integer emetteur) {
+    this.emetteur = emetteur;
+  }
+
+  /**
+   * Accesseur en lecture sur le paramètre destinataire.
+   *
+   * @return le paramètre destinataire
+   */
+  public Integer getDestinataire() {
+    return this.destinataire;
+  }
+
+  /**
+   * Accesseur en écriture sur le paramètre destinataire.
+   *
+   * @param destinataire le nouveau paramètre destinataire
+   */
+  public void setDestinataire(Integer destinataire) {
+    this.destinataire = destinataire;
+  }
+
+  /**
+   * Accesseur en lecture sur le paramètre message.
+   *
+   * @return le paramètre message
+   */
+  public String getMessage() {
+    return this.message;
+  }
+
+  /**
+   * Accesseur en écriture sur le paramètre message.
+   *
+   * @param message le nouveau paramètre message
+   */
+  public void setMessage(String message) {
+    this.message = message;
+  }
+
+  /**
+   * Accesseur en lecture sur le paramètre nom emetteur.
+   *
+   * @return le paramètre nom emetteur
+   */
+  public String getNomEmetteur() {
+    return this.nomEmetteur;
+  }
+
+  /**
+   * Accesseur en écriture sur le paramètre nom emetteur.
+   *
+   * @param nomEmetteur le nouveau paramètre nom emetteur
+   */
+  public void setNomEmetteur(String nomEmetteur) {
+    this.nomEmetteur = nomEmetteur;
+  }
+
+  /**
+   * Accesseur en lecture sur le paramètre date creation.
+   *
+   * @return le paramètre date creation
+   */
+  public Date getDateCreation() {
+    return this.dateCreation;
+  }
+
+  /**
+   * Accesseur en écriture sur le paramètre date creation.
+   *
+   * @param dateCreation le nouveau paramètre date creation
+   */
+  public void setDateCreation(Date dateCreation) {
+    this.dateCreation = dateCreation;
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.lang.Object#toString()
+   */
+  @Override
+  public String toString() {
+    return "Notification [id=" + this.id + ", emetteur=" + this.emetteur + ", destinataire="
+        + this.destinataire + ", message=" + this.message + ", nomEmetteur=" + this.nomEmetteur
+        + ", dateCreation=" + this.dateCreation + "]";
+  }
+
+}

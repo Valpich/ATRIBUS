@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>DirecteurEtudesDaoImpl.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Atribus</a> &gt; <a href="index.source.html" class="el_package">fr.eseo.atribus.dao</a> &gt; <span class="el_source">DirecteurEtudesDaoImpl.java</span></div><h1>DirecteurEtudesDaoImpl.java</h1><pre class="source lang-java linenums">package fr.eseo.atribus.dao;
+
+import fr.eseo.atribus.entities.DirecteurEtudes;
+
+import org.springframework.beans.factory.access.BeanFactoryReference;
+import org.springframework.beans.factory.access.SingletonBeanFactoryLocator;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+public class DirecteurEtudesDaoImpl implements DirecteurEtudesDao {
+<span class="nc" id="L18">  private static final Logger LOGGER = Logger.getLogger(DirecteurEtudesDaoImpl.class.getName());</span>
+  private static final String EXCEPTION = &quot;Exception&quot;;
+
+  private final DaoFactory daoFactory;
+
+  private static final String SELECT_1 =
+      &quot;SELECT directeur_etudes.id AS id_directeur_etudes, utilisateur.* &quot;;
+  
+  private static final String SELECT_2 =
+      &quot; FROM directeur_etudes &quot;;
+  
+  private static final String SELECT_3 =
+      &quot; LEFT JOIN utilisateur ON utilisateur.id = directeur_etudes.id_utilisateur &quot;;
+  
+  private static final String SQL_SELECT_PAR_LOGIN_HASH = SELECT_1 + SELECT_2 + SELECT_3
+      + &quot; WHERE utilisateur.login = ?&quot; + &quot; AND utilisateur.password = ?&quot;;
+
+  private static final String SQL_INSERT =
+      &quot;INSERT INTO directeur_etudes (id_utilisateur) VALUES (?)&quot;;
+
+  private static final String SQL_SELECT_ALL = SELECT_1 + SELECT_2 + SELECT_3;
+  
+  private static final String SQL_SELECT_PAR_ID_UTILISATEUR = SELECT_1 + SELECT_2
+          + SELECT_3
+          + &quot; WHERE id_utilisateur = ?&quot;;
+  
+  private static final String SQL_DELETE_PAR_ID_UTILISATEUR =
+      &quot;DELETE FROM directeur_etudes WHERE id_utilisateur = ?&quot;;
+
+
+
+<span class="nc" id="L49">  DirecteurEtudesDaoImpl() {</span>
+    final BeanFactoryReference bf =
+<span class="nc" id="L51">        SingletonBeanFactoryLocator.getInstance().useBeanFactory(&quot;contextDao&quot;);</span>
+<span class="nc" id="L52">    this.daoFactory = (DaoFactory) bf.getFactory().getBean(&quot;daoFactory&quot;);</span>
+<span class="nc" id="L53">  }</span>
+
+
+  private DirecteurEtudes trouverParIdUtilisateur(int idUtilisateur) {
+<span class="nc" id="L57">    return this.trouver(DirecteurEtudesDaoImpl.SQL_SELECT_PAR_ID_UTILISATEUR, idUtilisateur);</span>
+  }
+  
+  @Override
+  public List&lt;DirecteurEtudes&gt; recupererListe() {
+<span class="nc" id="L62">    final List&lt;DirecteurEtudes&gt; listeDirecteurEtudes = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L63">    Connection connexion = null;</span>
+<span class="nc" id="L64">    PreparedStatement preparedStatement = null;</span>
+<span class="nc" id="L65">    ResultSet resultSet = null;</span>
+
+    try {
+      /* Récupération d'une connexion depuis la Factory */
+<span class="nc" id="L69">      connexion = this.daoFactory.getConnection();</span>
+<span class="nc" id="L70">      preparedStatement = DaoUtilitaire.initialisationRequetePreparee(connexion,</span>
+          DirecteurEtudesDaoImpl.SQL_SELECT_ALL, false);
+<span class="nc" id="L72">      resultSet = preparedStatement.executeQuery();</span>
+      /* Parcours de la ligne de données retournée dans le ResultSet */
+<span class="nc bnc" id="L74" title="All 2 branches missed.">      while (resultSet.next()) {</span>
+<span class="nc" id="L75">        listeDirecteurEtudes.add(DirecteurEtudesDaoImpl.map(resultSet));</span>
+      }
+<span class="nc" id="L77">    } catch (final SQLException sqle) {</span>
+<span class="nc" id="L78">      throw new DaoException(sqle);</span>
+    } finally {
+<span class="nc" id="L80">      DaoUtilitaire.fermeturesSilencieuses(resultSet, preparedStatement, connexion);</span>
+<span class="nc" id="L81">    }</span>
+
+<span class="nc" id="L83">    return listeDirecteurEtudes;</span>
+  }
+
+  /* Implémentation de la méthode trouverParLogin() définie dans l'interface UtilisateurBdd */
+  @Override
+  public DirecteurEtudes trouverParLoginHash(String login, String hash) {
+<span class="nc" id="L89">    return this.trouver(DirecteurEtudesDaoImpl.SQL_SELECT_PAR_LOGIN_HASH, login, hash);</span>
+  }
+
+
+  @Override
+  public DirecteurEtudes ajouter(DirecteurEtudes directeurEtudes) {
+<span class="nc" id="L95">    Connection connexion = null;</span>
+<span class="nc" id="L96">    PreparedStatement preparedStatement = null;</span>
+<span class="nc" id="L97">    final ResultSet valeursAutoGenerees = null;</span>
+
+    try {
+      final BeanFactoryReference bf =
+<span class="nc" id="L101">          SingletonBeanFactoryLocator.getInstance().useBeanFactory(&quot;beansDao&quot;);</span>
+<span class="nc" id="L102">      final int idUtilisateur = ((UtilisateurDao) bf.getFactory().getBean(&quot;utilisateurDao&quot;))</span>
+<span class="nc" id="L103">          .trouverIdParLogin(directeurEtudes.getLogin());</span>
+      
+      // Si il n'y a pas déja l'utilisateur associé
+<span class="nc bnc" id="L106" title="All 2 branches missed.">      if (this.trouverParIdUtilisateur(idUtilisateur) == null) {</span>
+<span class="nc" id="L107">        connexion = this.daoFactory.getConnection();</span>
+<span class="nc" id="L108">        preparedStatement = DaoUtilitaire.initialisationRequetePreparee(connexion,</span>
+<span class="nc" id="L109">            DirecteurEtudesDaoImpl.SQL_INSERT, true, idUtilisateur);</span>
+
+<span class="nc" id="L111">        final int statut = preparedStatement.executeUpdate();</span>
+        /* Analyse du statut retourné par la requête d'insertion */
+<span class="nc bnc" id="L113" title="All 2 branches missed.">        if (statut == 0) {</span>
+<span class="nc" id="L114">          throw new DaoException(</span>
+              &quot;Échec de la création du directeur des études, aucune ligne ajoutée dans la table.&quot;);
+        }
+      }
+      
+<span class="nc" id="L119">    } catch (final SQLException sqle) {</span>
+<span class="nc" id="L120">      DirecteurEtudesDaoImpl.LOGGER.log(Level.INFO, &quot;Exception&quot;, sqle);</span>
+<span class="nc" id="L121">      throw new DaoException(sqle);</span>
+    } finally {
+<span class="nc" id="L123">      DaoUtilitaire.fermeturesSilencieuses(valeursAutoGenerees, preparedStatement, connexion);</span>
+<span class="nc" id="L124">    }</span>
+
+<span class="nc" id="L126">    return directeurEtudes;</span>
+  }
+  
+  
+  @Override
+  public int supprimer(DirecteurEtudes directeurEtudes) {
+
+    int statut;
+<span class="nc" id="L134">    Connection connexion = null;</span>
+<span class="nc" id="L135">    PreparedStatement preparedStatement = null;</span>
+
+
+    try {
+      /* Récupération de l'id_utilisateur */
+      final BeanFactoryReference bf =
+<span class="nc" id="L141">          SingletonBeanFactoryLocator.getInstance().useBeanFactory(&quot;beansDao&quot;);</span>
+<span class="nc" id="L142">      final int idUtilisateur = ((UtilisateurDao) bf.getFactory().getBean(&quot;utilisateurDao&quot;))</span>
+<span class="nc" id="L143">          .trouverIdParLogin(directeurEtudes.getLogin());</span>
+
+      /* Récupération d'une connexion depuis la Factory */
+<span class="nc" id="L146">      connexion = this.daoFactory.getConnection();</span>
+<span class="nc" id="L147">      preparedStatement = DaoUtilitaire.initialisationRequetePreparee(connexion,</span>
+<span class="nc" id="L148">          DirecteurEtudesDaoImpl.SQL_DELETE_PAR_ID_UTILISATEUR, false, idUtilisateur);</span>
+
+<span class="nc" id="L150">      statut = preparedStatement.executeUpdate();</span>
+
+<span class="nc" id="L152">    } catch (final SQLException sqle) {</span>
+<span class="nc" id="L153">      DirecteurEtudesDaoImpl.LOGGER.log(Level.INFO, DirecteurEtudesDaoImpl.EXCEPTION, sqle);</span>
+<span class="nc" id="L154">      throw new DaoException(sqle);</span>
+    } finally {
+<span class="nc" id="L156">      DaoUtilitaire.fermeturesSilencieuses(preparedStatement, connexion);</span>
+<span class="nc" id="L157">    }</span>
+
+<span class="nc" id="L159">    return statut;</span>
+  }
+
+
+  /*
+   * Méthode générique utilisée pour retourner un adminsys depuis la base de données, correspondant
+   * à la requête SQL donnée prenant en paramètres les objets passés en argument.
+   */
+  private DirecteurEtudes trouver(String sql, Object... objets) {
+<span class="nc" id="L168">    Connection connexion = null;</span>
+<span class="nc" id="L169">    PreparedStatement preparedStatement = null;</span>
+<span class="nc" id="L170">    ResultSet resultSet = null;</span>
+<span class="nc" id="L171">    DirecteurEtudes directeurEtudes = null;</span>
+
+    try {
+      /* Récupération d'une connexion depuis la Factory */
+<span class="nc" id="L175">      connexion = this.daoFactory.getConnection();</span>
+      /*
+       * Préparation de la requête avec les objets passés en arguments (ici, uniquement un id) et
+       * exécution.
+       */
+<span class="nc" id="L180">      preparedStatement =</span>
+<span class="nc" id="L181">          DaoUtilitaire.initialisationRequetePreparee(connexion, sql, false, objets);</span>
+<span class="nc" id="L182">      resultSet = preparedStatement.executeQuery();</span>
+      /* Parcours de la ligne de données retournée dans le ResultSet */
+<span class="nc bnc" id="L184" title="All 2 branches missed.">      if (resultSet.next()) {</span>
+<span class="nc" id="L185">        directeurEtudes = DirecteurEtudesDaoImpl.map(resultSet);</span>
+      }
+<span class="nc" id="L187">    } catch (final SQLException sqle) {</span>
+<span class="nc" id="L188">      throw new DaoException(sqle);</span>
+    } finally {
+<span class="nc" id="L190">      DaoUtilitaire.fermeturesSilencieuses(resultSet, preparedStatement, connexion);</span>
+<span class="nc" id="L191">    }</span>
+<span class="nc" id="L192">    return directeurEtudes;</span>
+  }
+
+  /*
+   * Simple méthode utilitaire permettant de faire la correspondance (le mapping) entre une ligne
+   * issue de la table des adminsyss (un ResultSet) et un bean Utilisateur.
+   */
+  private static DirecteurEtudes map(ResultSet resultSet) throws SQLException {
+<span class="nc" id="L200">    final DirecteurEtudes directeurEtudes = new DirecteurEtudes();</span>
+<span class="nc" id="L201">    directeurEtudes.setId(resultSet.getInt(&quot;id&quot;));</span>
+<span class="nc" id="L202">    directeurEtudes.setIdDirecteurEtudes(resultSet.getInt(&quot;id_directeur_etudes&quot;));</span>
+<span class="nc" id="L203">    directeurEtudes.setLogin(resultSet.getString(&quot;login&quot;));</span>
+<span class="nc" id="L204">    directeurEtudes.setPassword(resultSet.getString(&quot;password&quot;));</span>
+<span class="nc" id="L205">    directeurEtudes.setNom(resultSet.getString(&quot;nom&quot;));</span>
+<span class="nc" id="L206">    directeurEtudes.setPrenom(resultSet.getString(&quot;prenom&quot;));</span>
+<span class="nc" id="L207">    directeurEtudes.setEmail(resultSet.getString(&quot;email&quot;));</span>
+<span class="nc" id="L208">    directeurEtudes.setDateInscription(resultSet.getTimestamp(&quot;date_inscription&quot;));</span>
+<span class="nc" id="L209">    directeurEtudes.setNotificationActive(resultSet.getBoolean(&quot;notification_active&quot;));</span>
+<span class="nc" id="L210">    directeurEtudes.setNotificationMail(resultSet.getBoolean(&quot;notification_mail&quot;));</span>
+<span class="nc" id="L211">    directeurEtudes.setFrequenceNotificationMail(resultSet.getInt(&quot;frequence_notification_mail&quot;));</span>
+<span class="nc" id="L212">    return directeurEtudes;</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.6.201602180812</span></div></body></html>

@@ -1,0 +1,176 @@
+package fr.eseo.atribus.dao;
+
+import fr.eseo.atribus.entities.Competence;
+import fr.eseo.atribus.entities.CompetenceValidable;
+import fr.eseo.atribus.entities.Eleve;
+import fr.eseo.atribus.entities.Matiere;
+import fr.eseo.atribus.entities.UniteEnseignement;
+
+import java.util.List;
+import java.util.Map;
+
+
+// TODO: Auto-generated Javadoc
+/**
+ * The Interface CompetenceDao.
+ */
+public interface CompetenceDao {
+
+  /**
+   * Modifier competence.
+   *
+   * @param competence le competence
+   * @param nouveauNom le nouveau nom
+   */
+  void modifierCompetence(Competence competence, String nouveauNom);
+
+  /**
+   * Modifier competence.
+   *
+   * @param competence le competence
+   * @param ancienneCompetence le ancienne competence
+   */
+  void modifierCompetence(Competence competence, Competence ancienneCompetence);
+
+  /**
+   * Modifier competence.
+   *
+   * @param competence le competence
+   * @param profondeur le profondeur
+   */
+  void modifierCompetence(Competence competence, int profondeur);
+
+  /**
+   * Trouver par id.
+   *
+   * @param idCompetence le id competence
+   * @return Le paramètre competence
+   */
+  Competence trouverParId(int idCompetence);
+
+  /**
+   * Trouver par nom requete.
+   *
+   * @param sql le sql
+   * @param nom le nom
+   * @return Le paramètre list
+   */
+  List<Competence> trouverParNomRequete(String sql, String nom);
+
+  /**
+   * Trouver par nom.
+   *
+   * @param nom le nom
+   * @return Le paramètre list
+   */
+  List<Competence> trouverParNom(String nom);
+
+  /**
+   * Trouver unique par nom.
+   *
+   * @param nom le nom
+   * @return Le paramètre competence
+   */
+  Competence trouverUniqueParNom(String nom);
+
+  /**
+   * Trouver toutes les competences.
+   *
+   * @return Le paramètre list
+   */
+  List<Competence> trouverToutesLesCompetences();
+
+  /**
+   * Trouver id par nom.
+   *
+   * @param nom le nom
+   * @return Le paramètre int
+   */
+  int trouverIdParNom(String nom);
+
+  /**
+   * Trouver par profondeur.
+   *
+   * @param profondeur le profondeur
+   * @return Le paramètre list
+   */
+  List<Competence> trouverParProfondeur(int profondeur);
+
+  /**
+   * Ajouter competence.
+   *
+   * @param competence le competence
+   */
+  void ajouterCompetence(Competence competence);
+
+  /**
+   * Supprimer competence par nom.
+   *
+   * @param nom le nom
+   */
+  void supprimerCompetenceParNom(String nom);
+
+  /**
+   * Associer competence niveau ue.
+   *
+   * @param competence le competence
+   * @param ue le ue
+   */
+  void associerCompetenceNiveauUe(Competence competence, UniteEnseignement ue);
+
+  /**
+   * Recuperer association competence ue.
+   *
+   * @param idUe le id ue
+   * @return Le paramètre map
+   */
+  Map<Long, CompetenceValidable> recupererAssociationCompetenceUe(int idUe);
+
+  /**
+   * Recuperer profil eleve.
+   *
+   * @param eleve le eleve
+   * @return Le paramètre map
+   */
+  Map<Competence, Integer> recupererProfilEleve(Eleve eleve);
+
+  /**
+   * Valider.
+   *
+   * @param matiere le matiere
+   * @param competence le competence
+   */
+  void valider(Matiere matiere, CompetenceValidable competence);
+
+  /**
+   * Valider.
+   *
+   * @param ue le ue
+   * @param value le value
+   */
+  void valider(UniteEnseignement ue, CompetenceValidable value);
+
+  /**
+   * Liste competences ue.
+   *
+   * @param ue le ue
+   * @return Le paramètre list
+   */
+  List<Competence> listeCompetencesUe(UniteEnseignement ue);
+
+  /**
+   * Liste competences matiere.
+   *
+   * @param matiere le matiere
+   * @return Le paramètre list
+   */
+  List<Competence> listeCompetencesMatiere(Matiere matiere);
+
+  /**
+   * Modifier nom competence.
+   *
+   * @param competence le competence
+   */
+  void modifierNomCompetence(Competence competence);
+
+}

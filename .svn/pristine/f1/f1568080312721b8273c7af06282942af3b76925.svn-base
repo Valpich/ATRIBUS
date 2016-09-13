@@ -1,0 +1,13 @@
+package fr.eseo.atribus.dao;
+
+import fr.eseo.atribus.entities.Promotion;
+
+import java.util.List;
+
+public interface PromotionDao {
+  
+  List<Promotion> trouverToutesLesPromotions();
+  
+  Promotion trouverParNom(String nom);
+
+}

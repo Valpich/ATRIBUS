@@ -1,0 +1,125 @@
+package fr.eseo.atribus.forms;
+
+import fr.eseo.atribus.dao.DaoException;
+import fr.eseo.atribus.dao.UtilisateurDao;
+
+import org.springframework.beans.factory.access.BeanFactoryReference;
+import org.springframework.beans.factory.access.SingletonBeanFactoryLocator;
+
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.servlet.http.HttpServletRequest;
+
+/**
+ * La classe SupprimerUtilisateurForm.
+ */
+public class SupprimerUtilisateurForm extends UtilisateurForm {
+
+  /** La constante LOGGER. */
+  private static final Logger LOGGER = Logger.getLogger(SupprimerUtilisateurForm.class.getName());
+
+  /**
+   * Traitement du formulaire de suppression d'un utilisateur.
+   */
+  public SupprimerUtilisateurForm() {
+    final BeanFactoryReference bf =
+        SingletonBeanFactoryLocator.getInstance().useBeanFactory("beansDao");
+    /* Récupération d'une instance de notre DAO Utilisateur */
+    this.utilisateurDao = (UtilisateurDao) bf.getFactory().getBean("utilisateurDao");
+  }
+
+  /**
+   * Accesseur en lecture sur le paramètre resultat.
+   *
+   * @return le paramètre resultat
+   */
+  public String getResultat() {
+    return this.resultat;
+  }
+
+  /**
+   * Accesseur en lecture sur le paramètre erreurs.
+   *
+   * @return le paramètre erreurs
+   */
+  public Map<String, String> getErreurs() {
+    return this.erreurs;
+  }
+
+  /**
+   * Suppression d'un utilisateur.
+   * 
+   * @param request la requête
+   */
+  public void supprimerUtilisateur(HttpServletRequest request) {
+    final String login =
+        UtilisateurForm.getValeurChamp(request, UtilisateurForm.NOM_BOUTON_SUPPRIMER2);
+
+    try {
+      this.traiterLogin(login);
+      if (this.erreurs.isEmpty()) {
+        if (this.utilisateurDao.supprimerParLogin(login) > 0) {
+          this.resultat = "Succès de la suppression.";
+        } else {
+          this.resultat = "Echec de la suppression.";
+        }
+      }
+    } catch (final DaoException bdde) {
+      SupprimerUtilisateurForm.LOGGER.log(Level.INFO, "Exception", bdde);
+      this.resultat = "Échec de la suppression : une erreur imprévue est survenue,"
+          + " merci de réessayer dans quelques instants.";
+    }
+  }
+
+
+  /**
+   * Traiter login.
+   *
+   * @param login le login
+   */
+  private void traiterLogin(String login) {
+    try {
+      this.validationLogin(login);
+    } catch (final FormValidationException fve) {
+      SupprimerUtilisateurForm.LOGGER.log(Level.INFO, EXCEPTION, fve);
+      this.setErreur(UtilisateurForm.NOM_BOUTON_SUPPRIMER, fve.getMessage());
+    }
+  }
+
+  /**
+   * Validation login.
+   *
+   * @param login le login
+   * @throws FormValidationException de type FormValidationException
+   */
+  private void validationLogin(String login) throws FormValidationException {
+    if (login == null || login.length() < 5) {
+      throw new FormValidationException(
+          "Le nom d'utilisateur doit contenir au moins 5 caractères.");
+    } else if (this.utilisateurDao.trouverParLogin(login) == null) {
+      throw new FormValidationException("Utilisateur non trouvé dans la base de données.");
+    }
+  }
+
+  /**
+   * Accesseur en lecture sur le paramètre utilisateur bdd.
+   *
+   * @return le paramètre utilisateur bdd
+   */
+  public UtilisateurDao getUtilisateurBdd() {
+    return this.utilisateurDao;
+  }
+
+  /**
+   * Accesseur en écriture sur le paramètre resultat.
+   *
+   * @param resultat le nouveau paramètre resultat
+   */
+  public void setResultat(String resultat) {
+    this.resultat = resultat;
+  }
+  
+}
+

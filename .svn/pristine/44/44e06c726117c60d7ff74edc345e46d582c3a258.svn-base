@@ -1,0 +1,69 @@
+package fr.eseo.atribus.aop;
+
+import org.aspectj.lang.JoinPoint.StaticPart;
+import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.AfterReturning;
+import org.aspectj.lang.annotation.Around;
+import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.Pointcut;
+import org.springframework.stereotype.Component;
+import org.springframework.util.StopWatch;
+
+import java.util.logging.Logger;
+
+@Component("monitoring")
+@Aspect
+public class Monitoring {
+  private static final Logger LOGGER = Logger.getLogger(Monitoring.class.getName());
+
+  @Around("monitoringPointCut()")
+  public Object executer(final ProceedingJoinPoint joinpoint) {
+    Object returnValue = null;
+    final Object[] args = joinpoint.getArgs();
+    final StringBuilder sb = new StringBuilder();
+    sb.append(joinpoint.getSignature().toString());
+    sb.append(" avec les parametres : (");
+    for (int i = 0; i < args.length; i++) {
+      sb.append(args[i]);
+      if (i < args.length - 1) {
+        sb.append(", ");
+      }
+    }
+    sb.append(")");
+    LOGGER.info("Debut methode : " + sb);
+    StopWatch clock = new StopWatch(getClass().getName());
+    try {
+      clock.start(joinpoint.toString());
+      returnValue = joinpoint.proceed();
+    } catch (Throwable thw) {
+      LOGGER.info("Erreur : " + thw);
+    } finally {
+      clock.stop();
+      LOGGER.info("Temps d'execution : " + clock.prettyPrint());
+    }
+    return returnValue;
+  }
+  
+  @AfterReturning(pointcut = "monitoringPointCut()", returning = "result")
+  public void afficherFinTrace(final StaticPart staticPart, final Object result) {
+    String nomMethode = staticPart.getSignature().toLongString();
+    LOGGER.info("Fin methode : " + nomMethode + " retour=" + result);
+  }
+  
+  /**
+   * Detecte les appels du timer.
+   */
+  @Pointcut("execution(* fr.eseo.atribus.timers.TimerConversionNotificationEnMail.executer(..))")
+  public void monitoringPointCut() {
+    // Methode vide car doit être vide.
+  }
+  
+  /**
+   * Detecte les appels de la dao.
+   */
+  /**
+   * @Pointcut("execution(* fr.eseo.atribus.dao.*.*(..))") public void monitoringPointCut() { //
+   * Methode vide car doit être vide. }
+   */
+
+}

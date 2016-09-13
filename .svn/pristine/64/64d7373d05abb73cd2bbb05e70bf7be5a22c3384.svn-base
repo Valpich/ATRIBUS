@@ -1,0 +1,139 @@
+package fr.eseo.atribus.forms;
+
+import fr.eseo.atribus.dao.DaoException;
+import fr.eseo.atribus.dao.ExamenDao;
+import fr.eseo.atribus.dao.MatiereDao;
+import fr.eseo.atribus.entities.Examen;
+import fr.eseo.atribus.entities.Matiere;
+
+import org.springframework.beans.factory.access.BeanFactoryReference;
+import org.springframework.beans.factory.access.SingletonBeanFactoryLocator;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.servlet.http.HttpServletRequest;
+
+public class AddExamenForm {
+  private static final String CHAMP_MATIERE = "choixMatiere";
+  private static final String CHAMP_NOM = "nom";
+  private static final String CHAMP_AUTO = "autoEvaluation";
+  private static final Logger LOGGER = Logger.getLogger(AddExamenForm.class.getName());
+  private static final String EXCEPTION = "Exception";
+
+  private String resultat;
+  private final Map<String, String> erreurs = new HashMap<>();
+  private final ExamenDao examenDao;
+  private final MatiereDao matiereDao;
+
+  /**
+   * Méthode d'instantiation.
+   */
+  public AddExamenForm() {
+    final BeanFactoryReference bf =
+        SingletonBeanFactoryLocator.getInstance().useBeanFactory("beansDao");
+    /* Récupération d'une instance de notre DAO Examen */
+    this.examenDao = (ExamenDao) bf.getFactory().getBean("examenDao");
+    /* Récupération d'une instance de notre DAO Matiere */
+    this.matiereDao = (MatiereDao) bf.getFactory().getBean("matiereDao");
+  }
+
+  public String getResultat() {
+    return this.resultat;
+  }
+
+  public Map<String, String> getErreurs() {
+    return this.erreurs;
+  }
+
+  /**
+   * Ajout d'un examen dans la DAO en fonction du formulaire.
+   * 
+   * @param request request
+   * @return Examen
+   */
+  public Examen addExamen(HttpServletRequest request) {
+    final String nom = AddExamenForm.getValeurChamp(request, AddExamenForm.CHAMP_NOM);
+    final Examen examen = new Examen();
+    final String matiere = AddExamenForm.getValeurChamp(request, AddExamenForm.CHAMP_MATIERE);
+    final Matiere mat = new Matiere();
+    mat.setNom(matiere);
+    final String autoEvaluation = AddExamenForm.getValeurChamp(request, AddExamenForm.CHAMP_AUTO);
+    if ("on".equals(autoEvaluation)) {
+      examen.setAutoEvaluation(true);
+    } else {
+      examen.setAutoEvaluation(false);
+    }
+    try {
+      this.traiterDonnees(nom, matiere, examen);
+      if (this.erreurs.isEmpty()) {
+        this.examenDao.ajouter(examen, mat);
+        this.resultat = "success";
+      } else {
+        this.resultat = "error";
+      }
+    } catch (final DaoException ebdd) {
+      this.resultat = "errorDao";
+      AddExamenForm.LOGGER.log(Level.INFO, EXCEPTION, ebdd);
+    }
+    return examen;
+  }
+
+  private void traiterDonnees(String nom, String matiere, Examen examen) {
+    this.traiterNomMatiere(nom, matiere);
+    examen.setMatiere(this.matiereDao.trouverParNom(matiere));
+    examen.setNom(nom);
+  }
+
+  private void validationNom(String nom) throws FormValidationException {
+    if (nom == null || nom.length() < 3) {
+      throw new FormValidationException("Le nom de l'examen au moins 3 caractères.");
+    }
+    if (this.examenDao.trouverParNom(nom) != null) {
+      throw new FormValidationException("Cet examen existe déjà, merci d'en créer un autre.");
+    }
+  }
+
+  private void validationMatiere(String matiere) throws FormValidationException {
+    if (this.matiereDao.trouverParNom(matiere) == null) {
+      throw new FormValidationException("Cette matière n'existe pas");
+    }
+  }
+
+  private void traiterNomMatiere(String nom, String matiere) {
+    try {
+      this.validationMatiere(matiere);
+    } catch (final FormValidationException fve) {
+      AddExamenForm.LOGGER.log(Level.INFO, EXCEPTION, fve);
+      this.setErreur("choixMatiere", "Choix de matière invalide ou inexistant.");
+    }
+    try {
+      this.validationNom(nom);
+    } catch (final FormValidationException fve) {
+      AddExamenForm.LOGGER.log(Level.INFO, EXCEPTION, fve);
+      this.setErreur("nom", "Nom invalide ou inexistant.");
+    }
+  }
+
+  /*
+   * Ajoute un message correspondant au champ spécifié à la map des erreurs.
+   */
+  private void setErreur(String champ, String message) {
+    this.erreurs.put(champ, message);
+  }
+
+  /*
+   * Méthode utilitaire qui retourne null si un champ est vide, et son contenu sinon.
+   */
+  private static String getValeurChamp(HttpServletRequest request, String nomChamp) {
+    final String valeur = request.getParameter(nomChamp);
+    if (valeur == null || valeur.trim().length() == 0) {
+      return null;
+    } else {
+      return valeur.trim();
+    }
+  }
+}
+

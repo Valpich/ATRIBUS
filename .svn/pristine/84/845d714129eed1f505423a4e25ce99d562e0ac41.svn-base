@@ -1,0 +1,94 @@
+package fr.eseo.atribus.dao;
+
+import fr.eseo.atribus.entities.Enseignant;
+import fr.eseo.atribus.entities.Matiere;
+
+import java.util.List;
+
+
+// TODO: Auto-generated Javadoc
+/**
+ * The Interface EnseignantDao.
+ */
+public interface EnseignantDao {
+
+  /**
+   * Trouver par login hash.
+   *
+   * @param login le login
+   * @param hash le hash
+   * @return Le paramètre enseignant
+   */
+  Enseignant trouverParLoginHash(String login, String hash);
+
+  /**
+   * Ajouter.
+   *
+   * @param enseignant le enseignant
+   * @return Le paramètre enseignant
+   */
+  Enseignant ajouter(Enseignant enseignant);
+
+  /**
+   * Trouver par nom.
+   *
+   * @param nom le nom
+   * @return Le paramètre enseignant
+   */
+  Enseignant trouverParNom(String nom);
+
+  /**
+   * Trouver id par login.
+   *
+   * @param login le login
+   * @return Le paramètre int
+   */
+  int trouverIdParLogin(String login);
+
+  /**
+   * Recuperer liste.
+   *
+   * @return Le paramètre list
+   */
+  List<Enseignant> recupererListe();
+
+  /**
+   * Trouver matieres.
+   *
+   * @param enseignant le enseignant
+   * @return Le paramètre list
+   */
+  List<Matiere> trouverMatieres(Enseignant enseignant);
+
+  /**
+   * Trouver tous les enseignants.
+   *
+   * @return Le paramètre list
+   */
+  List<Enseignant> trouverTousLesEnseignants();
+
+  /**
+   * Supprimer.
+   *
+   * @param enseignant le enseignant
+   * @return Le paramètre int
+   */
+  int supprimer(Enseignant enseignant);
+
+  /**
+   * Trouver par id utilisateur.
+   *
+   * @param idUtilisateur le id utilisateur
+   * @return Le paramètre enseignant
+   */
+  Enseignant trouverParIdUtilisateur(int idUtilisateur);
+
+  /**
+   * Trouver id utilisateur par id enseignant.
+   *
+   * @param idEnseignant le id enseignant
+   * @return Le paramètre int
+   */
+  int trouverIdUtilisateurParIdEnseignant(int idEnseignant);
+
+}

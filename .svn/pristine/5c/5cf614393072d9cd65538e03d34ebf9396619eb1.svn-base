@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>ModifierAssocierCompetenceUeForm.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Atribus</a> &gt; <a href="index.source.html" class="el_package">fr.eseo.atribus.forms</a> &gt; <span class="el_source">ModifierAssocierCompetenceUeForm.java</span></div><h1>ModifierAssocierCompetenceUeForm.java</h1><pre class="source lang-java linenums">package fr.eseo.atribus.forms;
+
+import fr.eseo.atribus.dao.CompetenceDao;
+import fr.eseo.atribus.dao.DaoException;
+import fr.eseo.atribus.dao.UeDao;
+import fr.eseo.atribus.entities.Competence;
+import fr.eseo.atribus.entities.UniteEnseignement;
+
+import org.springframework.beans.factory.access.BeanFactoryReference;
+import org.springframework.beans.factory.access.SingletonBeanFactoryLocator;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.servlet.http.HttpServletRequest;
+
+public class ModifierAssocierCompetenceUeForm extends UeFormMethods {
+
+<span class="nc" id="L22">  private static final Logger LOGGER =</span>
+<span class="nc" id="L23">      Logger.getLogger(ModifierAssocierCompetenceUeForm.class.getName());</span>
+  private static final String EXCEPTION = &quot;Exception&quot;;
+
+  private static final String CHAMP_UE = &quot;ue&quot;;
+  private static final String CHAMP_COMPETENCE = &quot;comp&quot;;
+  private static final String CHAMP_ANCIENNE_UE = &quot;nomAncienUe&quot;;
+  private static final String CHAMP_ANCIENNE_COMPETENCE = &quot;nomAncienneCompetence&quot;;
+  private static final String CHAMP_NOUVELLE_UE = &quot;listeUe&quot;;
+  private static final String CHAMP_NOUVELLE_COMPETENCE = &quot;listeCompetence&quot;;
+  private static final String CHAMP_NIVEAU = &quot;niveau&quot;;
+
+  private UeDao ueDao;
+  private CompetenceDao competenceDao;
+  private String resultat;
+<span class="nc" id="L37">  private final Map&lt;String, String&gt; erreurs = new HashMap&lt;&gt;();</span>
+  private List&lt;UniteEnseignement&gt; listeDesUes;
+
+  /**
+   * Constructeur.
+   */
+<span class="nc" id="L43">  public ModifierAssocierCompetenceUeForm() {</span>
+    final BeanFactoryReference bf =
+<span class="nc" id="L45">        SingletonBeanFactoryLocator.getInstance().useBeanFactory(&quot;beansDao&quot;);</span>
+<span class="nc" id="L46">    this.ueDao = (UeDao) bf.getFactory().getBean(&quot;ueDao&quot;);</span>
+<span class="nc" id="L47">    this.competenceDao = (CompetenceDao) bf.getFactory().getBean(&quot;competenceDao&quot;);</span>
+<span class="nc" id="L48">  }</span>
+
+  public List&lt;UniteEnseignement&gt; getListeDesUes() {
+<span class="nc" id="L51">    return listeDesUes;</span>
+  }
+
+  public void setListeDesUes(List&lt;UniteEnseignement&gt; listeDesUes) {
+<span class="nc" id="L55">    this.listeDesUes = listeDesUes;</span>
+<span class="nc" id="L56">  }</span>
+
+  /**
+   * Méthode qui modifie une association.
+   * 
+   * @param request requete
+   */
+  public void modifierAssociationCompetenceUe(HttpServletRequest request) {
+
+<span class="nc" id="L65">    String ancienneUe =</span>
+<span class="nc" id="L66">        UeFormMethods.getValeurChamp(request, ModifierAssocierCompetenceUeForm.CHAMP_ANCIENNE_UE);</span>
+<span class="nc" id="L67">    String ancienneCompetence = UeFormMethods.getValeurChamp(request,</span>
+        ModifierAssocierCompetenceUeForm.CHAMP_ANCIENNE_COMPETENCE);
+<span class="nc" id="L69">    String nouvelleUe =</span>
+<span class="nc" id="L70">        UeFormMethods.getValeurChamp(request, ModifierAssocierCompetenceUeForm.CHAMP_NOUVELLE_UE);</span>
+<span class="nc" id="L71">    String nouvelleCompetence = UeFormMethods.getValeurChamp(request,</span>
+        ModifierAssocierCompetenceUeForm.CHAMP_NOUVELLE_COMPETENCE);
+<span class="nc" id="L73">    String niveau =</span>
+<span class="nc" id="L74">        UeFormMethods.getValeurChamp(request, ModifierAssocierCompetenceUeForm.CHAMP_NIVEAU);</span>
+
+<span class="nc" id="L76">    final Competence competence = new Competence();</span>
+<span class="nc" id="L77">    final UniteEnseignement ue = new UniteEnseignement();</span>
+
+    AssocierCompetenceUeForm form;
+
+    try {
+
+<span class="nc" id="L83">      form = new AssocierCompetenceUeForm();</span>
+
+<span class="nc" id="L85">      form.traiterValeurs(ancienneCompetence, ancienneUe, niveau);</span>
+<span class="nc" id="L86">      form.traiterValeurs(nouvelleCompetence, nouvelleUe, niveau);</span>
+
+<span class="nc bnc" id="L88" title="All 2 branches missed.">      if (this.data.getErreurs().isEmpty()) {</span>
+
+<span class="nc" id="L90">        ue.setNom(nouvelleUe);</span>
+<span class="nc" id="L91">        competence.setNom(nouvelleCompetence);</span>
+<span class="nc" id="L92">        competence.setNiveau(Integer.parseInt(niveau));</span>
+
+<span class="nc" id="L94">        this.ueDao.supprimerAssociationCompetenceUe(ancienneUe, ancienneCompetence);</span>
+<span class="nc" id="L95">        this.competenceDao.associerCompetenceNiveauUe(competence, ue);</span>
+<span class="nc" id="L96">        this.resultat = &quot;successUpdate&quot;;</span>
+
+      } else {
+<span class="nc" id="L99">        this.resultat = &quot;echecUpdate&quot;;</span>
+      }
+
+<span class="nc" id="L102">    } catch (final DaoException daoEx) {</span>
+<span class="nc" id="L103">      this.resultat = &quot;erreurDao&quot;;</span>
+<span class="nc" id="L104">      ModifierAssocierCompetenceUeForm.LOGGER.log(Level.INFO, EXCEPTION, daoEx);</span>
+<span class="nc" id="L105">    }</span>
+
+
+<span class="nc" id="L108">  }</span>
+
+  /**
+   * Méthode pour supprimer une association.
+   * 
+   * @param request Requête
+   */
+  public void supprimerAssociationCompetenceUe(HttpServletRequest request) {
+    
+<span class="nc" id="L117">    String nomUe = UeFormMethods.getValeurChamp(request, ModifierAssocierCompetenceUeForm.CHAMP_UE);</span>
+<span class="nc" id="L118">    String nomCompetence =</span>
+<span class="nc" id="L119">        UeFormMethods.getValeurChamp(request, ModifierAssocierCompetenceUeForm.CHAMP_COMPETENCE);</span>
+
+    try {
+
+<span class="nc bnc" id="L123" title="All 4 branches missed.">      if (nomUe != null &amp;&amp; nomCompetence != null) {</span>
+<span class="nc" id="L124">        this.ueDao.supprimerAssociationCompetenceUe(nomUe, nomCompetence);</span>
+<span class="nc" id="L125">        this.resultat = &quot;success&quot;;</span>
+      }
+
+<span class="nc" id="L128">    } catch (final DaoException daoEx) {</span>
+<span class="nc" id="L129">      this.resultat = &quot;erreurDao&quot;;</span>
+<span class="nc" id="L130">      ModifierAssocierCompetenceUeForm.LOGGER.log(Level.INFO, EXCEPTION, daoEx);</span>
+<span class="nc" id="L131">    }</span>
+
+<span class="nc" id="L133">  }</span>
+
+  @Override
+  public String getResultat() {
+<span class="nc" id="L137">    return this.resultat;</span>
+  }
+  
+  @Override
+  public Map&lt;String, String&gt; getErreurs() {
+<span class="nc" id="L142">    return this.erreurs;</span>
+  }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.6.201602180812</span></div></body></html>

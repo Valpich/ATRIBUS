@@ -1,0 +1,28 @@
+<h2>Methods run, sorted chronologically</h2><h3>&gt;&gt; means before, &lt;&lt; means after</h3><p/><br/><em>Default suite</em><p/><small><i>(Hover the method name to see the test class name)</i></small><p/>
+<table border="1">
+<tr><th>Time</th><th>Delta (ms)</th><th>Suite<br>configuration</th><th>Test<br>configuration</th><th>Class<br>configuration</th><th>Groups<br>configuration</th><th>Method<br>configuration</th><th>Test<br>method</th><th>Thread</th><th>Instances</th></tr>
+<tr bgcolor="8caeca">  <td>16/05/28 17:45:15</td>   <td>0</td> <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td title="UtilisateurControllerTest.afficherContactAdmin()[pri:0, instance:fr.eseo.atribus.controller.UtilisateurControllerTest@24db6ce]">afficherContactAdmin</td> 
+  <td>main@438493423</td>   <td></td> </tr>
+<tr bgcolor="8caeca">  <td>16/05/28 17:45:15</td>   <td>384</td> <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td title="UtilisateurControllerTest.afficherMonProfil()[pri:0, instance:fr.eseo.atribus.controller.UtilisateurControllerTest@24db6ce]">afficherMonProfil</td> 
+  <td>main@438493423</td>   <td></td> </tr>
+<tr bgcolor="8caeca">  <td>16/05/28 17:45:18</td>   <td>3327</td> <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td title="UtilisateurControllerTest.contactAdmin()[pri:0, instance:fr.eseo.atribus.controller.UtilisateurControllerTest@24db6ce]">contactAdmin</td> 
+  <td>main@438493423</td>   <td></td> </tr>
+<tr bgcolor="8caeca">  <td>16/05/28 17:45:18</td>   <td>3426</td> <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td title="UtilisateurControllerTest.contactAdminConnecte()[pri:0, instance:fr.eseo.atribus.controller.UtilisateurControllerTest@24db6ce]">contactAdminConnecte</td> 
+  <td>main@438493423</td>   <td></td> </tr>
+<tr bgcolor="8caeca">  <td>16/05/28 17:45:18</td>   <td>3459</td> <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td title="UtilisateurControllerTest.modifierMonProfil()[pri:0, instance:fr.eseo.atribus.controller.UtilisateurControllerTest@24db6ce]">modifierMonProfil</td> 
+  <td>main@438493423</td>   <td></td> </tr>
+<tr bgcolor="8caeca">  <td>16/05/28 17:45:12</td>   <td>-2554</td> <td>&nbsp;</td><td>&nbsp;</td><td title="&gt;&gt;UtilisateurControllerTest.setup()[pri:0, instance:fr.eseo.atribus.controller.UtilisateurControllerTest@24db6ce]">&gt;&gt;setup</td> 
+<td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>  <td>main@438493423</td>   <td></td> </tr>
+<tr bgcolor="8caeca">  <td>16/05/28 17:45:19</td>   <td>3637</td> <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td title="UtilisateurControllerTest.testAjouterUtilisateur()[pri:0, instance:fr.eseo.atribus.controller.UtilisateurControllerTest@24db6ce]">testAjouterUtilisateur</td> 
+  <td>main@438493423</td>   <td></td> </tr>
+<tr bgcolor="8caeca">  <td>16/05/28 17:45:19</td>   <td>4201</td> <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td title="UtilisateurControllerTest.testConnexion()[pri:0, instance:fr.eseo.atribus.controller.UtilisateurControllerTest@24db6ce]">testConnexion</td> 
+  <td>main@438493423</td>   <td></td> </tr>
+<tr bgcolor="8caeca">  <td>16/05/28 17:45:19</td>   <td>4206</td> <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td title="UtilisateurControllerTest.testDeconnexion()[pri:0, instance:fr.eseo.atribus.controller.UtilisateurControllerTest@24db6ce]">testDeconnexion</td> 
+  <td>main@438493423</td>   <td></td> </tr>
+<tr bgcolor="8caeca">  <td>16/05/28 17:45:19</td>   <td>4214</td> <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td title="UtilisateurControllerTest.testGestionUtilisateur()[pri:0, instance:fr.eseo.atribus.controller.UtilisateurControllerTest@24db6ce]">testGestionUtilisateur</td> 
+  <td>main@438493423</td>   <td></td> </tr>
+<tr bgcolor="8caeca">  <td>16/05/28 17:45:19</td>   <td>4332</td> <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td title="UtilisateurControllerTest.testTenterConnexion()[pri:0, instance:fr.eseo.atribus.controller.UtilisateurControllerTest@24db6ce]">testTenterConnexion</td> 
+  <td>main@438493423</td>   <td></td> </tr>
+<tr bgcolor="8caeca">  <td>16/05/28 17:45:20</td>   <td>5307</td> <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td title="UtilisateurControllerTest.testTenterMauvaiseConnexion()[pri:0, instance:fr.eseo.atribus.controller.UtilisateurControllerTest@24db6ce]">testTenterMauvaiseConnexion</td> 
+  <td>main@438493423</td>   <td></td> </tr>
+</table>

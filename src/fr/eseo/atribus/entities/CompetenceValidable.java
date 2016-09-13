@@ -1,0 +1,84 @@
+package fr.eseo.atribus.entities;
+
+import java.io.Serializable;
+import java.util.UUID;
+
+/**
+ * The Class CompetenceValidable.
+ */
+public class CompetenceValidable extends Competence implements Serializable {
+
+  /** La constante serialVersionUID. */
+  private static final long serialVersionUID = 2235338214847913313L;
+
+  /** La variable valide. */
+  private boolean valide;
+
+  /** La variable unique id. */
+  private UUID uniqueId;
+
+  /**
+   * Instancie un nouveau competence validable.
+   *
+   * @param competence le competence
+   */
+  public CompetenceValidable(Competence competence) {
+    this.setId(competence.getId());
+    this.setIdParent(competence.getIdParent());
+    this.setNiveau(competence.getNiveau());
+    this.setNom(competence.getNom());
+    this.setProfondeur(competence.getProfondeur());
+    this.setUe(competence.getUe());
+    this.setUniqueId(UUID.randomUUID());
+  }
+
+  /**
+   * Accesseur en lecture sur le paramètre valide.
+   *
+   * @return le paramètre valide
+   */
+  public boolean getValide() {
+    return this.valide;
+  }
+
+  /**
+   * Accesseur en écriture sur le paramètre valide.
+   *
+   * @param valide le nouveau paramètre valide
+   */
+  public void setValide(boolean valide) {
+    this.valide = valide;
+  }
+
+  /**
+   * Accesseur en lecture sur le paramètre unique id.
+   *
+   * @return le paramètre unique id
+   */
+  public UUID getUniqueId() {
+    return this.uniqueId;
+  }
+
+  /**
+   * Accesseur en écriture sur le paramètre unique id.
+   *
+   * @param uniqueId le nouveau paramètre unique id
+   */
+  public void setUniqueId(UUID uniqueId) {
+    this.uniqueId = uniqueId;
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see fr.eseo.atribus.entities.Competence#toString()
+   */
+  @Override
+  public String toString() {
+    return "CompetenceValidable [valide=" + this.valide + ", getId()=" + this.getId()
+        + ", getNom()=" + this.getNom() + ", getProfondeur()=" + this.getProfondeur()
+        + ", getIdParent()=" + this.getIdParent() + ", getNiveau()=" + this.getNiveau()
+        + ", getUe()=" + this.getUe() + "]";
+  }
+
+}

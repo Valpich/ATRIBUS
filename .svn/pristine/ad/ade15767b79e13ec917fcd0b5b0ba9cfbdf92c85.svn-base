@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>LdapControlleur.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Atribus</a> &gt; <a href="index.source.html" class="el_package">fr.eseo.atribus.controller</a> &gt; <span class="el_source">LdapControlleur.java</span></div><h1>LdapControlleur.java</h1><pre class="source lang-java linenums">package fr.eseo.atribus.controller;
+
+import static org.springframework.ldap.query.LdapQueryBuilder.query;
+
+import fr.eseo.atribus.entities.UtilisateurLdap;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.ldap.core.AttributesMapper;
+import org.springframework.ldap.core.LdapTemplate;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.ModelAndView;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.naming.NamingException;
+import javax.naming.directory.Attributes;
+
+@RestController
+<span class="nc" id="L25">public class LdapControlleur {</span>
+  public static final String VUE_CONNEXION = &quot;connexionLDAP&quot;;
+  public static final String EXCEPTION = &quot;Exception&quot;;
+
+<span class="nc" id="L29">  private static final Logger LOGGER = Logger.getLogger(LdapControlleur.class.getName());</span>
+
+  @Autowired
+  private LdapTemplate ldapTemplate;
+
+
+  @RequestMapping(value = &quot;/AdministrateurSysteme/AuthentificationLDAP&quot;, method = RequestMethod.GET)
+  public ModelAndView afficherAuthenficiationLdap() {
+<span class="nc" id="L37">    return new ModelAndView(VUE_CONNEXION);</span>
+  }
+
+  @RequestMapping(value = &quot;/AdministrateurSysteme/AuthentificationLDAP&quot;,
+      method = RequestMethod.POST)
+  public ModelAndView authentificationLdapt(@RequestParam(&quot;login&quot;) String login,
+      @RequestParam(&quot;password&quot;) String password) {
+<span class="nc" id="L44">    final HashMap&lt;String, Object&gt; attributsRequete = new HashMap&lt;&gt;();</span>
+    /* Tentative de connexion sur le LDAP */
+<span class="nc" id="L46">    final boolean authentifie = this.ldapTemplate.authenticate(&quot;&quot;, &quot;(uid=&quot; + login + &quot;)&quot;, password);</span>
+<span class="nc" id="L47">    String erreur = null;</span>
+<span class="nc bnc" id="L48" title="All 2 branches missed.">    if (!authentifie) {</span>
+<span class="nc" id="L49">      erreur = &quot;true&quot;;</span>
+    }
+<span class="nc bnc" id="L51" title="All 2 branches missed.">    if (authentifie) {</span>
+<span class="nc" id="L52">      attributsRequete.put(&quot;utilisateur&quot;, this.recupererUtilisateur(login));</span>
+<span class="nc" id="L53">      return new ModelAndView(&quot;indexLDAP&quot;, attributsRequete);</span>
+    } else {
+<span class="nc" id="L55">      attributsRequete.put(&quot;erreur&quot;, erreur);</span>
+<span class="nc" id="L56">      return new ModelAndView(VUE_CONNEXION, attributsRequete);</span>
+    }
+  }
+
+  public UtilisateurLdap recupererUtilisateur(String login) {
+<span class="nc" id="L61">    return this.ldapTemplate.search(query().base(&quot;ou=people&quot;).where(&quot;uid&quot;).is(login),</span>
+<span class="nc" id="L62">        new UtilisateurLdapAttributesMapper()).get(0);</span>
+  }
+
+  @RequestMapping(value = &quot;/AdministrateurSysteme/ListerLDAP&quot;, method = RequestMethod.GET)
+  public List&lt;UtilisateurLdap&gt; recuperTousLesUtilisateurs() {
+<span class="nc" id="L67">    return this.ldapTemplate.search(</span>
+<span class="nc" id="L68">        query().base(&quot;ou=people&quot;).where(&quot;objectClass&quot;).is(&quot;inetOrgPerson&quot;),</span>
+        new UtilisateurLdapAttributesMapper());
+  }
+
+<span class="nc" id="L72">  private class UtilisateurLdapAttributesMapper implements AttributesMapper&lt;UtilisateurLdap&gt; {</span>
+    @Override
+    public UtilisateurLdap mapFromAttributes(Attributes attrs) throws NamingException {
+<span class="nc" id="L75">      final UtilisateurLdap utilisateurLdap = new UtilisateurLdap();</span>
+      try {
+<span class="nc" id="L77">        utilisateurLdap.setCn((String) attrs.get(&quot;cn&quot;).get());</span>
+<span class="nc" id="L78">      } catch (final NullPointerException npe) {</span>
+<span class="nc" id="L79">        LOGGER.log(Level.INFO, EXCEPTION, npe);</span>
+<span class="nc" id="L80">      }</span>
+      try {
+<span class="nc" id="L82">        utilisateurLdap.setMail((String) attrs.get(&quot;mail&quot;).get());</span>
+<span class="nc" id="L83">      } catch (final NullPointerException npe) {</span>
+<span class="nc" id="L84">        LOGGER.log(Level.INFO, EXCEPTION, npe);</span>
+<span class="nc" id="L85">      }</span>
+      try {
+<span class="nc" id="L87">        utilisateurLdap.setGivenName((String) attrs.get(&quot;givenName&quot;).get());</span>
+<span class="nc" id="L88">      } catch (final NullPointerException npe) {</span>
+<span class="nc" id="L89">        LOGGER.log(Level.INFO, EXCEPTION, npe);</span>
+<span class="nc" id="L90">      }</span>
+      try {
+<span class="nc" id="L92">        utilisateurLdap.setObjectClass((String) attrs.get(&quot;objectClass&quot;).get());</span>
+<span class="nc" id="L93">      } catch (final NullPointerException npe) {</span>
+<span class="nc" id="L94">        LOGGER.log(Level.INFO, EXCEPTION, npe);</span>
+<span class="nc" id="L95">      }</span>
+      try {
+<span class="nc" id="L97">        utilisateurLdap.setUserpassword(new String((byte[]) attrs.get(&quot;userpassword&quot;).get()));</span>
+<span class="nc" id="L98">      } catch (final NullPointerException npe) {</span>
+<span class="nc" id="L99">        LOGGER.log(Level.INFO, EXCEPTION, npe);</span>
+<span class="nc" id="L100">      }</span>
+      try {
+<span class="nc" id="L102">        utilisateurLdap.setSn((String) attrs.get(&quot;sn&quot;).get());</span>
+<span class="nc" id="L103">      } catch (final NullPointerException npe) {</span>
+<span class="nc" id="L104">        LOGGER.log(Level.INFO, EXCEPTION, npe);</span>
+<span class="nc" id="L105">      }</span>
+      try {
+<span class="nc" id="L107">        utilisateurLdap.setUid((String) attrs.get(&quot;uid&quot;).get());</span>
+<span class="nc" id="L108">      } catch (final NullPointerException npe) {</span>
+<span class="nc" id="L109">        LOGGER.log(Level.INFO, EXCEPTION, npe);</span>
+<span class="nc" id="L110">      }</span>
+<span class="nc" id="L111">      return utilisateurLdap;</span>
+    }
+  }
+
+  public void setLdapTemplate(LdapTemplate ldapTemplate) {
+<span class="nc" id="L116">    this.ldapTemplate = ldapTemplate;</span>
+<span class="nc" id="L117">  }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.6.201602180812</span></div></body></html>

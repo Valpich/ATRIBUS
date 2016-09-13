@@ -1,0 +1,329 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>UeController.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Atribus</a> &gt; <a href="index.source.html" class="el_package">fr.eseo.atribus.controller</a> &gt; <span class="el_source">UeController.java</span></div><h1>UeController.java</h1><pre class="source lang-java linenums">package fr.eseo.atribus.controller;
+
+import fr.eseo.atribus.dao.CompetenceDao;
+import fr.eseo.atribus.dao.DaoException;
+import fr.eseo.atribus.dao.EnseignantDao;
+import fr.eseo.atribus.dao.MatiereDao;
+import fr.eseo.atribus.dao.PromotionDao;
+import fr.eseo.atribus.dao.SemestreDao;
+import fr.eseo.atribus.dao.UeDao;
+import fr.eseo.atribus.entities.CompetenceValidable;
+import fr.eseo.atribus.entities.Matiere;
+import fr.eseo.atribus.entities.UniteEnseignement;
+import fr.eseo.atribus.forms.AddUeForm;
+import fr.eseo.atribus.forms.ModifierUeForm;
+
+import org.springframework.beans.factory.access.BeanFactoryReference;
+import org.springframework.beans.factory.access.SingletonBeanFactoryLocator;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.ModelAndView;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.annotation.PostConstruct;
+import javax.servlet.http.HttpServletRequest;
+
+/**
+ * Servlet implementation class UeController.
+ */
+@Controller
+<span class="nc" id="L38">public class UeController {</span>
+<span class="nc" id="L39">  private static final Logger LOGGER = Logger.getLogger(UeController.class.getName());</span>
+  public static final String CONF_BDD_FACTORY = &quot;DaoFactory&quot;;
+  public static final String ATT_USER = &quot;utilisateur&quot;;
+  public static final String ATT_UE = &quot;ue&quot;;
+  public static final String ATT_UES = &quot;ues&quot;;
+  public static final String ATT_FORM = &quot;form&quot;;
+  public static final String ATT_COMPETENCES = &quot;competences&quot;;
+  public static final String ATT_ENSEIGNANTS = &quot;enseignants&quot;;
+  public static final String ATT_MATIERES = &quot;matieres&quot;;
+  public static final String ATT_MATIERE = &quot;matiere&quot;;
+  public static final String ATT_PROMOTIONS = &quot;promotions&quot;;
+  public static final String VUE = &quot;DirecteurProgrammes/AjouterUe&quot;;
+  public static final String VUE_VALIDER_COMPETENCES = &quot;DirecteurProgrammes/validerCompetences&quot;;
+  public static final String VUE_MODIFIER_UE = &quot;EnseignantRefUE/modifierMatieresUe&quot;;
+  
+  private static final String EXCEPTION = &quot;Exception&quot;;
+
+  private CompetenceDao competenceDao;
+  private EnseignantDao enseignantDao;
+  private PromotionDao promotionDao;
+  private UeDao ueDao;
+  private MatiereDao matiereDao;
+  private SemestreDao semestreDao;
+  private List&lt;UniteEnseignement&gt; ues;
+  private List&lt;Matiere&gt; matieres;
+
+  /**
+   * @Autowired private ServletContext servletContext;
+   * @Autowired(required = true) private HttpServletRequest request;
+   * 
+   *                     private UtilisateurBdd utilisateurDao.
+   */
+  @PostConstruct
+  public void init() {
+    final BeanFactoryReference bf =
+<span class="nc" id="L74">        SingletonBeanFactoryLocator.getInstance().useBeanFactory(&quot;beansDao&quot;);</span>
+    /**
+     * Recuperation d'une instance de notre DAO Utilisateur this.utilisateurDao = ((DaoFactory)
+     * servletContext.getAttribute(CONF_BDD_FACTORY)).getUtilisateurBdd(); }
+     */
+    /* Récupération d'une instance de notre DAO Competence */
+<span class="nc" id="L80">    this.competenceDao = (CompetenceDao) bf.getFactory().getBean(&quot;competenceDao&quot;);</span>
+    /* Récupération d'une instance de notre DAO Enseignant */
+<span class="nc" id="L82">    this.enseignantDao = (EnseignantDao) bf.getFactory().getBean(&quot;enseignantDao&quot;);</span>
+    /* Récupération d'une instance de notre DAO Promotion */
+<span class="nc" id="L84">    this.promotionDao = (PromotionDao) bf.getFactory().getBean(&quot;promotionDao&quot;);</span>
+    /* Récupération d'une instance de notre DAO Ue */
+<span class="nc" id="L86">    this.ueDao = (UeDao) bf.getFactory().getBean(&quot;ueDao&quot;);</span>
+    /* Récupération d'une instance de notre DAO Matiere */
+<span class="nc" id="L88">    this.matiereDao = (MatiereDao) bf.getFactory().getBean(&quot;matiereDao&quot;);</span>
+    /* Récupération d'une instance de notre DAO Semestre */
+<span class="nc" id="L90">    this.semestreDao = (SemestreDao) bf.getFactory().getBean(&quot;semestreDao&quot;);</span>
+<span class="nc" id="L91">  }</span>
+
+
+  @RequestMapping(value = &quot;/DirecteurProgrammes/AjouterUE&quot;, method = RequestMethod.GET)
+  protected ModelAndView afficherAddUe() {
+<span class="nc" id="L96">    final HashMap&lt;String, Object&gt; attributsRequete = new HashMap&lt;&gt;();</span>
+    // On charge la liste des enseignants
+<span class="nc" id="L98">    attributsRequete.put(UeController.ATT_ENSEIGNANTS, this.enseignantDao.recupererListe());</span>
+    // On charge la liste des promotions
+<span class="nc" id="L100">    attributsRequete.put(UeController.ATT_PROMOTIONS,</span>
+<span class="nc" id="L101">        this.promotionDao.trouverToutesLesPromotions());</span>
+<span class="nc" id="L102">    return new ModelAndView(VUE, attributsRequete);</span>
+  }
+
+  @RequestMapping(value = &quot;/DirecteurProgrammes/AjouterUE&quot;, method = RequestMethod.POST)
+  protected ModelAndView ajouterUe(HttpServletRequest request) {
+<span class="nc" id="L107">    final HashMap&lt;String, Object&gt; attributsRequete = new HashMap&lt;&gt;();</span>
+    // On charge la liste des enseignants
+<span class="nc" id="L109">    attributsRequete.put(UeController.ATT_ENSEIGNANTS, this.enseignantDao.recupererListe());</span>
+    // On charge la liste des promotions
+<span class="nc" id="L111">    attributsRequete.put(UeController.ATT_PROMOTIONS,</span>
+<span class="nc" id="L112">        this.promotionDao.trouverToutesLesPromotions());</span>
+
+    /* Préparation de l'objet formulaire */
+<span class="nc" id="L115">    final AddUeForm form = new AddUeForm();</span>
+
+    /* Appel au traitement et à la validation de la requête, et récupération du bean en résultant */
+<span class="nc" id="L118">    final UniteEnseignement ue = form.addUe(request);</span>
+
+    /* Stockage du formulaire et du bean dans l'objet request */
+<span class="nc" id="L121">    attributsRequete.put(ExamenController.ATT_FORM, form);</span>
+<span class="nc" id="L122">    attributsRequete.put(ExamenController.ATT_EXAMEN, ue);</span>
+
+<span class="nc" id="L124">    return new ModelAndView(VUE, attributsRequete);</span>
+  }
+
+  @RequestMapping(
+      value = { &quot;/DirecteurProgrammes/ValiderCompetences&quot;, &quot;/EnseignantRefUE/ValiderCompetences&quot; },
+      method = RequestMethod.GET)
+  protected ModelAndView afficherValiderCompetencesUe() {
+<span class="nc" id="L131">    final HashMap&lt;String, Object&gt; attributsRequete = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L132">    this.ues = this.ueDao.listerUe();</span>
+    // On charge la liste des competences
+<span class="nc" id="L134">    attributsRequete.put(UeController.ATT_UES, ues);</span>
+<span class="nc" id="L135">    this.matieres = this.matiereDao.trouverToutesLesMatieres();</span>
+    // On charge la liste des matieres
+<span class="nc" id="L137">    attributsRequete.put(UeController.ATT_MATIERES, matieres);</span>
+<span class="nc" id="L138">    return new ModelAndView(VUE_VALIDER_COMPETENCES, attributsRequete);</span>
+  }
+
+  @RequestMapping(
+      value = { &quot;/DirecteurProgrammes/ValiderCompetences&quot;, &quot;/EnseignantRefUE/ValiderCompetences&quot; },
+      method = RequestMethod.POST)
+  protected ModelAndView validerCompetencesUe(
+      @RequestParam(value = &quot;table_records&quot;, required = false) List&lt;String&gt; coches) {
+<span class="nc" id="L146">    final HashMap&lt;String, Object&gt; attributsRequete = new HashMap&lt;&gt;();</span>
+<span class="nc bnc" id="L147" title="All 2 branches missed.">    if (ues == null) {</span>
+<span class="nc" id="L148">      this.ues = this.ueDao.listerUe();</span>
+    }
+<span class="nc bnc" id="L150" title="All 2 branches missed.">    if (matieres == null) {</span>
+<span class="nc" id="L151">      this.matieres = this.matiereDao.trouverToutesLesMatieres();</span>
+    }
+<span class="nc" id="L153">    final Map&lt;String, String&gt; erreurs = new HashMap&lt;&gt;();</span>
+<span class="nc bnc" id="L154" title="All 2 branches missed.">    if (coches != null) {</span>
+<span class="nc bnc" id="L155" title="All 2 branches missed.">      for (String coche : coches) {</span>
+<span class="nc" id="L156">        validerUeEtMatieres(coche, erreurs);</span>
+<span class="nc" id="L157">      }</span>
+    }
+<span class="nc bnc" id="L159" title="All 4 branches missed.">    if (erreurs.isEmpty() &amp;&amp; coches != null) {</span>
+<span class="nc" id="L160">      attributsRequete.put(&quot;succes&quot;, &quot;true&quot;);</span>
+    }
+<span class="nc bnc" id="L162" title="All 2 branches missed.">    if (coches == null) {</span>
+<span class="nc" id="L163">      attributsRequete.put(&quot;vide&quot;, &quot;true&quot;);</span>
+    }
+<span class="nc bnc" id="L165" title="All 2 branches missed.">    if (!erreurs.isEmpty()) {</span>
+      // On charge la liste des erreurs
+<span class="nc" id="L167">      attributsRequete.put(&quot;erreurs&quot;, erreurs);</span>
+    }
+    // On charge la liste des competences
+<span class="nc" id="L170">    attributsRequete.put(UeController.ATT_UES, ues);</span>
+    // On charge la liste des matieres
+<span class="nc" id="L172">    attributsRequete.put(UeController.ATT_MATIERES, matieres);</span>
+<span class="nc" id="L173">    return new ModelAndView(VUE_VALIDER_COMPETENCES, attributsRequete);</span>
+  }
+  
+  @RequestMapping(value = &quot;/EnseignantRefUE/AssocierMatiereUe&quot;, method = RequestMethod.GET)
+  protected ModelAndView afficherMatieresUe() {
+<span class="nc" id="L178">    final HashMap&lt;String, Object&gt; attributsRequete = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L179">    this.ues = this.ueDao.listerUe();                           // On charge les ues</span>
+<span class="nc" id="L180">    attributsRequete.put(UeController.ATT_UES, ues);</span>
+<span class="nc" id="L181">    this.matieres = this.matiereDao.trouverToutesLesMatieres(); // On charge la liste des matières</span>
+<span class="nc" id="L182">    attributsRequete.put(UeController.ATT_MATIERES, matieres);</span>
+    
+<span class="nc" id="L184">    return new ModelAndView(VUE_MODIFIER_UE, attributsRequete);</span>
+  }
+  
+  @RequestMapping(value = &quot;/EnseignantRefUE/ModifierMatieresUe&quot;, method = RequestMethod.POST)
+  protected ModelAndView modifierCompositionUe(HttpServletRequest request) {
+<span class="nc" id="L189">    ModifierUeForm form = new ModifierUeForm(); </span>
+<span class="nc" id="L190">    form.modifierCompositionUe(request);</span>
+<span class="nc" id="L191">    final HashMap&lt;String, Object&gt; attributsRequete = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L192">    attributsRequete.put(&quot;form&quot;, form);</span>
+    
+<span class="nc" id="L194">    return new ModelAndView(VUE_MODIFIER_UE, attributsRequete);</span>
+  }
+  
+  @RequestMapping(value = &quot;/EnseignantRefUE/ModifierMatieresUe&quot;, method = RequestMethod.GET)
+  protected ModelAndView modifierCompositionUeAffichage(HttpServletRequest request) {
+ 
+<span class="nc" id="L200">    final HashMap&lt;String, Object&gt; attributsRequete = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L201">    this.ues = this.ueDao.listerUe(); </span>
+<span class="nc" id="L202">    attributsRequete.put(UeController.ATT_UES, ues);</span>
+<span class="nc" id="L203">    this.matieres = this.matiereDao.trouverMatiereParUe(); </span>
+<span class="nc" id="L204">    attributsRequete.put(UeController.ATT_MATIERES, matieres);</span>
+<span class="nc" id="L205">    return new ModelAndView(VUE_MODIFIER_UE, attributsRequete);</span>
+  }
+  
+  private void validerUeEtMatieres(String coche, Map&lt;String, String&gt; erreurs) {
+<span class="nc bnc" id="L209" title="All 2 branches missed.">    for (Matiere matiere : matieres) {</span>
+<span class="nc bnc" id="L210" title="All 2 branches missed.">      for (CompetenceValidable competence : matiere.getCompetences()) {</span>
+<span class="nc bnc" id="L211" title="All 2 branches missed.">        if (coche.equals(competence.getUniqueId().toString())) {</span>
+<span class="nc" id="L212">          validerCompMatiere(matiere, competence, erreurs);</span>
+        }
+<span class="nc" id="L214">      }</span>
+<span class="nc" id="L215">    }</span>
+<span class="nc bnc" id="L216" title="All 2 branches missed.">    for (UniteEnseignement ue : ues) {</span>
+<span class="nc bnc" id="L217" title="All 2 branches missed.">      for (Entry&lt;Long, CompetenceValidable&gt; competence : ue.getCompetences().entrySet()) {</span>
+<span class="nc bnc" id="L218" title="All 2 branches missed.">        if (coche.equals(competence.getValue().getUniqueId().toString())) {</span>
+<span class="nc" id="L219">          validerCompUe(ue, competence, erreurs);</span>
+        }
+<span class="nc" id="L221">      }</span>
+<span class="nc" id="L222">    }</span>
+<span class="nc" id="L223">  }</span>
+
+  private void validerCompUe(UniteEnseignement ue, Entry&lt;Long, CompetenceValidable&gt; competence,
+      Map&lt;String, String&gt; erreurs) {
+    try {
+<span class="nc" id="L228">      competence.getValue().setValide(true);</span>
+<span class="nc" id="L229">      this.competenceDao.valider(ue, competence.getValue());</span>
+<span class="nc" id="L230">    } catch (DaoException daoe) {</span>
+<span class="nc" id="L231">      competence.getValue().setValide(false);</span>
+<span class="nc" id="L232">      erreurs.put(&quot;erreur&quot;, &quot;Certaines compétences n'ont pas été validés.&quot;);</span>
+<span class="nc" id="L233">      UeController.LOGGER.log(Level.INFO, EXCEPTION, daoe);</span>
+<span class="nc" id="L234">    }</span>
+<span class="nc" id="L235">  }</span>
+
+  private void validerCompMatiere(Matiere matiere, CompetenceValidable competence,
+      Map&lt;String, String&gt; erreurs) {
+    try {
+<span class="nc" id="L240">      competence.setValide(true);</span>
+<span class="nc" id="L241">      this.competenceDao.valider(matiere, competence);</span>
+<span class="nc" id="L242">    } catch (DaoException daoe) {</span>
+<span class="nc" id="L243">      competence.setValide(false);</span>
+<span class="nc" id="L244">      erreurs.put(&quot;erreur&quot;, &quot;Certaines compétences n'ont pas été validés.&quot;);</span>
+<span class="nc" id="L245">      UeController.LOGGER.log(Level.INFO, EXCEPTION, daoe);</span>
+<span class="nc" id="L246">    }</span>
+<span class="nc" id="L247">  }</span>
+
+  @RequestMapping(value = &quot;/EnseignantRefMatiere/AfficherCompetenceUE&quot;, method = RequestMethod.GET)
+  protected ModelAndView afficherCompetenceUe() {
+
+<span class="nc" id="L252">    final HashMap&lt;String, Object&gt; attributsRequete = new HashMap&lt;&gt;();</span>
+
+<span class="nc" id="L254">    this.ues = this.ueDao.listerUe();</span>
+<span class="nc" id="L255">    attributsRequete.put(UeController.ATT_UES, ues);</span>
+
+<span class="nc" id="L257">    return new ModelAndView(&quot;EnseignantRefMatiere/afficherCompetenceUe&quot;, attributsRequete);</span>
+
+  }
+
+  @RequestMapping(value = &quot;/EnseignantRefMatiere/AfficherCompetenceUE&quot;, method = RequestMethod.POST)
+  protected ModelAndView afficherCompetencesLieesUe(@RequestParam(&quot;nomUe&quot;) String nomUe) {
+
+<span class="nc" id="L264">    final HashMap&lt;String, Object&gt; attributsRequete = new HashMap&lt;&gt;();</span>
+
+<span class="nc" id="L266">    attributsRequete.put(&quot;listeCompetences&quot;,</span>
+<span class="nc" id="L267">        this.competenceDao.listeCompetencesUe(this.ueDao.trouverUeParNom(nomUe)));</span>
+
+<span class="nc" id="L269">    return new ModelAndView(&quot;EnseignantRefMatiere/afficherCompetenceUe&quot;, attributsRequete);</span>
+
+  }
+
+  @RequestMapping(value = &quot;/Enseignant/AfficherCompetenceMatiere&quot;, method = RequestMethod.GET)
+  protected ModelAndView afficherCompetenceMatiere() {
+
+<span class="nc" id="L276">    final HashMap&lt;String, Object&gt; attributsRequete = new HashMap&lt;&gt;();</span>
+
+<span class="nc" id="L278">    this.matieres = this.matiereDao.trouverToutesLesMatieres();</span>
+<span class="nc" id="L279">    attributsRequete.put(&quot;matieres&quot;, matieres);</span>
+
+<span class="nc" id="L281">    return new ModelAndView(&quot;Enseignant/afficherCompetenceMatiere&quot;, attributsRequete);</span>
+
+  }
+
+  @RequestMapping(value = &quot;/Enseignant/AfficherCompetenceMatiere&quot;, method = RequestMethod.POST)
+  protected ModelAndView afficherCompetencesLieesMatiere(
+      @RequestParam(&quot;nomMatiere&quot;) String nomMatiere) {
+
+<span class="nc" id="L289">    final HashMap&lt;String, Object&gt; attributsRequete = new HashMap&lt;&gt;();</span>
+
+<span class="nc" id="L291">    attributsRequete.put(&quot;listeCompetence&quot;,</span>
+<span class="nc" id="L292">        this.competenceDao.listeCompetencesMatiere(this.matiereDao.trouverParNom(nomMatiere)));</span>
+
+<span class="nc" id="L294">    return new ModelAndView(&quot;Enseignant/afficherCompetenceMatiere&quot;, attributsRequete);</span>
+
+  }
+
+  @RequestMapping(value = &quot;/DirecteurProgrammes/ModifierUE&quot;, method = RequestMethod.GET)
+  protected ModelAndView afficherModifierUe() {
+<span class="nc" id="L300">    final HashMap&lt;String, Object&gt; attributsRequete = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L301">    attributsRequete.put(&quot;listeUe&quot;, this.ueDao.listerUe());</span>
+<span class="nc" id="L302">    return new ModelAndView(&quot;DirecteurProgrammes/modifierUe&quot;, attributsRequete);</span>
+  }
+
+  @RequestMapping(value = &quot;/DirecteurProgrammes/ModifierUE&quot;, method = RequestMethod.POST)
+  protected ModelAndView modifierUeSelectionUe(@RequestParam(&quot;idUe&quot;) Integer idUe,
+      @RequestParam(value = &quot;choixUe&quot;, required = false) String choixUe,
+      HttpServletRequest request) {
+
+<span class="nc" id="L310">    final HashMap&lt;String, Object&gt; attributsRequete = new HashMap&lt;&gt;();</span>
+
+<span class="nc" id="L312">    UniteEnseignement ancienneUe = this.ueDao.trouverUeParId(idUe);</span>
+    
+<span class="nc bnc" id="L314" title="All 2 branches missed.">    if (choixUe != null) {</span>
+<span class="nc" id="L315">      attributsRequete.put(&quot;ancienneUe&quot;, ancienneUe);</span>
+<span class="nc" id="L316">      attributsRequete.put(&quot;listeSemestres&quot;, this.semestreDao.listerSemestre());</span>
+<span class="nc" id="L317">      attributsRequete.put(&quot;listeEnseignants&quot;, this.enseignantDao.recupererListe());</span>
+    } else {
+<span class="nc" id="L319">      ModifierUeForm form = new ModifierUeForm();</span>
+<span class="nc" id="L320">      form.modifierUe(request);</span>
+<span class="nc" id="L321">      attributsRequete.put(&quot;form&quot;, form);</span>
+    }
+    
+<span class="nc" id="L324">    return new ModelAndView(&quot;DirecteurProgrammes/modifierUe&quot;, attributsRequete);</span>
+
+  }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.6.201602180812</span></div></body></html>

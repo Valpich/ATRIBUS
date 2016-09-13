@@ -1,0 +1,40 @@
+package fr.eseo.atribus.entities;
+
+import java.io.Serializable;
+
+public class EnseignantRefMatiere extends Enseignant implements Serializable {
+
+  private static final long serialVersionUID = -955316190050101426L;
+  private int idEnseignantRefMatiere;
+  private Matiere matiere;
+
+  public EnseignantRefMatiere() {
+    super();
+  }
+
+  public EnseignantRefMatiere(Utilisateur utilisateur) {
+    super(utilisateur);
+  }
+
+  public Matiere getMatiere() {
+    return this.matiere;
+  }
+
+  public void setMatiere(Matiere matiere) {
+    this.matiere = matiere;
+  }
+
+  public int getIdEnseignantRefMatiere() {
+    return this.idEnseignantRefMatiere;
+  }
+
+  public void setIdEnseignantRefMatiere(int idEnseignantRefMatiere) {
+    this.idEnseignantRefMatiere = idEnseignantRefMatiere;
+  }
+
+  @Override
+  public String toString() {
+    return "EnseignantRefMatiere [idEnseignantRefMatiere=" + this.idEnseignantRefMatiere
+        + ", matiere=" + this.matiere + "]";
+  }
+}

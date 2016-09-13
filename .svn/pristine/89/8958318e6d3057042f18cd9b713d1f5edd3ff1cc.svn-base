@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testng-results skipped="0" failed="0" total="1" passed="1">
+  <reporter-output>
+  </reporter-output>
+  <suite name="Default suite" duration-ms="10611" started-at="2016-05-21T12:10:45Z" finished-at="2016-05-21T12:10:55Z">
+    <groups>
+    </groups>
+    <test name="Default test" duration-ms="10611" started-at="2016-05-21T12:10:45Z" finished-at="2016-05-21T12:10:55Z">
+      <class name="com.example.tests.TestNG">
+        <test-method status="PASS" signature="setUp()[pri:0, instance:com.example.tests.TestNG@1efed156]" name="setUp" is-config="true" duration-ms="4264" started-at="2016-05-21T14:10:45Z" finished-at="2016-05-21T14:10:49Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- setUp -->
+        <test-method status="PASS" signature="testNG()[pri:0, instance:com.example.tests.TestNG@1efed156]" name="testNG" duration-ms="6146" started-at="2016-05-21T14:10:49Z" finished-at="2016-05-21T14:10:55Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- testNG -->
+        <test-method status="PASS" signature="tearDown()[pri:0, instance:com.example.tests.TestNG@1efed156]" name="tearDown" is-config="true" duration-ms="171" started-at="2016-05-21T14:10:55Z" finished-at="2016-05-21T14:10:55Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- tearDown -->
+      </class> <!-- com.example.tests.TestNG -->
+    </test> <!-- Default test -->
+  </suite> <!-- Default suite -->
+</testng-results>

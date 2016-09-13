@@ -1,0 +1,15 @@
+package fr.eseo.atribus.dao;
+
+import fr.eseo.atribus.entities.Notification;
+import fr.eseo.atribus.entities.Utilisateur;
+
+import java.util.List;
+
+public interface NotificationDao {
+
+  List<Notification> trouverToutesLesNotification(Utilisateur utilisateur);
+
+  void ajouter(Notification notification);
+  
+  void supprimer(Notification notification);
+}

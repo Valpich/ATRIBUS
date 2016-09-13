@@ -1,0 +1,409 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>UeDaoImpl.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Atribus</a> &gt; <a href="index.source.html" class="el_package">fr.eseo.atribus.dao</a> &gt; <span class="el_source">UeDaoImpl.java</span></div><h1>UeDaoImpl.java</h1><pre class="source lang-java linenums">package fr.eseo.atribus.dao;
+
+import fr.eseo.atribus.entities.Competence;
+import fr.eseo.atribus.entities.CompetenceValidable;
+import fr.eseo.atribus.entities.EnseignantRefUe;
+import fr.eseo.atribus.entities.UniteEnseignement;
+
+import org.springframework.beans.factory.access.BeanFactoryReference;
+import org.springframework.beans.factory.access.SingletonBeanFactoryLocator;
+
+import org.springframework.beans.factory.access.BeanFactoryReference;
+import org.springframework.beans.factory.access.SingletonBeanFactoryLocator;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+public class UeDaoImpl implements UeDao {
+
+  private final DaoFactory daoFactory;
+
+  private static final String ID_COMPETENCE = &quot;id_competence&quot;;
+
+  private static final String SQL_AJOUTER_UE =
+      &quot;INSERT INTO unite_enseignement (nom, nb_credits_ects, nb_heures, &quot;
+      + &quot;id_semestre, id_enseignant_ref) VALUES (?, ?, ?, ?, ?)&quot;;
+  private static final String SQL_SELECT_PAR_NOM = &quot;SELECT * FROM unite_enseignement WHERE nom =?&quot;;
+  private static final String SQL_SELECT_PAR_ID = &quot;SELECT * FROM unite_enseignement WHERE id =?&quot;;
+  private static final String SQL_LISTER_UE = &quot;SELECT * FROM unite_enseignement&quot;;
+  private static final String SQL_LISTER_ASSOCIATION_COMPETENCE =
+      &quot;SELECT * FROM unite_enseignement_associe_competence&quot;;
+  private static final String SQL_DELETE_ASSOCIATION_MATIERE_UE =
+      &quot;UPDATE IGNORE `matiere` SET id_unite_enseignement=NULL WHERE id=?&quot;;
+  private static final String SQL_DELETE_ASSOCIATION_COMPETENCE =
+      &quot;DELETE FROM unite_enseignement_associe_competence &quot;
+          + &quot;WHERE id_unite_enseignement=? AND id_competence=?;&quot;;
+  private static final String SQL_DELETE_ALL_ASSOCIATION_COMPETENCE =
+      &quot;DELETE FROM unite_enseignement_associe_competence &quot; + &quot;WHERE id_unite_enseignement=?;&quot;;
+  private static final String SQL_DELETE_UE = &quot;DELETE FROM unite_enseignement WHERE id = ?&quot;;
+  private static final String BEANSDAO = &quot;beansDao&quot;;
+  private static final String COMPETENCEDAO = &quot;competenceDao&quot;;
+
+  
+<span class="nc" id="L49">  UeDaoImpl() {</span>
+    final BeanFactoryReference bf =
+<span class="nc" id="L51">        SingletonBeanFactoryLocator.getInstance().useBeanFactory(&quot;contextDao&quot;);</span>
+<span class="nc" id="L52">    this.daoFactory = (DaoFactory) bf.getFactory().getBean(&quot;daoFactory&quot;);</span>
+<span class="nc" id="L53">  }</span>
+
+  /*
+   * Procédure pour ajouter un UE à la BDD
+   */
+  @Override
+  public void ajouterUe(UniteEnseignement ue) {
+<span class="nc" id="L60">    Connection connexion = null;</span>
+<span class="nc" id="L61">    PreparedStatement preparedStatement = null;</span>
+<span class="nc" id="L62">    ResultSet valeursAutoGenerees = null;</span>
+
+    try {
+
+      // Récupération d'une connexion depuis la Factory
+<span class="nc" id="L67">      connexion = this.daoFactory.getConnection();</span>
+<span class="nc" id="L68">      preparedStatement = DaoUtilitaire.initialisationRequetePreparee(connexion,</span>
+<span class="nc" id="L69">          UeDaoImpl.SQL_AJOUTER_UE, true, ue.getNom(), ue.getNbCreditsEcts(), ue.getNbHeures(),</span>
+<span class="nc" id="L70">          ue.getSemestre().getId(), ue.getEnseignantRefUe().getIdEnseignantRefUe());</span>
+
+<span class="nc" id="L72">      final int statut = preparedStatement.executeUpdate();</span>
+
+      // Analyse du statut retourné par la requête d'insertion
+<span class="nc bnc" id="L75" title="All 2 branches missed.">      if (statut == 0) {</span>
+<span class="nc" id="L76">        throw new DaoException(</span>
+            &quot;Échec de la création d'une unité d'enseignement, aucune ligne ajoutée dans la table.&quot;);
+      }
+
+      // Récupération de l'id auto-généré par la requête d'insertion
+
+<span class="nc" id="L82">      valeursAutoGenerees = preparedStatement.getGeneratedKeys();</span>
+<span class="nc bnc" id="L83" title="All 2 branches missed.">      if (!valeursAutoGenerees.next()) {</span>
+<span class="nc" id="L84">        ue.setId(valeursAutoGenerees.getInt(&quot;id&quot;));</span>
+<span class="nc" id="L85">        throw new DaoException(&quot;Échec de la création d'une unité d'enseignement en base&quot;</span>
+            + &quot;, aucun ID auto-généré retourné.&quot;);
+      }
+<span class="nc" id="L88">    } catch (final SQLException sqle) {</span>
+<span class="nc" id="L89">      throw new DaoException(sqle);</span>
+    } finally {
+<span class="nc" id="L91">      DaoUtilitaire.fermeturesSilencieuses(valeursAutoGenerees, preparedStatement, connexion);</span>
+<span class="nc" id="L92">    }</span>
+<span class="nc" id="L93">  }</span>
+
+  @Override
+  public void supprimerUe(UniteEnseignement ue) {
+<span class="nc" id="L97">    Connection connexion = null;</span>
+<span class="nc" id="L98">    PreparedStatement preparedStatement = null;</span>
+<span class="nc" id="L99">    ResultSet valeursAutoGenerees = null;</span>
+<span class="nc" id="L100">    try (PreparedStatement preparedStatementFk = DaoUtilitaire.initialisationRequetePreparee(</span>
+<span class="nc" id="L101">        connexion, UeDaoImpl.SQL_DELETE_ALL_ASSOCIATION_COMPETENCE, true, ue.getId())) {</span>
+
+      // Récupération d'une connexion depuis la Factory
+
+<span class="nc" id="L105">      connexion = this.daoFactory.getConnection();</span>
+
+<span class="nc" id="L107">      preparedStatementFk.executeUpdate();</span>
+<span class="nc" id="L108">      preparedStatement = DaoUtilitaire.initialisationRequetePreparee(connexion,</span>
+<span class="nc" id="L109">          UeDaoImpl.SQL_DELETE_UE, true, ue.getId());</span>
+
+<span class="nc" id="L111">      final int statut = preparedStatement.executeUpdate();</span>
+
+      // Analyse du statut retourné par la requête d'insertion
+
+<span class="nc bnc" id="L115" title="All 2 branches missed.">      if (statut == 0) {</span>
+<span class="nc" id="L116">        throw new DaoException(&quot;Échec de la suppression d'une unité d'enseignement.&quot;);</span>
+      }
+<span class="nc bnc" id="L118" title="All 8 branches missed.">    } catch (final SQLException sqle) {</span>
+<span class="nc" id="L119">      throw new DaoException(sqle);</span>
+    } finally {
+<span class="nc" id="L121">      DaoUtilitaire.fermeturesSilencieuses(valeursAutoGenerees, preparedStatement, connexion);</span>
+<span class="nc" id="L122">    }</span>
+<span class="nc" id="L123">  }</span>
+
+  @Override
+  public UniteEnseignement trouverUeParNom(String nomUe) {
+<span class="nc" id="L127">    return this.trouver(UeDaoImpl.SQL_SELECT_PAR_NOM, nomUe);</span>
+  }
+
+  /*
+   * Méthode générique utilisée pour retourner un UE depuis la base de données, correspondant à la
+   * requête SQL donnée prenant en paramètres les objets passés en argument.
+   */
+  private UniteEnseignement trouver(String sql, Object... objets) {
+<span class="nc" id="L135">    Connection connexion = null;</span>
+<span class="nc" id="L136">    PreparedStatement preparedStatement = null;</span>
+<span class="nc" id="L137">    ResultSet resultSet = null;</span>
+<span class="nc" id="L138">    UniteEnseignement ue = null;</span>
+    try {
+      /* Récupération d'une connexion depuis la Factory */
+<span class="nc" id="L141">      connexion = this.daoFactory.getConnection();</span>
+      /*
+       * Préparation de la requête avec les objets passés en arguments (ici, uniquement un id) et
+       * exécution.
+       */
+<span class="nc" id="L146">      preparedStatement =</span>
+<span class="nc" id="L147">          DaoUtilitaire.initialisationRequetePreparee(connexion, sql, false, objets);</span>
+<span class="nc" id="L148">      resultSet = preparedStatement.executeQuery();</span>
+      /* Parcours de la ligne de données retournée dans le ResultSet */
+<span class="nc bnc" id="L150" title="All 2 branches missed.">      if (resultSet.next()) {</span>
+<span class="nc" id="L151">        ue = this.map(resultSet);</span>
+      }
+<span class="nc" id="L153">    } catch (final SQLException sqle) {</span>
+<span class="nc" id="L154">      throw new DaoException(sqle);</span>
+    } finally {
+<span class="nc" id="L156">      DaoUtilitaire.fermeturesSilencieuses(resultSet, preparedStatement, connexion);</span>
+<span class="nc" id="L157">    }</span>
+<span class="nc" id="L158">    return ue;</span>
+  }
+
+
+  /*
+   * Procédure qui permet d'établir la liste des UE disponibles dans la BDD
+   */
+  @Override
+  public List&lt;UniteEnseignement&gt; listerUe() {
+
+<span class="nc" id="L168">    final ArrayList&lt;UniteEnseignement&gt; listeUe = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L169">    Connection connexion = null;</span>
+<span class="nc" id="L170">    PreparedStatement preparedStatement = null;</span>
+<span class="nc" id="L171">    ResultSet resultSet = null;</span>
+
+    try {
+      // Récupération d'une connexion depuis la Factory
+<span class="nc" id="L175">      connexion = this.daoFactory.getConnection();</span>
+<span class="nc" id="L176">      preparedStatement = connexion.prepareStatement(UeDaoImpl.SQL_LISTER_UE);</span>
+<span class="nc" id="L177">      resultSet = preparedStatement.executeQuery();</span>
+
+<span class="nc bnc" id="L179" title="All 2 branches missed.">      while (resultSet.next()) {</span>
+<span class="nc" id="L180">        listeUe.add(this.map(resultSet));</span>
+      }
+<span class="nc" id="L182">    } catch (final SQLException sqle) {</span>
+<span class="nc" id="L183">      throw new DaoException(sqle);</span>
+    } finally {
+<span class="nc" id="L185">      DaoUtilitaire.fermeturesSilencieuses(resultSet, preparedStatement, connexion);</span>
+<span class="nc" id="L186">    }</span>
+
+<span class="nc" id="L188">    return listeUe;</span>
+  }
+
+  /*
+   * Simple méthode utilitaire permettant de faire la correspondance (le mapping) entre une ligne
+   * issue de la table des UE (un ResultSet) et un bean UE.
+   */
+  private UniteEnseignement map(ResultSet resultSet) throws SQLException {
+<span class="nc" id="L196">    final UniteEnseignement ue = new UniteEnseignement();</span>
+<span class="nc" id="L197">    ue.setId(resultSet.getInt(&quot;id&quot;));</span>
+<span class="nc" id="L198">    ue.setNom(resultSet.getString(&quot;nom&quot;));</span>
+<span class="nc" id="L199">    ue.setNbCreditsEcts(resultSet.getInt(&quot;nb_credits_ects&quot;));</span>
+<span class="nc" id="L200">    ue.setNbHeures(resultSet.getInt(&quot;nb_heures&quot;));</span>
+    final BeanFactoryReference bf =
+<span class="nc" id="L202">        SingletonBeanFactoryLocator.getInstance().useBeanFactory(BEANSDAO);</span>
+<span class="nc" id="L203">    final CompetenceDao competenceDao = (CompetenceDao) bf.getFactory().getBean(COMPETENCEDAO);</span>
+<span class="nc" id="L204">    ue.setCompetences(competenceDao.recupererAssociationCompetenceUe(ue.getId()));</span>
+<span class="nc" id="L205">    final EnseignantRefUeDao erueDao =</span>
+<span class="nc" id="L206">        (EnseignantRefUeDao) bf.getFactory().getBean(&quot;enseignantRefUeDao&quot;);</span>
+<span class="nc" id="L207">    List&lt;EnseignantRefUe&gt; erues = erueDao.recupererListe();</span>
+<span class="nc bnc" id="L208" title="All 2 branches missed.">    for (EnseignantRefUe erue : erues) {</span>
+<span class="nc bnc" id="L209" title="All 2 branches missed.">      if (erue.getIdEnseignantRefUe() == resultSet.getInt(&quot;id_enseignant_ref&quot;)) {</span>
+<span class="nc" id="L210">        ue.setEnseignantRefUe(erue);</span>
+      }
+<span class="nc" id="L212">    }</span>
+<span class="nc" id="L213">    return ue;</span>
+  }
+
+  @Override
+  public int trouverIdParNom(String nom) {
+<span class="nc" id="L218">    Connection connexion = null;</span>
+<span class="nc" id="L219">    PreparedStatement preparedStatement = null;</span>
+<span class="nc" id="L220">    ResultSet resultSet = null;</span>
+<span class="nc" id="L221">    int id = -1;</span>
+    try {
+      /* Récupération d'une connexion depuis la Factory */
+<span class="nc" id="L224">      connexion = this.daoFactory.getConnection();</span>
+      /*
+       * Préparation de la requête avec les objets passés en arguments (ici, uniquement un id) et
+       * exécution.
+       */
+<span class="nc" id="L229">      preparedStatement =</span>
+<span class="nc" id="L230">          DaoUtilitaire.initialisationRequetePreparee(connexion, SQL_SELECT_PAR_NOM, false, nom);</span>
+<span class="nc" id="L231">      resultSet = preparedStatement.executeQuery();</span>
+      /* Parcours de la ligne de données retournée dans le ResultSet */
+<span class="nc bnc" id="L233" title="All 2 branches missed.">      if (resultSet.next()) {</span>
+<span class="nc" id="L234">        id = resultSet.getInt(&quot;id&quot;);</span>
+      }
+<span class="nc" id="L236">    } catch (final SQLException sqle) {</span>
+<span class="nc" id="L237">      throw new DaoException(sqle);</span>
+    } finally {
+<span class="nc" id="L239">      DaoUtilitaire.fermeturesSilencieuses(resultSet, preparedStatement, connexion);</span>
+<span class="nc" id="L240">    }</span>
+<span class="nc" id="L241">    return id;</span>
+  }
+
+  /**
+   * Méthode qui va renvoyer un UE en fonction de son ID.
+   */
+  @Override
+  public UniteEnseignement trouverUeParId(int idUe) {
+
+<span class="nc" id="L250">    Connection connexion = null;</span>
+<span class="nc" id="L251">    PreparedStatement preparedStatement = null;</span>
+<span class="nc" id="L252">    ResultSet resultSet = null;</span>
+    UniteEnseignement ue;
+
+    try {
+<span class="nc" id="L256">      connexion = this.daoFactory.getConnection();</span>
+<span class="nc" id="L257">      preparedStatement =</span>
+<span class="nc" id="L258">          DaoUtilitaire.initialisationRequetePreparee(connexion, SQL_SELECT_PAR_ID, false, idUe);</span>
+<span class="nc" id="L259">      resultSet = preparedStatement.executeQuery();</span>
+
+<span class="nc" id="L261">      ue = new UniteEnseignement();</span>
+
+<span class="nc bnc" id="L263" title="All 2 branches missed.">      while (resultSet.next()) {</span>
+<span class="nc" id="L264">        ue = this.map(resultSet);</span>
+      }
+<span class="nc" id="L266">    } catch (final SQLException sqle) {</span>
+<span class="nc" id="L267">      throw new DaoException(sqle);</span>
+    } finally {
+<span class="nc" id="L269">      DaoUtilitaire.fermeturesSilencieuses(resultSet, preparedStatement, connexion);</span>
+<span class="nc" id="L270">    }</span>
+<span class="nc" id="L271">    return ue;</span>
+  }
+
+  /*
+   * Procédure qui permet d'établir la liste des UE disponibles dans la BDD
+   */
+  @Override
+  public List&lt;UniteEnseignement&gt; listerUeAssociationCompetenceUe() {
+
+<span class="nc" id="L280">    List&lt;UniteEnseignement&gt; listeUe = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L281">    Connection connexion = null;</span>
+<span class="nc" id="L282">    PreparedStatement preparedStatement = null;</span>
+<span class="nc" id="L283">    ResultSet resultSet = null;</span>
+    UniteEnseignement ue;
+    Map&lt;Long, CompetenceValidable&gt; competences;
+
+    try {
+
+<span class="nc" id="L289">      connexion = this.daoFactory.getConnection();</span>
+<span class="nc" id="L290">      preparedStatement = connexion.prepareStatement(UeDaoImpl.SQL_LISTER_ASSOCIATION_COMPETENCE);</span>
+<span class="nc" id="L291">      resultSet = preparedStatement.executeQuery();</span>
+
+<span class="nc bnc" id="L293" title="All 2 branches missed.">      while (resultSet.next()) {</span>
+
+<span class="nc" id="L295">        final int idUe = resultSet.getInt(&quot;id_unite_enseignement&quot;);</span>
+<span class="nc" id="L296">        final long idCompetence = resultSet.getLong(ID_COMPETENCE);</span>
+<span class="nc" id="L297">        final int niveau = resultSet.getInt(&quot;niveau&quot;);</span>
+        final BeanFactoryReference bf =
+<span class="nc" id="L299">            SingletonBeanFactoryLocator.getInstance().useBeanFactory(BEANSDAO);</span>
+<span class="nc" id="L300">        final CompetenceDao competenceDao =</span>
+<span class="nc" id="L301">            (CompetenceDao) bf.getFactory().getBean(COMPETENCEDAO);</span>
+        
+<span class="nc" id="L303">        competences = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L304">        Competence comp = new Competence();</span>
+<span class="nc" id="L305">        ue = new UniteEnseignement();</span>
+
+<span class="nc" id="L307">        comp = competenceDao.trouverParId(resultSet.getInt(ID_COMPETENCE));</span>
+<span class="nc" id="L308">        comp.setNiveau(niveau);</span>
+<span class="nc" id="L309">        competences.put(idCompetence, new CompetenceValidable(comp));</span>
+
+<span class="nc" id="L311">        ue = this.trouverUeParId(idUe);</span>
+<span class="nc" id="L312">        ue.setCompetences(competences);</span>
+
+<span class="nc" id="L314">        listeUe.add(ue);</span>
+
+<span class="nc" id="L316">      }</span>
+<span class="nc" id="L317">    } catch (final SQLException sqle) {</span>
+<span class="nc" id="L318">      throw new DaoException(sqle);</span>
+    } finally {
+<span class="nc" id="L320">      DaoUtilitaire.fermeturesSilencieuses(resultSet, preparedStatement, connexion);</span>
+<span class="nc" id="L321">    }</span>
+
+<span class="nc" id="L323">    return listeUe;</span>
+  }
+
+  /**
+   * Méthode pour supprimer une association en BDD.
+   */
+  public void supprimerAssociationCompetenceUe(String nomUe, String nomCompetence) {
+
+<span class="nc" id="L331">    Connection connexion = null;</span>
+<span class="nc" id="L332">    PreparedStatement preparedStatement = null;</span>
+<span class="nc" id="L333">    ResultSet resultSet = null;</span>
+    int idUe;
+    int idCompetence;
+    int statut;
+
+    try {
+
+      final BeanFactoryReference bf =
+<span class="nc" id="L341">          SingletonBeanFactoryLocator.getInstance().useBeanFactory(BEANSDAO);</span>
+<span class="nc" id="L342">      final CompetenceDao competenceDao =</span>
+<span class="nc" id="L343">          (CompetenceDao) bf.getFactory().getBean(COMPETENCEDAO);</span>
+      
+<span class="nc" id="L345">      idUe = this.trouverIdParNom(nomUe);</span>
+<span class="nc" id="L346">      idCompetence = competenceDao.trouverIdParNom(nomCompetence);</span>
+
+<span class="nc" id="L348">      connexion = this.daoFactory.getConnection();</span>
+<span class="nc" id="L349">      preparedStatement = DaoUtilitaire.initialisationRequetePreparee(connexion,</span>
+<span class="nc" id="L350">          UeDaoImpl.SQL_DELETE_ASSOCIATION_COMPETENCE, false, idUe, idCompetence);</span>
+<span class="nc" id="L351">      statut = preparedStatement.executeUpdate();</span>
+
+<span class="nc bnc" id="L353" title="All 2 branches missed.">      if (statut == 0) {</span>
+<span class="nc" id="L354">        throw new DaoException(</span>
+            &quot;Échec de la suppresion de l'association, aucune ligne supprimée dans la table.&quot;);
+      }
+
+<span class="nc" id="L358">    } catch (final SQLException sqle) {</span>
+<span class="nc" id="L359">      throw new DaoException(sqle);</span>
+    } finally {
+<span class="nc" id="L361">      DaoUtilitaire.fermeturesSilencieuses(resultSet, preparedStatement, connexion);</span>
+<span class="nc" id="L362">    }</span>
+
+<span class="nc" id="L364">  }</span>
+
+  @Override
+  public void supprimerAssociationMatiereUe(String nomUe, String nomMatiere) {
+<span class="nc" id="L368">    Connection connexion = null;</span>
+<span class="nc" id="L369">    PreparedStatement preparedStatement = null;</span>
+<span class="nc" id="L370">    ResultSet resultSet = null;</span>
+    int idUe;
+    int idMatiere;
+    int statut;
+    try {
+
+      final BeanFactoryReference bf =
+<span class="nc" id="L377">          SingletonBeanFactoryLocator.getInstance().useBeanFactory(&quot;beansDao&quot;);</span>
+<span class="nc" id="L378">      final MatiereDao matiereDao = (MatiereDao) bf.getFactory().getBean(&quot;matiereDao&quot;);</span>
+
+<span class="nc" id="L380">      idUe = this.trouverIdParNom(nomUe);</span>
+<span class="nc" id="L381">      idMatiere = matiereDao.trouverIdParNom(nomMatiere);</span>
+
+<span class="nc" id="L383">      connexion = this.daoFactory.getConnection();</span>
+<span class="nc" id="L384">      preparedStatement = DaoUtilitaire.initialisationRequetePreparee(connexion,</span>
+<span class="nc" id="L385">          UeDaoImpl.SQL_DELETE_ASSOCIATION_MATIERE_UE, false, idUe, idMatiere);</span>
+<span class="nc" id="L386">      statut = preparedStatement.executeUpdate();</span>
+<span class="nc bnc" id="L387" title="All 2 branches missed.">      if (statut == 0) {</span>
+<span class="nc" id="L388">        throw new DaoException(</span>
+            &quot;Échec de la suppresion de l'association, aucune ligne supprimée dans la table.&quot;);
+      }
+
+<span class="nc" id="L392">    } catch (final SQLException sqle) {</span>
+<span class="nc" id="L393">      throw new DaoException(sqle);</span>
+    } finally {
+<span class="nc" id="L395">      DaoUtilitaire.fermeturesSilencieuses(resultSet, preparedStatement, connexion);</span>
+<span class="nc" id="L396">    }</span>
+
+
+<span class="nc" id="L399">  }</span>
+
+  @Override
+  public void modifierUe(UniteEnseignement ue) {
+    // TODO Auto-generated method stub
+    
+<span class="nc" id="L405">  }</span>
+}
+
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.6.201602180812</span></div></body></html>

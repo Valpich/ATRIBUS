@@ -1,0 +1,24 @@
+package fr.eseo.atribus.dao;
+
+import fr.eseo.atribus.entities.Eleve;
+import fr.eseo.atribus.entities.Evaluation;
+import fr.eseo.atribus.entities.Examen;
+import fr.eseo.atribus.entities.Exercice;
+
+import java.util.List;
+import java.util.Map;
+
+public interface EvaluationDao {
+
+  void repondre(Eleve eleve, List<String> reponses, Examen examen, Boolean autoEvaluation);
+
+  List<Evaluation> trouverToutesLesEvaluations();
+
+  void majEvaluation(List<Evaluation> evaluations);
+
+  void repondre(Eleve eleve, Map<Exercice, List<String>> reponsesParser, Examen examen,
+      Boolean autoEvaluation);
+
+  List<Evaluation> trouverToutesLesEvaluationsEleve(Eleve eleve);
+
+}

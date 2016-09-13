@@ -1,0 +1,135 @@
+package fr.eseo.atribus.forms;
+
+import fr.eseo.atribus.dao.CompetenceDao;
+import fr.eseo.atribus.dao.DaoException;
+import fr.eseo.atribus.entities.Competence;
+
+import org.springframework.beans.factory.access.BeanFactoryReference;
+import org.springframework.beans.factory.access.SingletonBeanFactoryLocator;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.servlet.http.HttpServletRequest;
+
+public class ModifierCompetenceForm {
+  private static final Logger LOGGER = Logger.getLogger(ModifierCompetenceForm.class.getName());
+  private static final String CHAMP_NOM = "NouveauNomCompetence";
+  private static final String CHAMP_NIVEAU = "nouveauNiveau";
+  private static final String EXCEPTION = "Exception";
+
+  private final CompetenceDao competenceDao;
+
+  private String resultat;
+  private final Map<String, String> erreurs = new HashMap<>();
+
+  public ModifierCompetenceForm() {
+    final BeanFactoryReference bf =
+        SingletonBeanFactoryLocator.getInstance().useBeanFactory("beansDao");
+    /* Récupération d'une instance de notre DAO Competence */
+    this.competenceDao = (CompetenceDao) bf.getFactory().getBean("competenceDao");
+  }
+
+  public String getResultat() {
+    return this.resultat;
+  }
+
+  public Map<String, String> getErreurs() {
+    return this.erreurs;
+  }
+
+  public void modifierCompetence(HttpServletRequest request) {
+    request.getSession();
+    final String nouveauNom =
+        ModifierCompetenceForm.getValeurChamp(request, ModifierCompetenceForm.CHAMP_NOM);
+    final String niveau =
+        ModifierCompetenceForm.getValeurChamp(request, ModifierCompetenceForm.CHAMP_NIVEAU);
+
+    final int idComp = Integer.parseInt(request.getParameter("competenceId"));
+
+    final Competence competence = this.competenceDao.trouverParId(idComp);
+    /**
+     * final int idComp = new Integer((Integer) session.getAttribute("idComp"));
+     * 
+     * final Competence competence = this.competenceDao.trouverParId(idComp);
+     */
+
+    try {
+      if (niveau != null) {
+        this.traiterNiveau(niveau);
+      }
+      if (nouveauNom != null) {
+        this.traiterNouveauNom(nouveauNom);
+      }
+
+      if (this.erreurs.isEmpty()) {
+        if (niveau != null) {
+          this.competenceDao.modifierCompetence(competence, Integer.parseInt(niveau));
+        }
+        if (nouveauNom != null) {
+          this.competenceDao.modifierCompetence(competence, nouveauNom);
+        }
+        this.resultat = "Succès de l'inscription.";
+      } else {
+        this.resultat = "Échec de l'inscription.";
+      }
+    } catch (final DaoException bdde) {
+      this.resultat =
+          "Échec de l'inscription : une erreur imprévue est survenue, merci de réessayer dans quelques instants.";
+      ModifierCompetenceForm.LOGGER.log(Level.INFO, EXCEPTION, bdde);
+    }
+  }
+
+  private static String getValeurChamp(HttpServletRequest request, String nomChamp) {
+    final String valeur = request.getParameter(nomChamp);
+    if (valeur == null || valeur.trim().length() == 0) {
+      return null;
+    } else {
+      return valeur.trim();
+    }
+  }
+
+  private void validationNiveau(String niveau) throws FormValidationException {
+    if (!niveau.matches("([0-9]+)")) {
+      throw new FormValidationException("Merci de saisir un niveau valide.");
+    }
+
+  }
+
+  private void validationNouveauNom(String nouveauNom) throws FormValidationException {
+
+    if (!(nouveauNom.length() < 100 && nouveauNom.length() > 4)) {
+      throw new FormValidationException("Merci de saisir un nom valide.");
+    }
+  }
+
+  private void traiterNouveauNom(String nouveauNom) {
+    try {
+      this.validationNouveauNom(nouveauNom);
+    } catch (final FormValidationException fve) {
+      ModifierCompetenceForm.LOGGER.log(Level.INFO, EXCEPTION, fve);
+      this.setErreur(ModifierCompetenceForm.CHAMP_NOM, fve.getMessage());
+    }
+  }
+
+  private void traiterNiveau(String niveau) {
+    try {
+      this.validationNiveau(niveau);
+    } catch (final FormValidationException fve) {
+      ModifierCompetenceForm.LOGGER.log(Level.INFO, EXCEPTION, fve);
+      this.setErreur(ModifierCompetenceForm.CHAMP_NIVEAU, fve.getMessage());
+    }
+  }
+
+  private void setErreur(String champ, String message) {
+    this.erreurs.put(champ, message);
+  }
+
+  public List<Competence> trouverParNom(String nom) {
+    return this.competenceDao.trouverParNom(nom);
+
+  }
+}

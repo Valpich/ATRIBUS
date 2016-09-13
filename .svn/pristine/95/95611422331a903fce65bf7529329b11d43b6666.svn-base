@@ -1,0 +1,237 @@
+package fr.eseo.atribus.controller;
+
+import fr.eseo.atribus.dao.CompetenceDao;
+import fr.eseo.atribus.dao.ExamenDao;
+import fr.eseo.atribus.entities.EnseignantRefMatiere;
+import fr.eseo.atribus.entities.Examen;
+import fr.eseo.atribus.entities.Exercice;
+import fr.eseo.atribus.entities.Utilisateur;
+import fr.eseo.atribus.forms.AddExerciceForm;
+import fr.eseo.atribus.forms.ModifierExerciceForm;
+
+import org.springframework.beans.factory.access.BeanFactoryReference;
+import org.springframework.beans.factory.access.SingletonBeanFactoryLocator;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.ModelAndView;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
+import javax.annotation.PostConstruct;
+import javax.servlet.http.HttpServletRequest;
+
+/**
+ * Servlet implementation class ExerciceController.
+ */
+@Controller
+public class ExerciceController {
+  public static final String CONF_BDD_FACTORY = "DaoFactory";
+  public static final String ATT_EXERCICE = "exercice";
+  public static final String ATT_EXERCICES = "exercices";
+  public static final String ATT_FORM = "form";
+  public static final String ATT_COMPETENCES = "competences";
+  public static final String ATT_EXAMEN = "examen";
+  public static final String ATT_EXAMENS = "examens";
+  public static final String VUE_MODIFIER = "EnseignantRefMatiere/modifierExercice";
+  public static final String VUE_SUPPRIMER = "EnseignantRefMatiere/supprimerExercice";
+  public static final String VUE = "EnseignantRefMatiere/addExercice";
+  public static final String VUE_AUTO_EVAL = "EnseignantRefMatiere/ajouterAutoEval";
+  public static final String ATT_CHOIX_EXAMEN = "choixExamen";
+  public static final String ATT_SAVE_EXAMEN = "saveExamen";
+  public static final String ATT_SESSION_USER = "sessionUtilisateur";
+
+  private ExamenDao examenDao;
+  private CompetenceDao competenceDao;
+
+  @PostConstruct
+  public void init() {
+    final BeanFactoryReference bf =
+        SingletonBeanFactoryLocator.getInstance().useBeanFactory("beansDao");
+    /* Récupération d'une instance de notre DAO Examen */
+    this.examenDao = (ExamenDao) bf.getFactory().getBean("examenDao");
+    /* Récupération d'une instance de notre DAO Competence */
+    this.competenceDao = (CompetenceDao) bf.getFactory().getBean("competenceDao");
+  }
+
+
+  @RequestMapping(value = "/EnseignantRefMatiere/AjouterExercice", method = RequestMethod.GET)
+  protected ModelAndView afficherAjouterExercice() {
+    final HashMap<String, Object> attributsRequete = new HashMap<>();
+    // On charge la liste des competences
+    attributsRequete.put(ExerciceController.ATT_COMPETENCES,
+        this.competenceDao.trouverToutesLesCompetences());
+    // On charge la liste des examens
+    attributsRequete.put(ExerciceController.ATT_EXAMENS, this.examenDao.trouverTousLesExamens());
+    return new ModelAndView(VUE, attributsRequete);
+  }
+
+  @RequestMapping(value = "/EnseignantRefMatiere/AjouterExercice", method = RequestMethod.POST)
+  protected ModelAndView ajouterExercice(HttpServletRequest request) {
+    final HashMap<String, Object> attributsRequete = new HashMap<>();
+    // On charge la liste des competences
+    attributsRequete.put(ExerciceController.ATT_COMPETENCES,
+        this.competenceDao.trouverToutesLesCompetences());
+    // On charge la liste des examens
+    attributsRequete.put(ExerciceController.ATT_EXAMENS, this.examenDao.trouverTousLesExamens());
+
+    /* Préparation de l'objet formulaire */
+    final AddExerciceForm form = new AddExerciceForm();
+
+    /* Appel au traitement et à la validation de la requête, et récupération du bean en résultant */
+    final Exercice exercice = form.addExercice(request);
+
+    /* Stockage du formulaire et du bean dans l'objet request */
+    attributsRequete.put(ExerciceController.ATT_FORM, form);
+    attributsRequete.put(ExerciceController.ATT_EXERCICE, exercice);
+
+    return new ModelAndView(VUE, attributsRequete);
+  }
+
+  @RequestMapping(value = "/EnseignantRefMatiere/ModifierExercice", method = RequestMethod.GET)
+  protected ModelAndView afficherModifierExercice(HttpServletRequest request) {
+    final HashMap<String, Object> attributsRequete = new HashMap<>();
+    request.getSession().removeAttribute(ATT_SAVE_EXAMEN);
+    request.getSession().removeAttribute(ExerciceController.ATT_EXAMEN);
+    final List<Examen> examensTrier = new ArrayList<>();
+    @SuppressWarnings("unchecked")
+    final List<Utilisateur> listeUtilisateur =
+        (List<Utilisateur>) request.getSession().getAttribute(ATT_SESSION_USER);
+    EnseignantRefMatiere erm = null;
+    for (final Utilisateur utilisateur : listeUtilisateur) {
+      if (utilisateur.getClass().equals(EnseignantRefMatiere.class)) {
+        erm = (EnseignantRefMatiere) utilisateur;
+      }
+    }
+    this.trierExamens(erm, this.examenDao.trouverTousLesExamens(), examensTrier);
+    // On charge la liste des examens
+    attributsRequete.put(ExerciceController.ATT_EXAMENS, examensTrier);
+    return new ModelAndView(VUE_MODIFIER, attributsRequete);
+  }
+
+  @RequestMapping(value = "/EnseignantRefMatiere/ModifierExercice", method = RequestMethod.POST)
+  protected ModelAndView modifierExercice(HttpServletRequest request) {
+    final HashMap<String, Object> attributsRequete = new HashMap<>();
+    // On charge la liste des competences
+    attributsRequete.put(ExerciceController.ATT_COMPETENCES,
+        this.competenceDao.trouverToutesLesCompetences());
+    final String nomExamen = ExerciceController.getValeurChamp(request, ATT_CHOIX_EXAMEN);
+    final String examenSauvegarde = (String) request.getSession().getAttribute(ATT_SAVE_EXAMEN);
+    @SuppressWarnings("unchecked")
+    final List<Utilisateur> listeUtilisateur =
+        (List<Utilisateur>) request.getSession().getAttribute(ATT_SESSION_USER);
+    EnseignantRefMatiere erm = null;
+    for (final Utilisateur utilisateur : listeUtilisateur) {
+      if (utilisateur.getClass().equals(EnseignantRefMatiere.class)) {
+        erm = (EnseignantRefMatiere) utilisateur;
+      }
+    }
+    if (nomExamen != null) {
+      // On charge la liste des examens
+      final List<Examen> examens = this.examenDao.trouverTousLesExamens();
+      final List<Examen> examensTrier = new ArrayList<>();
+      this.trierExamens(erm, examens, examensTrier);
+      for (final Examen examen : examensTrier) {
+        this.recupererExercices(request, attributsRequete, nomExamen, examen);
+      }
+      attributsRequete.put(ExerciceController.ATT_EXAMENS, examensTrier);
+      return new ModelAndView(VUE_MODIFIER, attributsRequete);
+    } else {
+      if (examenSauvegarde != null) {
+        final Examen examenAncien =
+            (Examen) request.getSession().getAttribute(ExerciceController.ATT_EXAMEN);
+        final ModifierExerciceForm form = new ModifierExerciceForm();
+        form.modifierExercices(examenAncien, request);
+        request.getSession().removeAttribute(ExerciceController.ATT_EXAMEN);
+        request.getSession().removeAttribute(ExerciceController.ATT_SAVE_EXAMEN);
+        // On charge la liste des examens
+        final List<Examen> examens = this.examenDao.trouverTousLesExamens();
+        final List<Examen> examensTrier = new ArrayList<>();
+        this.trierExamens(erm, examens, examensTrier);
+        attributsRequete.put(ExerciceController.ATT_EXAMENS, examensTrier);
+        attributsRequete.put("message", "TODO : afficher resultat du form");
+        return new ModelAndView(VUE_MODIFIER, attributsRequete);
+      } else {
+        request.getSession().removeAttribute(ATT_SAVE_EXAMEN);
+        return this.afficherModifierExercice(request);
+      }
+    }
+  }
+
+  private void trierExamens(EnseignantRefMatiere erm, final List<Examen> examens,
+      final List<Examen> examensTrier) {
+    if (erm != null) {
+      for (final Examen examen : examens) {
+        if (!examen.getAutoEvaluation()
+            && examen.getMatiere().getId() == erm.getMatiere().getId()) {
+          examensTrier.add(examen);
+        }
+      }
+    }
+  }
+
+
+  private void recupererExercices(HttpServletRequest request,
+      final HashMap<String, Object> attributsRequete, final String nomExamen, final Examen examen) {
+    if (nomExamen.equals(examen.getNom()) && !examen.getAutoEvaluation()) {
+      request.getSession().setAttribute(ATT_SAVE_EXAMEN, examen.getNom());
+      request.getSession().setAttribute(ExerciceController.ATT_EXAMEN, examen);
+      attributsRequete.put(ExerciceController.ATT_EXERCICES, examen.getExercices());
+      if (examen.getExercices().isEmpty()) {
+        request.setAttribute("noExercice", "L'examen n'a pas d'exercice");
+      }
+    }
+  }
+
+  @RequestMapping(value = "/EnseignantRefMatiere/AjouterAutoEvaluation", method = RequestMethod.GET)
+  protected ModelAndView afficherAjouterAutoEvaluation() {
+    final HashMap<String, Object> attributsRequete = new HashMap<>();
+    // On charge la liste des competences
+    attributsRequete.put(ExerciceController.ATT_COMPETENCES,
+        this.competenceDao.trouverToutesLesCompetences());
+    // On charge la liste des examens
+    attributsRequete.put(ExerciceController.ATT_EXAMENS, this.examenDao.trouverTousLesExamens());
+    return new ModelAndView(VUE_AUTO_EVAL, attributsRequete);
+  }
+
+  @RequestMapping(value = "/EnseignantRefMatiere/AjouterAutoEvaluation",
+      method = RequestMethod.POST)
+  protected ModelAndView ajouterAutoEvaluation(@RequestParam("choixExamen") String nomExamen,
+      @RequestParam("question") String question, @RequestParam("reponses") List<String> reponses,
+      @RequestParam("points") String nbPoints,
+      @RequestParam("choixCompetence") List<String> competences,
+      @RequestParam("pourcentages") List<String> pourcentages,
+      @RequestParam("bonneReponses") String bonneReponses) {
+    final HashMap<String, Object> attributsRequete = new HashMap<>();
+    // On charge la liste des competences
+    attributsRequete.put(ExerciceController.ATT_COMPETENCES,
+        this.competenceDao.trouverToutesLesCompetences());
+    // On charge la liste des examens
+    attributsRequete.put(ExerciceController.ATT_EXAMENS, this.examenDao.trouverTousLesExamens());
+    /* Préparation de l'objet formulaire */
+    final AddExerciceForm form = new AddExerciceForm();
+    /* Appel au traitement et à la validation de la requête, et récupération du bean en résultant */
+    final Exercice exercice = form.ajouterAutoEvaluation(question, reponses, nbPoints, competences,
+        pourcentages, nomExamen, bonneReponses);
+    /* Stockage du formulaire et du bean dans l'objet request */
+    attributsRequete.put(ExerciceController.ATT_FORM, form);
+    attributsRequete.put(ExerciceController.ATT_EXERCICE, exercice);
+
+    return new ModelAndView(VUE_AUTO_EVAL, attributsRequete);
+  }
+
+  /**
+   * Méthode utilitaire qui retourne null si un champ est vide, et son contenu sinon.
+   */
+  private static String getValeurChamp(HttpServletRequest request, String nomChamp) {
+    final String valeur = request.getParameter(nomChamp);
+    if (valeur == null || valeur.trim().length() == 0) {
+      return null;
+    } else {
+      return valeur.trim();
+    }
+  }
+}

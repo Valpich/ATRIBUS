@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite guice-stage="DEVELOPMENT" name="Failed suite [Default suite]">
+  <test name="Default test(failed)">
+    <classes>
+      <class name="fr.eseo.atribus.controller.UeControllerTest">
+        <methods>
+          <include name="ajouterUeGet"/>
+          <include name="modifierUe"/>
+          <include name="setup"/>
+          <include name="affichersAsocierMatiereUe"/>
+          <include name="validerCompetencesUePost"/>
+          <include name="afficherModifierUeSelectionUe"/>
+          <include name="valideMatiere"/>
+          <include name="modifierMatiereUe"/>
+          <include name="afficherAssocierMatiereUe"/>
+          <include name="afficherCompetenceMatierePost"/>
+          <include name="validerCompetencesUeGet"/>
+          <include name="afficherCompetenceMatiereGet"/>
+          <include name="afficherCompetenceUePost"/>
+          <include name="afficherCompetenceUeGet"/>
+          <include name="modifierModMatiereUe"/>
+          <include name="ajouterUePost"/>
+        </methods>
+      </class> <!-- fr.eseo.atribus.controller.UeControllerTest -->
+    </classes>
+  </test> <!-- Default test(failed) -->
+</suite> <!-- Failed suite [Default suite] -->

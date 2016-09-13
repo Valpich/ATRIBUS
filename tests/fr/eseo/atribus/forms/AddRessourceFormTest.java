@@ -1,0 +1,73 @@
+package fr.eseo.atribus.forms;
+
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
+
+import fr.eseo.atribus.entities.Ressource;
+
+import org.mockito.Mockito;
+import org.testng.annotations.BeforeTest;
+import org.testng.annotations.Test;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+
+public class AddRessourceFormTest {
+
+  private static final String CHAMP_MATIERE = "matiere";
+  private static final String CHAMP_FILE = "file";
+
+  AddRessourceForm form;
+  Ressource ressource;
+
+  @BeforeTest
+  public void beforeTest() {
+    this.form = new AddRessourceForm();
+    this.ressource = new Ressource();
+  }
+
+  @Test
+  public void ajouterRessourceValide() {
+
+    final HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
+    final String nomMatiere = "MP Microcontrôleur 1";
+    final String nomFile = "document.txt";
+    final List<String> competencesLister = new ArrayList<>();
+
+    competencesLister.add("Travail en équipe");
+    competencesLister.add("Communication");
+
+    Mockito.when(request.getParameter(AddRessourceFormTest.CHAMP_MATIERE)).thenReturn(nomMatiere);
+    Mockito.when(request.getParameter(AddRessourceFormTest.CHAMP_FILE)).thenReturn(nomFile);
+
+    this.ressource = this.form.addRessource(nomFile, nomFile,nomMatiere, competencesLister);
+
+    assertNotNull(this.ressource);
+    assertEquals(this.ressource.getNom(), "document", "Nom document valide");
+    assertEquals(this.ressource.getType(), "txt", "Extension document valide");
+
+  }
+
+  @Test
+  public void ajouterRessourceNonValide() {
+
+    final HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
+    final String nomMatiere = "Matiere inconnu";
+    final String nomFile = "document.txt";
+    final List<String> competencesLister = new ArrayList<>();
+
+    competencesLister.add("Def");
+    competencesLister.add("Abc");
+
+    Mockito.when(request.getParameter(AddRessourceFormTest.CHAMP_MATIERE)).thenReturn(nomMatiere);
+    Mockito.when(request.getParameter(AddRessourceFormTest.CHAMP_FILE)).thenReturn(nomFile);
+
+    this.ressource = this.form.addRessource(nomFile,nomFile, nomMatiere, competencesLister);
+
+    assertNotNull(this.ressource);
+
+  }
+
+}

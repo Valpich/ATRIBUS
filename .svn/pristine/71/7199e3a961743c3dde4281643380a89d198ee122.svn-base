@@ -1,0 +1,9 @@
+fr.eseo.atribus.beans
+fr.eseo.atribus.controller
+fr.eseo.atribus.dao
+fr.eseo.atribus.entities
+fr.eseo.atribus.filters
+fr.eseo.atribus.forms
+fr.eseo.atribus.integration
+fr.eseo.atribus.listeners
+fr.eseo.atribus.timers

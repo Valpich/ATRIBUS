@@ -1,0 +1,392 @@
+package fr.eseo.atribus.dao;
+
+import fr.eseo.atribus.entities.Examen;
+import fr.eseo.atribus.entities.Exercice;
+import fr.eseo.atribus.entities.Matiere;
+
+import org.springframework.beans.factory.access.BeanFactoryReference;
+import org.springframework.beans.factory.access.SingletonBeanFactoryLocator;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+/**
+ * La Classe ExamenDaoImpl.
+ */
+public class ExamenDaoImpl implements ExamenDao {
+
+  /** La constante LOGGER. */
+  private static final Logger LOGGER = Logger.getLogger(ExamenDaoImpl.class.getName());
+
+  /** La variable dao factory. */
+  private final DaoFactory daoFactory;
+
+  /** La constante SQL_INSERT. */
+  private static final String SQL_INSERT =
+      "INSERT INTO examen (nom, id_matiere, auto_evaluation) VALUES (?,?,?)";
+
+  /** La constante SQL_SELECT_PAR_NOM. */
+  private static final String SQL_SELECT_PAR_NOM = "SELECT * FROM examen WHERE nom = ?";
+
+  /** La constante SQL_SELECT_ALL. */
+  private static final String SQL_SELECT_ALL = "SELECT * FROM examen";
+
+  /** La constante ECHEC. */
+  private static final String ECHEC =
+      "Échec de la création de l'examen, aucune ligne" + " ajoutée dans la table.";
+
+  /** La constante UPDATE. */
+  private static final String UPDATE = "UPDATE examen SET nom = ?, id_matiere = ? WHERE id = ?;";
+
+  /** La constante EXCEPTION. */
+  private static final String EXCEPTION = "Exception";
+
+  /** La constante SQL_DELETE. */
+  private static final String SQL_DELETE = "DELETE FROM examen WHERE id = ?;";
+
+  /** La constante COMPTER_EXERCICE. */
+  private static final String COMPTER_EXERCICE =
+      "SELECT COUNT(*) FROM notes WHERE id_exercice = ? AND date_examen BETWEEN ? AND ?;";
+
+  /** La constante COMPTER_EXERCICE_DEBUT. */
+  private static final String COMPTER_EXERCICE_DEBUT =
+      "SELECT COUNT(*) FROM notes WHERE id_exercice = ? AND date_examen > ? ;";
+
+  /** La constante COMPTER_EXERCICE_FIN. */
+  private static final String COMPTER_EXERCICE_FIN =
+      "SELECT COUNT(*) FROM notes WHERE id_exercice = ? AND date_examen < ? ;";
+
+  /** La constante COMPTER_EXERCICE_ALL. */
+  private static final String COMPTER_EXERCICE_ALL =
+      "SELECT COUNT(*) FROM notes WHERE id_exercice = ? ;";
+
+  /**
+   * Instancie un nouveau examen dao impl.
+   */
+  public ExamenDaoImpl() {
+    final BeanFactoryReference bf =
+        SingletonBeanFactoryLocator.getInstance().useBeanFactory("contextDao");
+    this.daoFactory = (DaoFactory) bf.getFactory().getBean("daoFactory");
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see fr.eseo.atribus.dao.ExamenDao#trouverParNom(java.lang.String)
+   */
+  /* Implémentation de la méthode trouverParNom() définie dans l'interface ExamenBdd */
+  @Override
+  public Examen trouverParNom(String nom) {
+    return this.trouver(ExamenDaoImpl.SQL_SELECT_PAR_NOM, nom);
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see fr.eseo.atribus.dao.ExamenDao#trouverTousLesExamens()
+   */
+  /* Implémentation de la méthode trouverParNom() définie dans l'interface ExamenBdd */
+  @Override
+  public List<Examen> trouverTousLesExamens() {
+    return this.trouverTous(ExamenDaoImpl.SQL_SELECT_ALL);
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see fr.eseo.atribus.dao.ExamenDao#trouverIdParNom(java.lang.String)
+   */
+  /* Implémentation de la méthode trouverParNom() définie dans l'interface ExamenBdd */
+  @Override
+  public int trouverIdParNom(String nom) {
+    return DaoUtilitaire.trouverId(this.daoFactory, ExamenDaoImpl.SQL_SELECT_PAR_NOM, nom);
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see fr.eseo.atribus.dao.ExamenDao#ajouter(fr.eseo.atribus.entities.Examen,
+   * fr.eseo.atribus.entities.Matiere)
+   */
+  /* Implémentation de la méthode définie dans l'interface ExamenBdd */
+  @Override
+  public void ajouter(Examen examen, Matiere matiere) {
+    Connection connexion = null;
+    PreparedStatement preparedStatement = null;
+    final ResultSet valeursAutoGenerees = null;
+    try {
+      /* Récupération d'une connexion depuis la Factory */
+      connexion = this.daoFactory.getConnection();
+      final int idMatiere = this.getIdMatiere(matiere);
+      preparedStatement = DaoUtilitaire.initialisationRequetePreparee(connexion,
+          ExamenDaoImpl.SQL_INSERT, true, examen.getNom(), idMatiere, examen.getAutoEvaluation());
+      final int statut = preparedStatement.executeUpdate();
+      /* Analyse du statut retourné par la requête d'insertion */
+      if (statut == 0) {
+        throw new DaoException(ECHEC);
+      }
+    } catch (final SQLException sqle) {
+      ExamenDaoImpl.LOGGER.log(Level.INFO, EXCEPTION, sqle);
+      throw new DaoException(sqle);
+    } finally {
+      DaoUtilitaire.fermeturesSilencieuses(valeursAutoGenerees, preparedStatement, connexion);
+    }
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see fr.eseo.atribus.dao.ExamenDao#supprimer(fr.eseo.atribus.entities.Examen)
+   */
+  /* Implémentation de la méthode définie dans l'interface ExamenDao */
+  @Override
+  public void supprimer(Examen examen) {
+    Connection connexion = null;
+    PreparedStatement preparedStatement = null;
+    final ResultSet valeursAutoGenerees = null;
+    try {
+      /* Récupération d'une connexion depuis la Factory */
+      connexion = this.daoFactory.getConnection();
+      preparedStatement = DaoUtilitaire.initialisationRequetePreparee(connexion,
+          ExamenDaoImpl.SQL_DELETE, false, examen.getId());
+      final int statut = preparedStatement.executeUpdate();
+      /* Analyse du statut retourné par la requête d'insertion */
+      if (statut == 0) {
+        throw new DaoException(
+            "Échec de la suppresion de la ressource, aucune ligne supprimée dans la table.");
+      }
+    } catch (final SQLException sqle) {
+      ExamenDaoImpl.LOGGER.log(Level.INFO, EXCEPTION, sqle);
+      throw new DaoException(sqle);
+    } finally {
+      DaoUtilitaire.fermeturesSilencieuses(valeursAutoGenerees, preparedStatement, connexion);
+    }
+  }
+
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see fr.eseo.atribus.dao.ExamenDao#update(fr.eseo.atribus.entities.Examen, java.lang.String)
+   */
+  /* Implémentation de la méthode définie dans l'interface ExamenBdd */
+  @Override
+  public void update(Examen examen, String ancienNom) {
+    Connection connexion = null;
+    PreparedStatement preparedStatement = null;
+    final ResultSet valeursAutoGenerees = null;
+    final PreparedStatement preparedStatementDeux = null;
+    try {
+      /* Récupération d'une connexion depuis la Factory */
+      connexion = this.daoFactory.getConnection();
+      preparedStatement =
+          DaoUtilitaire.initialisationRequetePreparee(connexion, ExamenDaoImpl.UPDATE, true,
+              examen.getNom(), examen.getMatiere().getId(), this.getIdExamen(ancienNom));
+      final int statut = preparedStatement.executeUpdate();
+      /* Analyse du statut retourné par la requête d'insertion */
+      if (statut == 0) {
+        throw new DaoException(ECHEC);
+      }
+    } catch (final SQLException sqle) {
+      ExamenDaoImpl.LOGGER.log(Level.INFO, EXCEPTION, sqle);
+      throw new DaoException(sqle);
+    } finally {
+      DaoUtilitaire.fermeturesSilencieuses(valeursAutoGenerees, preparedStatement, connexion);
+      DaoUtilitaire.fermetureSilencieuse(preparedStatementDeux);
+    }
+  }
+
+
+  /**
+   * Trouver.
+   *
+   * @param sql la requete sql
+   * @param objets les objets de la requete
+   * @return Le paramètre examen
+   */
+  /*
+   * Méthode générique utilisée pour retourner un examen depuis la base de données, correspondant à
+   * la requête SQL donnée prenant en paramètres les objets passés en argument.
+   */
+  private Examen trouver(String sql, Object... objets) {
+    Connection connexion = null;
+    PreparedStatement preparedStatement = null;
+    ResultSet resultSet = null;
+    Examen examen = null;
+
+    try {
+      /* Récupération d'une connexion depuis la Factory */
+      connexion = this.daoFactory.getConnection();
+      /*
+       * Préparation de la requête avec les objets passés en arguments (ici, uniquement un id) et
+       * exécution.
+       */
+      preparedStatement =
+          DaoUtilitaire.initialisationRequetePreparee(connexion, sql, false, objets);
+      resultSet = preparedStatement.executeQuery();
+      /* Parcours de la ligne de données retournée dans le ResultSet */
+      if (resultSet.next()) {
+        examen = this.map(resultSet);
+      }
+    } catch (final SQLException sqle) {
+      ExamenDaoImpl.LOGGER.log(Level.INFO, "Exception", sqle);
+      throw new DaoException(sqle);
+    } finally {
+      DaoUtilitaire.fermeturesSilencieuses(resultSet, preparedStatement, connexion);
+    }
+    return examen;
+  }
+
+  /**
+   * Trouver tous les examens.
+   *
+   * @param sql la requete sql
+   * @return Le paramètre list
+   */
+  /*
+   * Méthode générique utilisée pour retourner un examen depuis la base de données, correspondant à
+   * la requête SQL donnée prenant en paramètres les objets passés en argument.
+   */
+  private List<Examen> trouverTous(String sql) {
+    Connection connexion = null;
+    PreparedStatement preparedStatement = null;
+    ResultSet resultSet = null;
+    List<Examen> examens = null;
+    try {
+      /* Récupération d'une connexion depuis la Factory */
+      connexion = this.daoFactory.getConnection();
+      /*
+       * Préparation de la requête avec les objets passés en arguments (ici, uniquement un id) et
+       * exécution.
+       */
+      preparedStatement = DaoUtilitaire.initialisationRequetePreparee(connexion, sql, false);
+      resultSet = preparedStatement.executeQuery();
+      examens = new ArrayList<>();
+      /* Parcours de la ligne de données retournée dans le ResultSet */
+      while (resultSet.next()) {
+        examens.add(this.map(resultSet));
+      }
+    } catch (final SQLException sqle) {
+      ExamenDaoImpl.LOGGER.log(Level.INFO, EXCEPTION, sqle);
+      throw new DaoException(sqle);
+    } finally {
+      DaoUtilitaire.fermeturesSilencieuses(resultSet, preparedStatement, connexion);
+    }
+    return examens;
+  }
+
+  /**
+   * Accesseur en lecture du paramètre id examen.
+   *
+   * @param nom le nom de l'examen
+   * @return le paramètre id examen
+   */
+  private int getIdExamen(String nom) {
+    final int idExamen = this.trouverIdParNom(nom);
+    if (idExamen < 0) {
+      throw new DaoException(ECHEC);
+    }
+    return idExamen;
+  }
+
+  /**
+   * Map.
+   *
+   * @param resultSet le result set
+   * @return Le paramètre examen
+   * @throws SQLException de type SQL exception
+   */
+  /*
+   * Simple méthode utilitaire permettant de faire la correspondance (le mapping) entre une ligne
+   * issue de la table des examens (un ResultSet) et un bean Examen.
+   */
+  private Examen map(ResultSet resultSet) throws SQLException {
+    final Examen examen = new Examen();
+    examen.setNom(resultSet.getString("nom"));
+    examen.setId(resultSet.getInt("id"));
+    final BeanFactoryReference bf =
+        SingletonBeanFactoryLocator.getInstance().useBeanFactory("beansDao");
+    final MatiereDao matiereDao = (MatiereDao) bf.getFactory().getBean("matiereDao");
+    final ExerciceDao exerciceDao = (ExerciceDao) bf.getFactory().getBean("exerciceDao");
+    examen.setMatiere(matiereDao.trouverParId(resultSet.getInt("id_matiere")));
+    final List<Exercice> questions = exerciceDao.trouverParExamen(examen);
+    examen.setExercices(questions);
+    examen.setAutoEvaluation(resultSet.getBoolean("auto_evaluation"));
+    return examen;
+  }
+
+  /**
+   * Accesseur en lecture sur le paramètre id matiere.
+   *
+   * @param matiere la matiere
+   * @return le paramètre id matiere
+   */
+  private int getIdMatiere(Matiere matiere) {
+    final BeanFactoryReference bf =
+        SingletonBeanFactoryLocator.getInstance().useBeanFactory("beansDao");
+    final MatiereDao matiereDao = (MatiereDao) bf.getFactory().getBean("matiereDao");
+    final int idMatiere = matiereDao.trouverIdParNom(matiere.getNom());
+    if (idMatiere < 0) {
+      throw new DaoException(ECHEC);
+    }
+    return idMatiere;
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see fr.eseo.atribus.dao.ExamenDao#calculerHistorique(fr.eseo.atribus.entities.Examen,
+   * java.util.Date, java.util.Date)
+   */
+  @Override
+  public int calculerHistorique(Examen examen, Date dateDebut, Date dateFin) {
+    Connection connexion = null;
+    ResultSet resultSet = null;
+    int quantite = 0;
+    PreparedStatement preparedStatement = null;
+    try {
+      /* Récupération d'une connexion depuis la Factory */
+      connexion = this.daoFactory.getConnection();
+      /*
+       * Préparation de la requête avec les objets passés en arguments (ici, uniquement un id) et
+       * exécution.
+       */
+      if (dateDebut == null) {
+        if (dateFin == null) {
+          preparedStatement = DaoUtilitaire.initialisationRequetePreparee(connexion,
+              COMPTER_EXERCICE_ALL, false, examen.getExercices().get(0).getId());
+        } else {
+          preparedStatement = DaoUtilitaire.initialisationRequetePreparee(connexion,
+              COMPTER_EXERCICE_FIN, false, examen.getExercices().get(0).getId(), dateFin);
+        }
+      } else {
+        if (dateFin == null) {
+          preparedStatement = DaoUtilitaire.initialisationRequetePreparee(connexion,
+              COMPTER_EXERCICE_DEBUT, false, examen.getExercices().get(0).getId(), dateDebut);
+        } else {
+          preparedStatement = DaoUtilitaire.initialisationRequetePreparee(connexion,
+              COMPTER_EXERCICE, false, examen.getExercices().get(0).getId(), dateDebut, dateFin);
+        }
+      }
+      resultSet = preparedStatement.executeQuery();
+      /* Parcours de la ligne de données retournée dans le ResultSet */
+      while (resultSet.next()) {
+        quantite = resultSet.getInt(1);
+      }
+    } catch (final SQLException sqle) {
+      ExamenDaoImpl.LOGGER.log(Level.INFO, EXCEPTION, sqle);
+      throw new DaoException(sqle);
+    } finally {
+      DaoUtilitaire.fermeturesSilencieuses(resultSet, preparedStatement, connexion);
+    }
+    return quantite;
+  }
+
+}

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testng-results skipped="0" failed="0" total="15" passed="15">
+  <reporter-output>
+  </reporter-output>
+  <suite name="Default suite" duration-ms="6540" started-at="2016-05-28T22:43:52Z" finished-at="2016-05-28T22:43:58Z">
+    <groups>
+    </groups>
+    <test name="Default test" duration-ms="6540" started-at="2016-05-28T22:43:52Z" finished-at="2016-05-28T22:43:58Z">
+      <class name="fr.eseo.atribus.controller.RessourceControllerTest">
+        <test-method status="PASS" signature="setup()[pri:0, instance:fr.eseo.atribus.controller.RessourceControllerTest@51c959a4]" name="setup" is-config="true" duration-ms="4010" started-at="2016-05-29T00:43:52Z" finished-at="2016-05-29T00:43:56Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- setup -->
+        <test-method status="PASS" signature="afficherConsulterRessource()[pri:0, instance:fr.eseo.atribus.controller.RessourceControllerTest@51c959a4]" name="afficherConsulterRessource" duration-ms="1159" started-at="2016-05-29T00:43:56Z" finished-at="2016-05-29T00:43:57Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- afficherConsulterRessource -->
+        <test-method status="PASS" signature="afficherExtraireNotes()[pri:0, instance:fr.eseo.atribus.controller.RessourceControllerTest@51c959a4]" name="afficherExtraireNotes" duration-ms="232" started-at="2016-05-29T00:43:57Z" finished-at="2016-05-29T00:43:57Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- afficherExtraireNotes -->
+        <test-method status="PASS" signature="afficherExtraireNotesDe()[pri:0, instance:fr.eseo.atribus.controller.RessourceControllerTest@51c959a4]" name="afficherExtraireNotesDe" duration-ms="7" started-at="2016-05-29T00:43:57Z" finished-at="2016-05-29T00:43:57Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- afficherExtraireNotesDe -->
+        <test-method status="PASS" signature="afficherModifierRessource()[pri:0, instance:fr.eseo.atribus.controller.RessourceControllerTest@51c959a4]" name="afficherModifierRessource" duration-ms="81" started-at="2016-05-29T00:43:57Z" finished-at="2016-05-29T00:43:57Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- afficherModifierRessource -->
+        <test-method status="PASS" signature="afficherTelechargerRessource()[pri:0, instance:fr.eseo.atribus.controller.RessourceControllerTest@51c959a4]" name="afficherTelechargerRessource" duration-ms="69" started-at="2016-05-29T00:43:57Z" finished-at="2016-05-29T00:43:57Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- afficherTelechargerRessource -->
+        <test-method status="PASS" signature="afficherUploaderRessource()[pri:0, instance:fr.eseo.atribus.controller.RessourceControllerTest@51c959a4]" name="afficherUploaderRessource" duration-ms="105" started-at="2016-05-29T00:43:57Z" finished-at="2016-05-29T00:43:57Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- afficherUploaderRessource -->
+        <test-method status="PASS" signature="afficherUtilisationRessources()[pri:0, instance:fr.eseo.atribus.controller.RessourceControllerTest@51c959a4]" name="afficherUtilisationRessources" duration-ms="28" started-at="2016-05-29T00:43:57Z" finished-at="2016-05-29T00:43:57Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- afficherUtilisationRessources -->
+        <test-method status="PASS" signature="consulterRessourcesAvecCompetences()[pri:0, instance:fr.eseo.atribus.controller.RessourceControllerTest@51c959a4]" name="consulterRessourcesAvecCompetences" duration-ms="54" started-at="2016-05-29T00:43:57Z" finished-at="2016-05-29T00:43:57Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- consulterRessourcesAvecCompetences -->
+        <test-method status="PASS" signature="extraireNotesDe()[pri:0, instance:fr.eseo.atribus.controller.RessourceControllerTest@51c959a4]" name="extraireNotesDe" duration-ms="295" started-at="2016-05-29T00:43:57Z" finished-at="2016-05-29T00:43:58Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- extraireNotesDe -->
+        <test-method status="PASS" signature="getFile()[pri:0, instance:fr.eseo.atribus.controller.RessourceControllerTest@51c959a4]" name="getFile" duration-ms="33" started-at="2016-05-29T00:43:58Z" finished-at="2016-05-29T00:43:58Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- getFile -->
+        <test-method status="PASS" signature="modifierRessource()[pri:0, instance:fr.eseo.atribus.controller.RessourceControllerTest@51c959a4]" name="modifierRessource" duration-ms="59" started-at="2016-05-29T00:43:58Z" finished-at="2016-05-29T00:43:58Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- modifierRessource -->
+        <test-method status="PASS" signature="recupererRessources()[pri:0, instance:fr.eseo.atribus.controller.RessourceControllerTest@51c959a4]" name="recupererRessources" duration-ms="18" started-at="2016-05-29T00:43:58Z" finished-at="2016-05-29T00:43:58Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- recupererRessources -->
+        <test-method status="PASS" signature="supprimerRessource()[pri:0, instance:fr.eseo.atribus.controller.RessourceControllerTest@51c959a4]" name="supprimerRessource" duration-ms="43" started-at="2016-05-29T00:43:58Z" finished-at="2016-05-29T00:43:58Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- supprimerRessource -->
+        <test-method status="PASS" signature="uploadFileHandler()[pri:0, instance:fr.eseo.atribus.controller.RessourceControllerTest@51c959a4]" name="uploadFileHandler" duration-ms="174" started-at="2016-05-29T00:43:58Z" finished-at="2016-05-29T00:43:58Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- uploadFileHandler -->
+        <test-method status="PASS" signature="uploadFileHandlerVide()[pri:0, instance:fr.eseo.atribus.controller.RessourceControllerTest@51c959a4]" name="uploadFileHandlerVide" duration-ms="75" started-at="2016-05-29T00:43:58Z" finished-at="2016-05-29T00:43:58Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- uploadFileHandlerVide -->
+      </class> <!-- fr.eseo.atribus.controller.RessourceControllerTest -->
+    </test> <!-- Default test -->
+  </suite> <!-- Default suite -->
+</testng-results>

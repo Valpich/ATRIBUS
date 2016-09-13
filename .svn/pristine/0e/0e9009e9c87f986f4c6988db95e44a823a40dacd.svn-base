@@ -1,0 +1,85 @@
+package fr.eseo.atribus.forms;
+
+import static org.testng.AssertJUnit.assertEquals;
+import static org.testng.Assert.assertNotNull;
+
+import org.mockito.Mockito;
+import org.testng.annotations.BeforeTest;
+import org.testng.annotations.Test;
+
+import fr.eseo.atribus.entities.Matiere;
+
+import javax.servlet.http.HttpServletRequest;
+
+public class AddUeFormTest {
+
+  private static final String CHAMP_NOMUE = "nomUe";
+  private static final String CHAMP_NOM_MATIERE = "nomMatiere";
+  private static final String CHAMP_ECTS = "nbCreditsEcts";
+  private static final String CHAMP_NBHEURES = "nbHeures";
+
+  private static final String CHAMP_SEMESTRE = "semestre";
+  private static final String CHAMP_ID_ENSEIGNANT = "choixIdEnseignant";
+  private static final String CHAMP_COEFF = "coeff";
+  AddUeForm form;
+
+  @BeforeTest
+  public void beforeTest() {
+    this.form = new AddUeForm();
+  }
+
+  @Test
+  public void addBonUe() {
+
+    final HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
+    final String nomUe = "nomUeTest";
+    final String nbCreditEcts = "3";
+    final String nbHeures = "3";
+    final String semestre = "5";
+    final String idEnseignant = "3";
+
+    Mockito.when(request.getParameter(AddUeFormTest.CHAMP_NOMUE)).thenReturn(nomUe);
+    Mockito.when(request.getParameter(AddUeFormTest.CHAMP_ECTS)).thenReturn(nbCreditEcts);
+    Mockito.when(request.getParameter(AddUeFormTest.CHAMP_NBHEURES)).thenReturn(nbHeures);
+    Mockito.when(request.getParameter(AddUeFormTest.CHAMP_SEMESTRE)).thenReturn(semestre);
+    Mockito.when(request.getParameter(AddUeFormTest.CHAMP_ID_ENSEIGNANT)).thenReturn(idEnseignant);
+
+    assertNotNull(this.form.addUe(request));
+
+  }
+
+  @Test
+  public void addMauvaisUe() {
+
+    final HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
+    final String nomUe = "ue";
+    final String nbCreditEcts = "-1";
+    final String nbHeures = "-4";
+    final String semestre = "8";
+    final String idEnseignant = "1";
+
+    Mockito.when(request.getParameter(AddUeFormTest.CHAMP_NOMUE)).thenReturn(nomUe);
+    Mockito.when(request.getParameter(AddUeFormTest.CHAMP_ECTS)).thenReturn(nbCreditEcts);
+    Mockito.when(request.getParameter(AddUeFormTest.CHAMP_NBHEURES)).thenReturn(nbHeures);
+    Mockito.when(request.getParameter(AddUeFormTest.CHAMP_SEMESTRE)).thenReturn(semestre);
+    Mockito.when(request.getParameter(AddUeFormTest.CHAMP_ID_ENSEIGNANT)).thenReturn(idEnseignant);
+
+    assertNotNull(this.form.addUe(request));
+
+  }
+
+  @Test
+  public void testGetResultat(){
+    final HttpServletRequest request = Mockito.mock(HttpServletRequest.class); 
+    final String nomMatiere = "nomMatiere";
+    final String coeff = "-1"; 
+    final String semestre = "-1"; 
+    
+    Mockito.when(request.getParameter(AddUeFormTest.CHAMP_NOM_MATIERE)).thenReturn(nomMatiere);
+    Mockito.when(request.getParameter(AddUeFormTest.CHAMP_COEFF)).thenReturn(coeff);
+    Mockito.when(request.getParameter(AddUeFormTest.CHAMP_SEMESTRE)).thenReturn(semestre);
+    
+    assertEquals("succes",form.getResultat()); 
+  }
+  
+}

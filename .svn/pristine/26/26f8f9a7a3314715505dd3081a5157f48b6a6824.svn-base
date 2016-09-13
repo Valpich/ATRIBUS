@@ -1,0 +1,240 @@
+package fr.eseo.atribus.controller;
+
+import fr.eseo.atribus.dao.CompetenceDao;
+import fr.eseo.atribus.dao.EleveDao;
+import fr.eseo.atribus.entities.Competence;
+import fr.eseo.atribus.entities.DirecteurEtudes;
+import fr.eseo.atribus.entities.Eleve;
+import fr.eseo.atribus.entities.Enseignant;
+import fr.eseo.atribus.entities.EnseignantRefMatiere;
+import fr.eseo.atribus.entities.EnseignantRefUe;
+import fr.eseo.atribus.entities.Utilisateur;
+import fr.eseo.atribus.forms.ConvoquerEtudiantForm;
+import fr.eseo.atribus.forms.SuggererAjouterCompetenceForm;
+import fr.eseo.atribus.forms.SuggererNouvelleCompetenceForm;
+
+import org.springframework.beans.factory.access.BeanFactoryReference;
+import org.springframework.beans.factory.access.SingletonBeanFactoryLocator;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.ModelAndView;
+
+import java.util.HashMap;
+import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+
+@Controller
+public class MailController {
+  public static final String ATT_FORM = "form";
+  public static final String ATT_SESSION_USER = "sessionUtilisateur";
+  private static final String VUE_SUGGERER_AJOUTER = "suggererCompetenceExistantes";
+  private static final String VUE_SUGGERER_NOUVELLE = "suggererNouvelleCompetence";
+  private static final String VUE_CONVOQUER = "DirecteurEtudes/convoquerEtudiant";
+  private static final String BEANS_DAO = "beansDao";
+  private static final String ELEVES = "eleves";
+  private static final String ELEVE_DAO = "eleveDao";
+  private static final String COMPETENCE_DAO = "competenceDao";
+  private static final String REDIRECT_INDEX = "redirect:/index";
+  private static final String COMPETENCES = "competences";
+  @Autowired(required = true)
+  private ConvoquerEtudiantForm convoquerEtudiantForm;
+  @Autowired(required = true)
+  private SuggererNouvelleCompetenceForm suggererNouvelleCompetenceForm;
+  @Autowired(required = true)
+  private SuggererAjouterCompetenceForm suggererAjouterCompetenceForm;
+
+  @RequestMapping(value = "/DirecteurEtudes/ConvoquerEtudiant", method = RequestMethod.GET)
+  protected ModelAndView afficherConvoquerEtudiant() {
+    final HashMap<String, Object> attributsRequete = new HashMap<>();
+    final BeanFactoryReference bf =
+        SingletonBeanFactoryLocator.getInstance().useBeanFactory(BEANS_DAO);
+    final List<Eleve> eleves = ((EleveDao) bf.getFactory().getBean(ELEVE_DAO)).recupererListe();
+    attributsRequete.put(ELEVES, eleves);
+    return new ModelAndView(VUE_CONVOQUER, attributsRequete);
+  }
+
+  @RequestMapping(value = "/DirecteurEtudes/ConvoquerEtudiant", method = RequestMethod.POST)
+  protected ModelAndView convoquerEtudiant(HttpServletRequest request,
+      @RequestParam("choixEleve") String eleve, @RequestParam("date") String date) {
+    final HashMap<String, Object> attributsRequete = new HashMap<>();
+    @SuppressWarnings("unchecked")
+    final List<Utilisateur> listeUtilisateur =
+        (List<Utilisateur>) request.getSession().getAttribute(ATT_SESSION_USER);
+    DirecteurEtudes de = null;
+    for (final Utilisateur utilisateur : listeUtilisateur) {
+      if (utilisateur.getClass().equals(DirecteurEtudes.class)) {
+        de = (DirecteurEtudes) utilisateur;
+      }
+    }
+    if (de != null) {
+      this.convoquerEtudiantForm.convoquerEleve(de, eleve, date);
+      attributsRequete.put(ATT_FORM, this.convoquerEtudiantForm);
+      final BeanFactoryReference bf =
+          SingletonBeanFactoryLocator.getInstance().useBeanFactory(BEANS_DAO);
+      final List<Eleve> eleves = ((EleveDao) bf.getFactory().getBean(ELEVE_DAO)).recupererListe();
+      attributsRequete.put(ELEVES, eleves);
+      return new ModelAndView(VUE_CONVOQUER, attributsRequete);
+    }
+    return new ModelAndView(REDIRECT_INDEX);
+  }
+
+  @RequestMapping(value = "/Eleve/SuggererCompetence", method = RequestMethod.GET)
+  protected ModelAndView afficherSuggererCompetenceNouvelle() {
+    return new ModelAndView(VUE_SUGGERER_NOUVELLE);
+  }
+
+  @RequestMapping(value = "/Eleve/SuggererCompetence", method = RequestMethod.POST)
+  protected ModelAndView suggererNouvelleCompetence(HttpServletRequest request,
+      @RequestParam("competence") String competence,
+      @RequestParam("commentaire") String commentaire) {
+    final HashMap<String, Object> attributsRequete = new HashMap<>();
+    @SuppressWarnings("unchecked")
+    final List<Utilisateur> listeUtilisateur =
+        (List<Utilisateur>) request.getSession().getAttribute(ATT_SESSION_USER);
+    Eleve eleve = null;
+    for (final Utilisateur utilisateur : listeUtilisateur) {
+      if (utilisateur.getClass().equals(Eleve.class)) {
+        eleve = (Eleve) utilisateur;
+      }
+    }
+    if (eleve != null) {
+      this.suggererNouvelleCompetenceForm.suggererCompetence(eleve, competence, commentaire);
+      attributsRequete.put(ATT_FORM, this.suggererNouvelleCompetenceForm);
+      return new ModelAndView(VUE_SUGGERER_NOUVELLE, attributsRequete);
+    }
+    return new ModelAndView(REDIRECT_INDEX);
+  }
+
+  @RequestMapping(value = "/EnseignantRefUE/SuggererCompetence", method = RequestMethod.GET)
+  protected ModelAndView afficherSuggererCompetenceNouvelleRefUe() {
+    return new ModelAndView(VUE_SUGGERER_NOUVELLE);
+  }
+
+  @RequestMapping(value = "/EnseignantRefUE/SuggererCompetence", method = RequestMethod.POST)
+  protected ModelAndView suggererNouvelleCompetenceRefUe(HttpServletRequest request,
+      @RequestParam("competence") String competence,
+      @RequestParam("commentaire") String commentaire) {
+    final HashMap<String, Object> attributsRequete = new HashMap<>();
+    @SuppressWarnings("unchecked")
+    final List<Utilisateur> listeUtilisateur =
+        (List<Utilisateur>) request.getSession().getAttribute(ATT_SESSION_USER);
+    EnseignantRefUe eure = null;
+    for (final Utilisateur utilisateur : listeUtilisateur) {
+      if (utilisateur.getClass().equals(EnseignantRefUe.class)) {
+        eure = (EnseignantRefUe) utilisateur;
+      }
+    }
+    if (eure != null) {
+      this.suggererNouvelleCompetenceForm.suggererCompetence(eure, competence, commentaire);
+      attributsRequete.put(ATT_FORM, this.suggererNouvelleCompetenceForm);
+      return new ModelAndView(VUE_SUGGERER_NOUVELLE, attributsRequete);
+    }
+    return new ModelAndView(REDIRECT_INDEX);
+  }
+
+  @RequestMapping(value = "/Enseignant/SuggererCompetence", method = RequestMethod.GET)
+  protected ModelAndView afficherSuggererCompetenceNouvelleEnseignant() {
+    final HashMap<String, Object> attributsRequete = new HashMap<>();
+    final BeanFactoryReference bf =
+        SingletonBeanFactoryLocator.getInstance().useBeanFactory(BEANS_DAO);
+    final List<Competence> competences =
+        ((CompetenceDao) bf.getFactory().getBean(COMPETENCE_DAO)).trouverToutesLesCompetences();
+    attributsRequete.put(COMPETENCES, competences);
+    return new ModelAndView(VUE_SUGGERER_AJOUTER, attributsRequete);
+  }
+
+  @RequestMapping(value = "/Enseignant/SuggererCompetence", method = RequestMethod.POST)
+  protected ModelAndView suggererNouvelleCompetenceEnseignant(HttpServletRequest request,
+      @RequestParam("choixCompetence") String competence,
+      @RequestParam("commentaire") String commentaire) {
+    final HashMap<String, Object> attributsRequete = new HashMap<>();
+    @SuppressWarnings("unchecked")
+    final List<Utilisateur> listeUtilisateur =
+        (List<Utilisateur>) request.getSession().getAttribute(ATT_SESSION_USER);
+    Enseignant enseignant = null;
+    final BeanFactoryReference bf =
+        SingletonBeanFactoryLocator.getInstance().useBeanFactory(BEANS_DAO);
+    final List<Competence> competences =
+        ((CompetenceDao) bf.getFactory().getBean(COMPETENCE_DAO)).trouverToutesLesCompetences();
+    attributsRequete.put(COMPETENCES, competences);
+    for (final Utilisateur utilisateur : listeUtilisateur) {
+      if (utilisateur.getClass().equals(Enseignant.class)) {
+        enseignant = (Enseignant) utilisateur;
+      }
+    }
+    if (enseignant != null) {
+      this.suggererAjouterCompetenceForm.suggererCompetence(enseignant, competence, commentaire);
+      attributsRequete.put(ATT_FORM, this.suggererAjouterCompetenceForm);
+      return new ModelAndView(VUE_SUGGERER_AJOUTER, attributsRequete);
+    }
+    return new ModelAndView(REDIRECT_INDEX);
+  }
+
+  @RequestMapping(value = "/EnseignantRefMatiere/SuggererCompetence", method = RequestMethod.GET)
+  protected ModelAndView afficherSuggererAjouterCompetenceEnseignantRefMatiere() {
+    final HashMap<String, Object> attributsRequete = new HashMap<>();
+    final BeanFactoryReference bf =
+        SingletonBeanFactoryLocator.getInstance().useBeanFactory(BEANS_DAO);
+    final List<Competence> competences =
+        ((CompetenceDao) bf.getFactory().getBean(COMPETENCE_DAO)).trouverToutesLesCompetences();
+    attributsRequete.put(COMPETENCES, competences);
+    return new ModelAndView(VUE_SUGGERER_AJOUTER, attributsRequete);
+  }
+
+  @RequestMapping(value = "/EnseignantRefMatiere/SuggererCompetence", method = RequestMethod.POST)
+  protected ModelAndView suggererAjouterCompetenceEnseignantRefMatiere(HttpServletRequest request,
+      @RequestParam("choixCompetence") String competence,
+      @RequestParam("commentaire") String commentaire) {
+    final HashMap<String, Object> attributsRequete = new HashMap<>();
+    @SuppressWarnings("unchecked")
+    final List<Utilisateur> listeUtilisateur =
+        (List<Utilisateur>) request.getSession().getAttribute(ATT_SESSION_USER);
+    EnseignantRefMatiere enseignant = null;
+    final BeanFactoryReference bf =
+        SingletonBeanFactoryLocator.getInstance().useBeanFactory(BEANS_DAO);
+    final List<Competence> competences =
+        ((CompetenceDao) bf.getFactory().getBean(COMPETENCE_DAO)).trouverToutesLesCompetences();
+    attributsRequete.put(COMPETENCES, competences);
+    for (final Utilisateur utilisateur : listeUtilisateur) {
+      if (utilisateur.getClass().equals(EnseignantRefMatiere.class)) {
+        enseignant = (EnseignantRefMatiere) utilisateur;
+      }
+    }
+    if (enseignant != null) {
+      this.suggererAjouterCompetenceForm.suggererCompetence(enseignant, competence, commentaire);
+      attributsRequete.put(ATT_FORM, this.suggererAjouterCompetenceForm);
+      return new ModelAndView(VUE_SUGGERER_AJOUTER, attributsRequete);
+    }
+    return new ModelAndView(REDIRECT_INDEX);
+  }
+
+  public ConvoquerEtudiantForm getConvoquerEtudiantForm() {
+    return this.convoquerEtudiantForm;
+  }
+
+  public void setConvoquerEtudiantForm(ConvoquerEtudiantForm convoquerEtudiantForm) {
+    this.convoquerEtudiantForm = convoquerEtudiantForm;
+  }
+
+  public SuggererNouvelleCompetenceForm getSuggererNouvelleCompetenceForm() {
+    return this.suggererNouvelleCompetenceForm;
+  }
+
+  public void setSuggererNouvelleCompetenceForm(
+      SuggererNouvelleCompetenceForm suggererNouvelleCompetenceForm) {
+    this.suggererNouvelleCompetenceForm = suggererNouvelleCompetenceForm;
+  }
+
+  public SuggererAjouterCompetenceForm getSuggererAjouterCompetenceForm() {
+    return this.suggererAjouterCompetenceForm;
+  }
+
+  public void setSuggererAjouterCompetenceForm(
+      SuggererAjouterCompetenceForm suggererAjouterCompetenceForm) {
+    this.suggererAjouterCompetenceForm = suggererAjouterCompetenceForm;
+  }
+}

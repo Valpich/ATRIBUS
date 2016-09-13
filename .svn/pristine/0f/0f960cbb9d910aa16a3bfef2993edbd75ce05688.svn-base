@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testng-results skipped="0" failed="0" total="13" passed="13">
+  <reporter-output>
+  </reporter-output>
+  <suite name="Default suite" duration-ms="5498" started-at="2016-05-29T19:28:19Z" finished-at="2016-05-29T19:28:25Z">
+    <groups>
+    </groups>
+    <test name="Default test" duration-ms="5498" started-at="2016-05-29T19:28:19Z" finished-at="2016-05-29T19:28:25Z">
+      <class name="fr.eseo.atribus.controller.CompetencesControllerTest">
+        <test-method status="PASS" signature="setup()[pri:0, instance:fr.eseo.atribus.controller.CompetencesControllerTest@78226c36]" name="setup" is-config="true" duration-ms="3704" started-at="2016-05-29T21:28:19Z" finished-at="2016-05-29T21:28:23Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- setup -->
+        <test-method status="PASS" signature="afficherAjouterCompetences()[pri:0, instance:fr.eseo.atribus.controller.CompetencesControllerTest@78226c36]" name="afficherAjouterCompetences" duration-ms="890" started-at="2016-05-29T21:28:23Z" finished-at="2016-05-29T21:28:24Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- afficherAjouterCompetences -->
+        <test-method status="PASS" signature="afficherAssocierCompetencesUe()[pri:0, instance:fr.eseo.atribus.controller.CompetencesControllerTest@78226c36]" name="afficherAssocierCompetencesUe" duration-ms="79" started-at="2016-05-29T21:28:24Z" finished-at="2016-05-29T21:28:24Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- afficherAssocierCompetencesUe -->
+        <test-method status="PASS" signature="afficherMesCompetence()[pri:0, instance:fr.eseo.atribus.controller.CompetencesControllerTest@78226c36]" name="afficherMesCompetence" duration-ms="238" started-at="2016-05-29T21:28:24Z" finished-at="2016-05-29T21:28:24Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- afficherMesCompetence -->
+        <test-method status="PASS" signature="afficherModifierAssocierCompetencesUe()[pri:0, instance:fr.eseo.atribus.controller.CompetencesControllerTest@78226c36]" name="afficherModifierAssocierCompetencesUe" duration-ms="99" started-at="2016-05-29T21:28:24Z" finished-at="2016-05-29T21:28:24Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- afficherModifierAssocierCompetencesUe -->
+        <test-method status="PASS" signature="ajouterCompetence()[pri:0, instance:fr.eseo.atribus.controller.CompetencesControllerTest@78226c36]" name="ajouterCompetence" duration-ms="20" started-at="2016-05-29T21:28:24Z" finished-at="2016-05-29T21:28:24Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- ajouterCompetence -->
+        <test-method status="PASS" signature="ajouterCompetencePost()[pri:0, instance:fr.eseo.atribus.controller.CompetencesControllerTest@78226c36]" name="ajouterCompetencePost" duration-ms="11" started-at="2016-05-29T21:28:24Z" finished-at="2016-05-29T21:28:24Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- ajouterCompetencePost -->
+        <test-method status="PASS" signature="ajouterUneCompetenceGet()[pri:0, instance:fr.eseo.atribus.controller.CompetencesControllerTest@78226c36]" name="ajouterUneCompetenceGet" duration-ms="3" started-at="2016-05-29T21:28:24Z" finished-at="2016-05-29T21:28:24Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- ajouterUneCompetenceGet -->
+        <test-method status="PASS" signature="associerCompetenceUe()[pri:0, instance:fr.eseo.atribus.controller.CompetencesControllerTest@78226c36]" name="associerCompetenceUe" duration-ms="123" started-at="2016-05-29T21:28:24Z" finished-at="2016-05-29T21:28:24Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- associerCompetenceUe -->
+        <test-method status="PASS" signature="modifierAssocierCompetencesUe()[pri:0, instance:fr.eseo.atribus.controller.CompetencesControllerTest@78226c36]" name="modifierAssocierCompetencesUe" duration-ms="37" started-at="2016-05-29T21:28:24Z" finished-at="2016-05-29T21:28:25Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- modifierAssocierCompetencesUe -->
+        <test-method status="PASS" signature="modifierCompetence()[pri:0, instance:fr.eseo.atribus.controller.CompetencesControllerTest@78226c36]" name="modifierCompetence" duration-ms="9" started-at="2016-05-29T21:28:25Z" finished-at="2016-05-29T21:28:25Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- modifierCompetence -->
+        <test-method status="PASS" signature="supprimerAssocierCompetencesUe()[pri:0, instance:fr.eseo.atribus.controller.CompetencesControllerTest@78226c36]" name="supprimerAssocierCompetencesUe" duration-ms="107" started-at="2016-05-29T21:28:25Z" finished-at="2016-05-29T21:28:25Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- supprimerAssocierCompetencesUe -->
+        <test-method status="PASS" signature="supprimerCompetence()[pri:0, instance:fr.eseo.atribus.controller.CompetencesControllerTest@78226c36]" name="supprimerCompetence" duration-ms="20" started-at="2016-05-29T21:28:25Z" finished-at="2016-05-29T21:28:25Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- supprimerCompetence -->
+        <test-method status="PASS" signature="validerModifierAssocierCompetencesUe()[pri:0, instance:fr.eseo.atribus.controller.CompetencesControllerTest@78226c36]" name="validerModifierAssocierCompetencesUe" duration-ms="94" started-at="2016-05-29T21:28:25Z" finished-at="2016-05-29T21:28:25Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- validerModifierAssocierCompetencesUe -->
+      </class> <!-- fr.eseo.atribus.controller.CompetencesControllerTest -->
+    </test> <!-- Default test -->
+  </suite> <!-- Default suite -->
+</testng-results>

@@ -1,0 +1,810 @@
+package fr.eseo.atribus.dao;
+
+import fr.eseo.atribus.entities.Competence;
+import fr.eseo.atribus.entities.CompetenceValidable;
+import fr.eseo.atribus.entities.Eleve;
+import fr.eseo.atribus.entities.Matiere;
+import fr.eseo.atribus.entities.UniteEnseignement;
+
+import org.springframework.beans.factory.access.BeanFactoryReference;
+import org.springframework.beans.factory.access.SingletonBeanFactoryLocator;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+
+// TODO: Auto-generated Javadoc
+/**
+ * The Class CompetenceDaoImpl.
+ */
+public class CompetenceDaoImpl implements CompetenceDao {
+
+  /** La constante LOGGER. */
+  private static final Logger LOGGER = Logger.getLogger(CompetenceDaoImpl.class.getName());
+
+  /** La variable dao factory. */
+  private final DaoFactory daoFactory;
+
+  /** La constante SQL_SELECT_PAR_ID. */
+  private static final String SQL_SELECT_PAR_ID = "SELECT * FROM competence WHERE id = ?";
+
+  /** La constante SQL_SELECT_ALL. */
+  private static final String SQL_SELECT_ALL = "SELECT * FROM competence ";
+
+  /** La constante SQL_UPDATE_COMPETENCE. */
+  private static final String SQL_UPDATE_COMPETENCE =
+      "UPDATE competence SET nom=?, parent_id=?, profondeur=? WHERE id=?";
+
+  /** La constante SQL_UPDATE_COMPETENCE_NOM. */
+  private static final String SQL_UPDATE_COMPETENCE_NOM = "UPDATE competence SET nom=? WHERE id=?";
+
+  /** La constante SQL_UPDATE_COMPETENCE_PROFONDEUR. */
+  private static final String SQL_UPDATE_COMPETENCE_PROFONDEUR =
+      "UPDATE competence SET profondeur=? WHERE id=?";
+
+  /** La constante SQL_SELECT_PAR_NOM. */
+  private static final String SQL_SELECT_PAR_NOM = "SELECT * FROM competence WHERE nom = ?";
+
+  /** La constante EXCEPTION. */
+  private static final String EXCEPTION = "Exception";
+
+  /** La constante SQL_INSERT_ASSOCIER. */
+  private static final String SQL_INSERT_ASSOCIER =
+      "INSERT INTO unite_enseignement_associe_competence "
+          + "(niveau, id_unite_enseignement, id_competence) VALUES (?,?,?)";
+
+  /** La constante SQL_RECUPERER_ASSOCIER. */
+  private static final String SQL_RECUPERER_ASSOCIER =
+      "SELECT * FROM unite_enseignement_associe_competence WHERE id_unite_enseignement = ?";
+
+  /** La constante SQL_RECUPERER_COMP_ELEVE. */
+  private static final String SQL_RECUPERER_COMP_ELEVE =
+      "SELECT * FROM eleve_associe_competence WHERE id_eleve = ?";
+
+  /** La constante SQL_TROUVER_PAR_PROFONDEUR. */
+  private static final String SQL_TROUVER_PAR_PROFONDEUR =
+      "SELECT * FROM competence WHERE profondeur=?";
+
+  /** La constante SQL_SUPPRIMER. */
+  private static final String SQL_SUPPRIMER = "DELETE FROM competence WHERE nom=?";
+
+  /** La constante SQL_AJOUTER. */
+  private static final String SQL_AJOUTER =
+      "INSERT INTO competence (nom, profondeur, parent_id) VALUES (?, ?, ?)";
+
+  /** La constante SQL_VALIDER_MATIERE. */
+  private static final String SQL_VALIDER_MATIERE =
+      "UPDATE matiere_associe_competence SET valide = ? "
+          + "WHERE id_matiere = ? AND id_competence = ?;";
+
+  /** La constante SQL_VALIDER_UE. */
+  private static final String SQL_VALIDER_UE =
+      "UPDATE unite_enseignement_associe_competence SET valide = ? "
+          + "WHERE id_unite_enseignement = ? AND id_competence = ?;";
+
+  /** La constante BEANSDAO. */
+  private static final String BEANSDAO = "beansDao";
+
+  /** La constante IDCOMP. */
+  private static final String IDCOMP = "id_competence";
+
+  /** La constante PARENTID. */
+  private static final String PARENTID = "parent_id";
+
+  /** La constante COMPETENCE_DAO. */
+  private static final String COMPETENCE_DAO = "competenceDao";
+
+  /**
+   * Instance de la classe CompetenceDaoImpl.
+   */
+  public CompetenceDaoImpl() {
+    final BeanFactoryReference bf =
+        SingletonBeanFactoryLocator.getInstance().useBeanFactory("contextDao");
+    this.daoFactory = (DaoFactory) bf.getFactory().getBean("daoFactory");
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see fr.eseo.atribus.dao.CompetenceDao#trouverParId(int)
+   */
+  @Override
+  public Competence trouverParId(int idComp) {
+    return this.trouverCompetence(CompetenceDaoImpl.SQL_SELECT_PAR_ID, idComp);
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see fr.eseo.atribus.dao.CompetenceDao#trouverParNom(java.lang.String)
+   */
+  @Override
+  public List<Competence> trouverParNom(String nom) {
+    return this.trouverParNomRequete(CompetenceDaoImpl.SQL_SELECT_PAR_NOM, nom);
+  }
+
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see fr.eseo.atribus.dao.CompetenceDao#trouverUniqueParNom(java.lang.String)
+   */
+  @Override
+  public Competence trouverUniqueParNom(String nom) {
+    return this.trouverCompetence(CompetenceDaoImpl.SQL_SELECT_PAR_NOM, nom);
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see fr.eseo.atribus.dao.CompetenceDao#trouverToutesLesCompetences()
+   */
+  @Override
+  public List<Competence> trouverToutesLesCompetences() {
+    return this.trouverToutes(CompetenceDaoImpl.SQL_SELECT_ALL);
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see fr.eseo.atribus.dao.CompetenceDao#modifierCompetence(fr.eseo.atribus.entities.Competence,
+   * fr.eseo.atribus.entities.Competence)
+   */
+  @Override
+  public void modifierCompetence(Competence competence, Competence ancienneCompetence) {
+    this.update(CompetenceDaoImpl.SQL_UPDATE_COMPETENCE, competence.getNom(),
+        competence.getIdParent(), competence.getProfondeur(), ancienneCompetence.getId());
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see fr.eseo.atribus.dao.CompetenceDao#modifierCompetence(fr.eseo.atribus.entities.Competence,
+   * java.lang.String)
+   */
+  @Override
+  public void modifierCompetence(Competence competence, String nouveauNom) {
+    this.update(CompetenceDaoImpl.SQL_UPDATE_COMPETENCE_NOM, nouveauNom, competence.getId());
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see fr.eseo.atribus.dao.CompetenceDao#modifierCompetence(fr.eseo.atribus.entities.Competence,
+   * int)
+   */
+  @Override
+  public void modifierCompetence(Competence competence, int nouvelleProfondeur) {
+    /** System.out.println("avant appel à update"); */
+    this.update(CompetenceDaoImpl.SQL_UPDATE_COMPETENCE_PROFONDEUR, nouvelleProfondeur,
+        competence.getId());
+    /** System.out.println("apres appel à update"); */
+  }
+
+  /**
+   * Implémentation de la méthode trouverParProfondeur() définie dans l'interface CompetenceBdd.
+   *
+   * @param profondeur le profondeur
+   * @return Le paramètre list
+   */
+  @Override
+  public List<Competence> trouverParProfondeur(int profondeur) {
+    return this.trouverListe(CompetenceDaoImpl.SQL_TROUVER_PAR_PROFONDEUR, profondeur);
+  }
+
+  /**
+   * Implémentation de la méthode supprimerCompetence() A FAIRE dans l'interface CompetenceBdd.
+   *
+   * @param competence le competence
+   */
+  @Override
+  public void ajouterCompetence(Competence competence) {
+    this.ajouter(competence);
+  }
+
+  /**
+   * Implémentation de la méthode pour supprimer une compétence.
+   *
+   * @param nom le nom
+   */
+  @Override
+  public void supprimerCompetenceParNom(String nom) {
+
+    Connection connexion = null;
+    PreparedStatement preparedStatement = null;
+
+    try {
+
+      connexion = this.daoFactory.getConnection();
+      preparedStatement = DaoUtilitaire.initialisationRequetePreparee(connexion,
+          CompetenceDaoImpl.SQL_SUPPRIMER, false, nom);
+
+      preparedStatement.executeUpdate();
+
+    } catch (final SQLException sqle) {
+      CompetenceDaoImpl.LOGGER.log(Level.INFO, CompetenceDaoImpl.EXCEPTION, sqle);
+      throw new DaoException(sqle);
+    } finally {
+      DaoUtilitaire.fermeturesSilencieuses(preparedStatement, connexion);
+    }
+  }
+
+
+
+  /**
+   * Méthode générique utilisée pour retourner une liste de compétence depuis la base de données,
+   * correspondant à la requête SQL donnée prenant en paramètres les objets passés en argument.
+   *
+   * @param sql le sql
+   * @param objets le objets
+   * @return Le paramètre list
+   */
+  private List<Competence> trouverListe(String sql, Object... objets) {
+    final List<Competence> listeComp = new ArrayList<>();
+
+    Connection connexion = null;
+    PreparedStatement preparedStatement = null;
+    ResultSet resultSet = null;
+    Competence competence = null;
+
+    try {
+      /** Récupération d'une connexion depuis la Factory. */
+      connexion = this.daoFactory.getConnection();
+      /** System.out.println("Connexion ok" + connexion); */
+
+      /**
+       * Préparation de la requête avec les objets passés en arguments (ici, uniquement un id) et
+       * exécution.
+       */
+      preparedStatement =
+          DaoUtilitaire.initialisationRequetePreparee(connexion, sql, false, objets);
+      /** System.out.println("PreparedStatement ok" + preparedStatement); */
+      resultSet = preparedStatement.executeQuery();
+      /** System.out.println("Résultat ok" + resultSet); */
+
+      /**
+       * Parcours de la ligne de données retournée dans le ResultSet. int ii = 0;
+       */
+      while (resultSet.next()) {
+        competence = CompetenceDaoImpl.map(resultSet);
+        listeComp.add(competence);
+        /** ii++;. */
+        /** System.out.println("Compétence n°" + ii + " récupérée"); */
+      }
+      for (int j = 0; j < listeComp.size(); j++) {
+        /** System.out.println("Liste créée" + listeComp.get(j).toString()); */
+      }
+    } catch (final SQLException sqle) {
+      CompetenceDaoImpl.LOGGER.log(Level.INFO, EXCEPTION, sqle);
+      throw new DaoException(sqle);
+    } finally {
+      DaoUtilitaire.fermeturesSilencieuses(resultSet, preparedStatement, connexion);
+    }
+    return listeComp;
+  }
+
+
+  /**
+   * Méthode générique utilisée pour ajouter une compétence dans la base de données, correspondant à
+   * la requête SQL donnée prenant en paramètres les objets passés en argument.
+   *
+   * @param competence le competence
+   */
+  private void ajouter(Competence competence) {
+    Connection connexion = null;
+    PreparedStatement preparedStatement = null;
+    ResultSet valeursAutoGenerees = null;
+
+
+    try {
+      /** Récupération d'une connexion depuis la Factory. */
+      connexion = this.daoFactory.getConnection();
+      preparedStatement =
+          DaoUtilitaire.initialisationRequetePreparee(connexion, CompetenceDaoImpl.SQL_AJOUTER,
+              true, competence.getNom(), competence.getProfondeur(), competence.getIdParent());
+      final int statut = preparedStatement.executeUpdate();
+
+      /** Analyse du statut retourné par la requête d'insertion. */
+      if (statut == 0) {
+        throw new DaoException(
+            "Échec d'ajout de la compétence, aucune ligne ajoutée dans la table.");
+      }
+
+      /** Récupération de l'id auto-généré par la requête d'insertion. */
+      valeursAutoGenerees = preparedStatement.getGeneratedKeys();
+
+      if (valeursAutoGenerees.next()) {
+        /** Puis initialisation de la propriété id du bean Utilisateur avec sa valeur. */
+        competence.setId(valeursAutoGenerees.getInt(1));
+      } else {
+        throw new DaoException(
+            "Échec de la création de la compétence en base, aucun ID auto-généré retourné.");
+      }
+    } catch (final SQLException sqle) {
+      throw new DaoException(sqle);
+    } finally {
+      DaoUtilitaire.fermeturesSilencieuses(valeursAutoGenerees, preparedStatement, connexion);
+    }
+  }
+
+
+
+  /**
+   * Implémentation de la méthode trouverParNom() définie dans l'interface CompetenceBdd.
+   *
+   * @param nom le nom
+   * @return Le paramètre int
+   */
+  @Override
+  public int trouverIdParNom(String nom) {
+    return DaoUtilitaire.trouverId(this.daoFactory, CompetenceDaoImpl.SQL_SELECT_PAR_NOM, nom);
+  }
+
+  /**
+   * Methode générique pour trouver une compétence.
+   * 
+   * @param sql Requête SQL
+   * @param objets Objets de cette requette SQL
+   * @return la compétence trouvée
+   */
+  public Competence trouverCompetence(String sql, Object... objets) {
+    Connection connexion = null;
+    PreparedStatement preparedStatement = null;
+    ResultSet resultSet = null;
+    Competence competence = null;
+
+    try {
+      /** Récupération d'une connexion depuis la Factory. */
+      connexion = this.daoFactory.getConnection();
+      /**
+       * Préparation de la requête avec les objets passés en arguments (ici, uniquement un id) et
+       * exécution.
+       */
+      preparedStatement =
+          DaoUtilitaire.initialisationRequetePreparee(connexion, sql, false, objets);
+      resultSet = preparedStatement.executeQuery();
+      /** Parcours de la ligne de données retournée dans le ResultSet. */
+      if (resultSet.next()) {
+        competence = CompetenceDaoImpl.map(resultSet);
+      }
+    } catch (final SQLException sqle) {
+      CompetenceDaoImpl.LOGGER.log(Level.INFO, EXCEPTION, sqle);
+      throw new DaoException(sqle);
+    } finally {
+      DaoUtilitaire.fermeturesSilencieuses(resultSet, preparedStatement, connexion);
+    }
+    return competence;
+  }
+
+  /**
+   * Update.
+   *
+   * @param sql le sql
+   * @param objets le objets
+   */
+  private void update(String sql, Object... objets) {
+    Connection connexion = null;
+    PreparedStatement preparedStatement = null;
+    final ResultSet resultSet = null;
+    try {
+      /** Récupération d'une connexion depuis la Factory */
+      connexion = this.daoFactory.getConnection();
+      /**
+       * Préparation de la requête avec les objets passés en arguments (ici, uniquement un id) et
+       * exécution.
+       */
+      preparedStatement =
+          DaoUtilitaire.initialisationRequetePreparee(connexion, sql, false, objets);
+      preparedStatement.executeUpdate();
+
+    } catch (final SQLException sqle) {
+      CompetenceDaoImpl.LOGGER.log(Level.INFO, EXCEPTION, sqle);
+      throw new DaoException(sqle);
+    } finally {
+      DaoUtilitaire.fermeturesSilencieuses(resultSet, preparedStatement, connexion);
+    }
+  }
+
+
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see fr.eseo.atribus.dao.CompetenceDao#trouverParNomRequete(java.lang.String, java.lang.String)
+   */
+  @Override
+  public List<Competence> trouverParNomRequete(String sql, String nom) {
+
+    Connection connexion = null;
+    PreparedStatement preparedStatement = null;
+    ResultSet rset = null;
+    final List<Competence> listeCompetences = new ArrayList<>();
+
+    try {
+      /** Récupération d'une connexion depuis la Factory. */
+      connexion = this.daoFactory.getConnection();
+      /**
+       * Préparation de la requête avec les objets passés en arguments (ici, uniquement un id) et
+       * exécution.
+       */
+      preparedStatement = DaoUtilitaire.initialisationRequetePreparee(connexion, sql, false, nom);
+      rset = preparedStatement.executeQuery();
+      /** Parcours de la ligne de données retournée dans le ResultSet */
+      while (rset.next()) {
+        final Competence comp = new Competence();
+        comp.setNom(rset.getString("nom"));
+        comp.setId(rset.getInt("id"));
+        comp.setIdParent(rset.getInt(CompetenceDaoImpl.PARENTID));
+        listeCompetences.add(comp);
+      }
+    } catch (final SQLException sqle) {
+      CompetenceDaoImpl.LOGGER.log(Level.INFO, EXCEPTION, sqle);
+      throw new DaoException(sqle);
+    } finally {
+      DaoUtilitaire.fermeturesSilencieuses(rset, preparedStatement, connexion);
+    }
+    return listeCompetences;
+  }
+
+  /**
+   * Méthode générique qui renvoie une liste de compétence.
+   * 
+   * @param sql requête SQL
+   * @param objets objets de la requête
+   * @return une liste de compétence
+   */
+  public List<Competence> trouverToutes(String sql, Object... objets) {
+    Connection connexion = null;
+    PreparedStatement preparedStatement = null;
+    ResultSet resultSet = null;
+    List<Competence> competences = null;
+
+    try {
+      /** Récupération d'une connexion depuis la Factory. */
+      connexion = this.daoFactory.getConnection();
+      /**
+       * Préparation de la requête avec les objets passés en arguments (ici, uniquement un id) et
+       * exécution.
+       */
+      preparedStatement =
+          DaoUtilitaire.initialisationRequetePreparee(connexion, sql, false, objets);
+      resultSet = preparedStatement.executeQuery();
+      competences = new ArrayList<>();
+      /** Parcours de la ligne de données retournée dans le ResultSet. */
+      while (resultSet.next()) {
+        competences.add(CompetenceDaoImpl.mapDebug(resultSet));
+      }
+    } catch (final SQLException sqle) {
+      CompetenceDaoImpl.LOGGER.log(Level.INFO, EXCEPTION, sqle);
+      throw new DaoException(sqle);
+    } finally {
+      DaoUtilitaire.fermeturesSilencieuses(resultSet, preparedStatement, connexion);
+    }
+    return competences;
+  }
+
+  /**
+   * Simple méthode utilitaire permettant de faire la correspondance (le mapping) entre une ligne
+   * issue de la table des utilisateurs (un ResultSet) et un bean Competence.
+   *
+   * @param resultSet le result set
+   * @return Le paramètre competence
+   * @throws SQLException de type SQL exception
+   */
+  private static Competence map(ResultSet resultSet) throws SQLException {
+    final Competence competence = new Competence();
+    competence.setId(resultSet.getInt("id"));
+    competence.setNom(resultSet.getString("nom"));
+    competence.setIdParent(resultSet.getInt(CompetenceDaoImpl.PARENTID));
+    competence.setProfondeur(resultSet.getInt("profondeur"));
+    return competence;
+  }
+
+
+  /**
+   * Map debug.
+   *
+   * @param resultSet le result set
+   * @return Le paramètre competence
+   * @throws SQLException de type SQL exception
+   */
+  /*
+   * Simple méthode utilitaire permettant de faire la correspondance (le mapping) entre une ligne
+   * issue de la table des utilisateurs (un ResultSet) et un bean Competence.
+   */
+  private static Competence mapDebug(ResultSet resultSet) throws SQLException {
+    final Competence competence = new Competence();
+    competence.setId(resultSet.getInt("id"));
+    competence.setNom(resultSet.getString("nom"));
+    competence.setIdParent(resultSet.getInt(CompetenceDaoImpl.PARENTID));
+    competence.setProfondeur(resultSet.getInt("profondeur"));
+    return competence;
+  }
+
+  /**
+   * Méthode pour associer à un UE, une compétence et un niveau.
+   *
+   * @param competence le competence
+   * @param ue le ue
+   */
+  @Override
+  public void associerCompetenceNiveauUe(Competence competence, UniteEnseignement ue) {
+    Connection connexion = null;
+    PreparedStatement preparedStatement = null;
+    final PreparedStatement preparedStatementDeux = null;
+    try {
+
+      connexion = this.daoFactory.getConnection();
+
+      final int idCompetence = this.trouverIdParNom(competence.getNom());
+      final int idUe = this.getIdUe(ue);
+
+      preparedStatement = DaoUtilitaire.initialisationRequetePreparee(connexion,
+          CompetenceDaoImpl.SQL_INSERT_ASSOCIER, true, competence.getNiveau(), idUe, idCompetence);
+
+      final int statut = preparedStatement.executeUpdate();
+      if (statut == 0) {
+        throw new DaoException(
+            "Échec de l'association à l'UE, aucune ligne ajoutée dans la table.");
+      }
+
+    } catch (final SQLException sqle) {
+      CompetenceDaoImpl.LOGGER.log(Level.INFO, EXCEPTION, sqle);
+      throw new DaoException(sqle);
+    } finally {
+      DaoUtilitaire.fermetureSilencieuse(preparedStatementDeux);
+      DaoUtilitaire.fermeturesSilencieuses(preparedStatement, connexion);
+    }
+
+  }
+
+  /**
+   * Accesseur en lecture sur le paramètre id ue.
+   *
+   * @param ue le ue
+   * @return le paramètre id ue
+   */
+  private int getIdUe(UniteEnseignement ue) {
+    final BeanFactoryReference bf =
+        SingletonBeanFactoryLocator.getInstance().useBeanFactory(BEANSDAO);
+    final UeDao ueDao = (UeDao) bf.getFactory().getBean("ueDao");
+    final int idUe = ueDao.trouverIdParNom(ue.getNom());
+    if (idUe < 0) {
+      throw new DaoException("Impossible de récupérer l'ID d'un UE.");
+    }
+    return idUe;
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see fr.eseo.atribus.dao.CompetenceDao#recupererAssociationCompetenceUe(int)
+   */
+  @Override
+  public Map<Long, CompetenceValidable> recupererAssociationCompetenceUe(int idUe) {
+    final Map<Long, CompetenceValidable> competences = new HashMap<>();
+    Connection connexion = null;
+    PreparedStatement preparedStatement = null;
+    final PreparedStatement preparedStatementDeux = null;
+    ResultSet resultSet = null;
+
+    try {
+      connexion = this.daoFactory.getConnection();
+      preparedStatement = DaoUtilitaire.initialisationRequetePreparee(connexion,
+          CompetenceDaoImpl.SQL_RECUPERER_ASSOCIER, true, idUe);
+      resultSet = preparedStatement.executeQuery();
+      final BeanFactoryReference bf =
+          SingletonBeanFactoryLocator.getInstance().useBeanFactory(BEANSDAO);
+      /* Récupération d'une instance de notre DAO Competence */
+      final CompetenceDao competenceDao =
+          (CompetenceDao) bf.getFactory().getBean(CompetenceDaoImpl.COMPETENCE_DAO);
+      /** Parcours de la ligne de données retournée dans le ResultSet. */
+      while (resultSet.next()) {
+        final CompetenceValidable comp =
+            new CompetenceValidable(competenceDao.trouverParId(resultSet.getInt(IDCOMP)));
+        comp.setValide(resultSet.getBoolean("valide"));
+        competences.put(resultSet.getLong(IDCOMP), comp);
+      }
+    } catch (final SQLException sqle) {
+      CompetenceDaoImpl.LOGGER.log(Level.INFO, EXCEPTION, sqle);
+      throw new DaoException(sqle);
+    } finally {
+      DaoUtilitaire.fermetureSilencieuse(preparedStatementDeux);
+      DaoUtilitaire.fermeturesSilencieuses(preparedStatement, connexion);
+    }
+    return competences;
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see fr.eseo.atribus.dao.CompetenceDao#recupererProfilEleve(fr.eseo.atribus.entities.Eleve)
+   */
+  @Override
+  public Map<Competence, Integer> recupererProfilEleve(Eleve eleve) {
+    final Map<Competence, Integer> competences = new HashMap<>();
+    Connection connexion = null;
+    PreparedStatement preparedStatement = null;
+    final PreparedStatement preparedStatementDeux = null;
+    ResultSet resultSet = null;
+    try {
+      connexion = this.daoFactory.getConnection();
+      preparedStatement = DaoUtilitaire.initialisationRequetePreparee(connexion,
+          CompetenceDaoImpl.SQL_RECUPERER_COMP_ELEVE, true, eleve.getIdEleve());
+      resultSet = preparedStatement.executeQuery();
+      final BeanFactoryReference bf =
+          SingletonBeanFactoryLocator.getInstance().useBeanFactory(BEANSDAO);
+      /* Récupération d'une instance de notre DAO Competence */
+      final CompetenceDao competenceDao =
+          (CompetenceDao) bf.getFactory().getBean(CompetenceDaoImpl.COMPETENCE_DAO);
+      /** Parcours de la ligne de données retournée dans le ResultSet. */
+      while (resultSet.next()) {
+        competences.put(competenceDao.trouverParId(resultSet.getInt(IDCOMP)),
+            resultSet.getInt("niveau"));
+      }
+    } catch (final SQLException sqle) {
+      CompetenceDaoImpl.LOGGER.log(Level.INFO, EXCEPTION, sqle);
+      throw new DaoException(sqle);
+    } finally {
+      DaoUtilitaire.fermetureSilencieuse(preparedStatementDeux);
+      DaoUtilitaire.fermeturesSilencieuses(preparedStatement, connexion);
+    }
+    return competences;
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see fr.eseo.atribus.dao.CompetenceDao#valider(fr.eseo.atribus.entities.UniteEnseignement,
+   * fr.eseo.atribus.entities.CompetenceValidable)
+   */
+  @Override
+  public void valider(UniteEnseignement ue, CompetenceValidable competence) {
+    Connection connexion = null;
+    PreparedStatement preparedStatement = null;
+    final PreparedStatement preparedStatementDeux = null;
+    try {
+      connexion = this.daoFactory.getConnection();
+      preparedStatement =
+          DaoUtilitaire.initialisationRequetePreparee(connexion, CompetenceDaoImpl.SQL_VALIDER_UE,
+              true, competence.getValide(), ue.getId(), competence.getId());
+      final int statut = preparedStatement.executeUpdate();
+      verifierStatut(statut);
+    } catch (final SQLException sqle) {
+      CompetenceDaoImpl.LOGGER.log(Level.INFO, EXCEPTION, sqle);
+      throw new DaoException(sqle);
+    } finally {
+      DaoUtilitaire.fermetureSilencieuse(preparedStatementDeux);
+      DaoUtilitaire.fermeturesSilencieuses(preparedStatement, connexion);
+    }
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see fr.eseo.atribus.dao.CompetenceDao#valider(fr.eseo.atribus.entities.Matiere,
+   * fr.eseo.atribus.entities.CompetenceValidable)
+   */
+  @Override
+  public void valider(Matiere matiere, CompetenceValidable competence) {
+    Connection connexion = null;
+    PreparedStatement preparedStatement = null;
+    final PreparedStatement preparedStatementDeux = null;
+    try {
+      connexion = this.daoFactory.getConnection();
+      preparedStatement = DaoUtilitaire.initialisationRequetePreparee(connexion,
+          CompetenceDaoImpl.SQL_VALIDER_MATIERE, true, competence.getValide(), matiere.getId(),
+          competence.getId());
+      final int statut = preparedStatement.executeUpdate();
+      verifierStatut(statut);
+    } catch (final SQLException sqle) {
+      CompetenceDaoImpl.LOGGER.log(Level.INFO, EXCEPTION, sqle);
+      throw new DaoException(sqle);
+    } finally {
+      DaoUtilitaire.fermetureSilencieuse(preparedStatementDeux);
+      DaoUtilitaire.fermeturesSilencieuses(preparedStatement, connexion);
+    }
+  }
+
+  private void verifierStatut(final int statut) {
+    if (statut == 0) {
+      throw new DaoException("Échec de la validation de la compétence.");
+    }
+  }
+
+  /**
+   * Liste les compétences d'un UE.
+   *
+   * @param ue le ue
+   * @return Le paramètre list
+   */
+  @Override
+  public List<Competence> listeCompetencesUe(UniteEnseignement ue) {
+
+    final String requete =
+        "SELECT * FROM unite_enseignement_associe_competence WHERE id_unite_enseignement=?;";
+
+    final List<Competence> listeCompetences = new ArrayList<>();
+    Connection connexion = null;
+    PreparedStatement preparedStatement = null;
+    ResultSet resultSet = null;
+
+    try {
+
+      connexion = this.daoFactory.getConnection();
+      preparedStatement =
+          DaoUtilitaire.initialisationRequetePreparee(connexion, requete, false, ue.getId());
+      maperCompetences(listeCompetences, preparedStatement);
+
+    } catch (final SQLException sqle) {
+      CompetenceDaoImpl.LOGGER.log(Level.INFO, EXCEPTION, sqle);
+      throw new DaoException(sqle);
+    } finally {
+      DaoUtilitaire.fermeturesSilencieuses(preparedStatement, connexion);
+    }
+
+    return listeCompetences;
+
+  }
+
+  private void maperCompetences(final List<Competence> listeCompetences,
+      PreparedStatement preparedStatement) throws SQLException {
+    ResultSet resultSet;
+    resultSet = preparedStatement.executeQuery();
+
+    final BeanFactoryReference bf =
+        SingletonBeanFactoryLocator.getInstance().useBeanFactory(BEANSDAO);
+
+    final CompetenceDao competenceDao =
+        (CompetenceDao) bf.getFactory().getBean(CompetenceDaoImpl.COMPETENCE_DAO);
+
+    while (resultSet.next()) {
+      listeCompetences
+          .add(competenceDao.trouverParId(resultSet.getInt(CompetenceDaoImpl.IDCOMP)));
+    }
+  }
+
+  /**
+   * Liste les compétences d'une matiere.
+   *
+   * @param matiere le matiere
+   * @return Le paramètre list
+   */
+  @Override
+  public List<Competence> listeCompetencesMatiere(Matiere matiere) {
+
+    final String requete = "SELECT * FROM matiere_associe_competence WHERE id_matiere=?;";
+
+    final List<Competence> listeCompetences = new ArrayList<>();
+
+    Connection connexion = null;
+    PreparedStatement preparedStatement = null;
+    ResultSet resultSet = null;
+
+    try {
+
+      connexion = this.daoFactory.getConnection();
+      preparedStatement =
+          DaoUtilitaire.initialisationRequetePreparee(connexion, requete, false, matiere.getId());
+      maperCompetences(listeCompetences, preparedStatement);
+
+    } catch (final SQLException sqle) {
+      CompetenceDaoImpl.LOGGER.log(Level.INFO, EXCEPTION, sqle);
+      throw new DaoException(sqle);
+    } finally {
+      DaoUtilitaire.fermeturesSilencieuses(preparedStatement, connexion);
+    }
+
+    return listeCompetences;
+
+  }
+
+}

@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>AddRessourceForm.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Atribus</a> &gt; <a href="index.source.html" class="el_package">fr.eseo.atribus.forms</a> &gt; <span class="el_source">AddRessourceForm.java</span></div><h1>AddRessourceForm.java</h1><pre class="source lang-java linenums">package fr.eseo.atribus.forms;
+
+import fr.eseo.atribus.dao.CompetenceDao;
+import fr.eseo.atribus.dao.DaoException;
+import fr.eseo.atribus.dao.MatiereDao;
+import fr.eseo.atribus.dao.RessourceDao;
+import fr.eseo.atribus.entities.Competence;
+import fr.eseo.atribus.entities.Ressource;
+
+import org.joda.time.DateTime;
+import org.springframework.beans.factory.access.BeanFactoryReference;
+import org.springframework.beans.factory.access.SingletonBeanFactoryLocator;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+public class AddRessourceForm {
+  private static final String CHAMP_MATIERE = &quot;matiere&quot;;
+  private static final String CHAMP_FILE = &quot;file&quot;;
+<span class="nc" id="L24">  private static final Logger LOGGER = Logger.getLogger(AddRessourceForm.class.getName());</span>
+  private static final String EXCEPTION = &quot;Exception&quot;;
+
+  private String resultat;
+<span class="nc" id="L28">  private final Map&lt;String, String&gt; erreurs = new HashMap&lt;&gt;();</span>
+  private final RessourceDao ressourceDao;
+  private final MatiereDao matiereDao;
+  private final CompetenceDao competenceDao;
+
+<span class="nc" id="L33">  public AddRessourceForm() {</span>
+    final BeanFactoryReference bf =
+<span class="nc" id="L35">        SingletonBeanFactoryLocator.getInstance().useBeanFactory(&quot;beansDao&quot;);</span>
+    /* Récupération d'une instance de notre DAO Ressource */
+<span class="nc" id="L37">    this.ressourceDao = (RessourceDao) bf.getFactory().getBean(&quot;ressourceDao&quot;);</span>
+    /* Récupération d'une instance de notre DAO Matiere */
+<span class="nc" id="L39">    this.matiereDao = (MatiereDao) bf.getFactory().getBean(&quot;matiereDao&quot;);</span>
+    /* Récupération d'une instance de notre DAO Competence */
+<span class="nc" id="L41">    this.competenceDao = (CompetenceDao) bf.getFactory().getBean(&quot;competenceDao&quot;);</span>
+<span class="nc" id="L42">  }</span>
+
+  public String getResultat() {
+<span class="nc" id="L45">    return this.resultat;</span>
+  }
+
+  public Map&lt;String, String&gt; getErreurs() {
+<span class="nc" id="L49">    return this.erreurs;</span>
+  }
+
+  public Ressource addRessource(String fileName, String matiere, List&lt;String&gt; competences) {
+<span class="nc" id="L53">    final Ressource ressource = new Ressource();</span>
+<span class="nc" id="L54">    this.traiterFile(fileName, ressource);</span>
+<span class="nc" id="L55">    this.traiterCompetences(competences, ressource);</span>
+<span class="nc" id="L56">    this.traiterMatiere(matiere, ressource);</span>
+    try {
+<span class="nc bnc" id="L58" title="All 2 branches missed.">      if (this.erreurs.isEmpty()) {</span>
+<span class="nc" id="L59">        ressource.setDatePublication(DateTime.now().toDateTime());</span>
+<span class="nc" id="L60">        this.ressourceDao.ajouter(ressource, fileName);</span>
+<span class="nc" id="L61">        this.resultat = &quot;Succès de l'ajout de la ressource.&quot;;</span>
+      } else {
+<span class="nc" id="L63">        this.resultat = &quot;Échec de l'ajout de la ressource.&quot;;</span>
+      }
+<span class="nc" id="L65">    } catch (final DaoException ebdd) {</span>
+      /** Supprimer le fichier */
+<span class="nc" id="L67">      this.resultat = &quot;Échec de l'ajout de la ressource : une erreur imprévue est survenue,&quot;</span>
+          + &quot; merci de réessayer dans quelques instants.&quot;;
+<span class="nc" id="L69">      AddRessourceForm.LOGGER.log(Level.INFO, EXCEPTION, ebdd);</span>
+<span class="nc" id="L70">    }</span>
+
+<span class="nc" id="L72">    return ressource;</span>
+  }
+
+  private void traiterCompetences(List&lt;String&gt; competences, Ressource ressource) {
+<span class="nc" id="L76">    final List&lt;Competence&gt; competencesLister = new ArrayList&lt;&gt;();</span>
+    try {
+<span class="nc" id="L78">      this.validationCompetences(competences);</span>
+<span class="nc" id="L79">    } catch (final FormValidationException fve) {</span>
+<span class="nc" id="L80">      this.setErreur(AddRessourceForm.CHAMP_FILE, fve.getMessage());</span>
+<span class="nc" id="L81">      AddRessourceForm.LOGGER.log(Level.INFO, EXCEPTION, fve);</span>
+<span class="nc" id="L82">    }</span>
+<span class="nc bnc" id="L83" title="All 2 branches missed.">    for (final String competence : competences) {</span>
+<span class="nc" id="L84">      competencesLister.addAll(this.competenceDao.trouverParNom(competence));</span>
+<span class="nc" id="L85">    }</span>
+<span class="nc" id="L86">    ressource.setCompetences(competencesLister);</span>
+<span class="nc" id="L87">  }</span>
+
+  private void traiterFile(String fileName, Ressource ressource) {
+    try {
+<span class="nc" id="L91">      this.validationFile(fileName);</span>
+<span class="nc" id="L92">    } catch (final FormValidationException fve) {</span>
+<span class="nc" id="L93">      this.setErreur(AddRessourceForm.CHAMP_FILE, fve.getMessage());</span>
+<span class="nc" id="L94">      AddRessourceForm.LOGGER.log(Level.INFO, EXCEPTION, fve);</span>
+<span class="nc" id="L95">    }</span>
+<span class="nc" id="L96">    ressource.setNom(fileName.substring(0, fileName.lastIndexOf(&quot;.&quot;)));</span>
+<span class="nc" id="L97">    ressource.setType(fileName.substring(fileName.lastIndexOf(&quot;.&quot;) + 1));</span>
+<span class="nc" id="L98">  }</span>
+
+  private void validationFile(String file) throws FormValidationException {
+<span class="nc bnc" id="L101" title="All 2 branches missed.">    if (file == null) {</span>
+<span class="nc" id="L102">      throw new FormValidationException(&quot;Le fichier n'existe pas.&quot;);</span>
+    }
+<span class="nc" id="L104">  }</span>
+
+  private void traiterMatiere(String matiere, Ressource ressource) {
+    try {
+<span class="nc" id="L108">      this.validationMatiere(matiere);</span>
+<span class="nc" id="L109">    } catch (final FormValidationException fve) {</span>
+<span class="nc" id="L110">      this.setErreur(AddRessourceForm.CHAMP_MATIERE, fve.getMessage());</span>
+<span class="nc" id="L111">      AddRessourceForm.LOGGER.log(Level.INFO, EXCEPTION, fve);</span>
+<span class="nc" id="L112">    }</span>
+<span class="nc" id="L113">    ressource.setMatiere(this.matiereDao.trouverParNom(matiere));</span>
+<span class="nc" id="L114">  }</span>
+
+  private void validationMatiere(String matiere) throws FormValidationException {
+<span class="nc bnc" id="L117" title="All 2 branches missed.">    if (this.matiereDao.trouverParNom(matiere) == null) {</span>
+<span class="nc" id="L118">      throw new FormValidationException(&quot;Cette matière n'existe pas&quot;);</span>
+    }
+<span class="nc" id="L120">  }</span>
+
+  private void validationCompetences(List&lt;String&gt; competences) throws FormValidationException {
+<span class="nc bnc" id="L123" title="All 2 branches missed.">    for (final String competence : competences) {</span>
+<span class="nc bnc" id="L124" title="All 2 branches missed.">      if (this.competenceDao.trouverParNom(competence) == null) {</span>
+<span class="nc" id="L125">        throw new FormValidationException(&quot;Cette matière n'existe pas&quot;);</span>
+      }
+<span class="nc" id="L127">    }</span>
+<span class="nc" id="L128">  }</span>
+
+  /*
+   * Ajoute un message correspondant au champ spécifié à la map des erreurs.
+   */
+  private void setErreur(String champ, String message) {
+<span class="nc" id="L134">    this.erreurs.put(champ, message);</span>
+<span class="nc" id="L135">  }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.6.201602180812</span></div></body></html>

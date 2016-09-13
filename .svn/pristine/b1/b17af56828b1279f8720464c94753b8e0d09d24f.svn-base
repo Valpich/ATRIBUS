@@ -1,0 +1,15 @@
+package fr.eseo.atribus.dao;
+
+import fr.eseo.atribus.entities.DirecteurProgrammes;
+
+import java.util.List;
+
+public interface DirecteurProgrammesDao {
+  DirecteurProgrammes trouverParLoginHash(String login, String hash);
+
+  DirecteurProgrammes ajouter(DirecteurProgrammes directeurProgrammes);
+
+  List<DirecteurProgrammes> recupererListe();
+
+  int supprimer(DirecteurProgrammes directeurProgrammes);
+}

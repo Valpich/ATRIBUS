@@ -1,0 +1,24 @@
+package fr.eseo.atribus.beans;
+
+import java.util.List;
+
+public class ArbreCompetence {
+  private String nomCompetence;
+  private List<ArbreCompetence> children;
+  
+  public String getNomCompetence() {
+    return nomCompetence;
+  }
+  
+  public void setNomCompetence(String nomCompetence) {
+    this.nomCompetence = nomCompetence;
+  }
+  
+  public List<ArbreCompetence> getChildren() {
+    return children;
+  }
+  
+  public void setChildren(List<ArbreCompetence> children) {
+    this.children = children;
+  }
+}

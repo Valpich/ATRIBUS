@@ -1,0 +1,26 @@
+<h2>Methods run, sorted chronologically</h2><h3>&gt;&gt; means before, &lt;&lt; means after</h3><p/><br/><em>Default suite</em><p/><small><i>(Hover the method name to see the test class name)</i></small><p/>
+<table border="1">
+<tr><th>Time</th><th>Delta (ms)</th><th>Suite<br>configuration</th><th>Test<br>configuration</th><th>Class<br>configuration</th><th>Groups<br>configuration</th><th>Method<br>configuration</th><th>Test<br>method</th><th>Thread</th><th>Instances</th></tr>
+<tr bgcolor="7fa7d4">  <td>16/05/28 23:06:32</td>   <td>0</td> <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td title="RessourceDaoImplTest.ajouterRessource()[pri:6, instance:fr.eseo.atribus.dao.RessourceDaoImplTest@71b6d77f]">ajouterRessource</td> 
+  <td>main@794476802</td>   <td></td> </tr>
+<tr bgcolor="7fa7d4">  <td>16/05/28 23:06:29</td>   <td>-3086</td> <td>&nbsp;</td><td title="&gt;&gt;RessourceDaoImplTest.beforeTest()[pri:0, instance:fr.eseo.atribus.dao.RessourceDaoImplTest@71b6d77f]">&gt;&gt;beforeTest</td> 
+<td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>  <td>main@794476802</td>   <td></td> </tr>
+<tr bgcolor="7fa7d4">  <td>16/05/28 23:06:32</td>   <td>93</td> <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td title="RessourceDaoImplTest.consulter()[pri:9, instance:fr.eseo.atribus.dao.RessourceDaoImplTest@71b6d77f]">consulter</td> 
+  <td>main@794476802</td>   <td></td> </tr>
+<tr bgcolor="7fa7d4">  <td>16/05/28 23:06:32</td>   <td>132</td> <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td title="RessourceDaoImplTest.listerConsultations()[pri:10, instance:fr.eseo.atribus.dao.RessourceDaoImplTest@71b6d77f]">listerConsultations</td> 
+  <td>main@794476802</td>   <td></td> </tr>
+<tr bgcolor="7fa7d4">  <td>16/05/28 23:06:32</td>   <td>-35</td> <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td title="RessourceDaoImplTest.modifierRessource()[pri:5, instance:fr.eseo.atribus.dao.RessourceDaoImplTest@71b6d77f]">modifierRessource</td> 
+  <td>main@794476802</td>   <td></td> </tr>
+<tr bgcolor="7fa7d4">  <td>16/05/28 23:06:32</td>   <td>79</td> <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td title="RessourceDaoImplTest.supprimerRessource()[pri:8, instance:fr.eseo.atribus.dao.RessourceDaoImplTest@71b6d77f]">supprimerRessource</td> 
+  <td>main@794476802</td>   <td></td> </tr>
+<tr bgcolor="7fa7d4">  <td>16/05/28 23:06:31</td>   <td>-996</td> <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td title="RessourceDaoImplTest.trouverParNomEtMatiere()[pri:1, instance:fr.eseo.atribus.dao.RessourceDaoImplTest@71b6d77f]">trouverParNomEtMatiere</td> 
+  <td>main@794476802</td>   <td></td> </tr>
+<tr bgcolor="7fa7d4">  <td>16/05/28 23:06:31</td>   <td>-134</td> <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td title="RessourceDaoImplTest.trouverParNomEtType()[pri:2, instance:fr.eseo.atribus.dao.RessourceDaoImplTest@71b6d77f]">trouverParNomEtType</td> 
+  <td>main@794476802</td>   <td></td> </tr>
+<tr bgcolor="7fa7d4">  <td>16/05/28 23:06:32</td>   <td>-40</td> <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td title="RessourceDaoImplTest.trouverParPath()[pri:4, instance:fr.eseo.atribus.dao.RessourceDaoImplTest@71b6d77f]">trouverParPath</td> 
+  <td>main@794476802</td>   <td></td> </tr>
+<tr bgcolor="7fa7d4">  <td>16/05/28 23:06:32</td>   <td>-101</td> <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td title="RessourceDaoImplTest.trouverTouteLesRessources()[pri:3, instance:fr.eseo.atribus.dao.RessourceDaoImplTest@71b6d77f]">trouverTouteLesRessources</td> 
+  <td>main@794476802</td>   <td></td> </tr>
+<tr bgcolor="7fa7d4">  <td>16/05/28 23:06:32</td>   <td>33</td> <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td title="RessourceDaoImplTest.trouverToutesLesRessourcesCompetences()[pri:7, instance:fr.eseo.atribus.dao.RessourceDaoImplTest@71b6d77f]">trouverToutesLesRessourcesCompetences</td> 
+  <td>main@794476802</td>   <td></td> </tr>
+</table>

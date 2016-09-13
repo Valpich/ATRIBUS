@@ -1,0 +1,352 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>UtilisateurController.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Atribus</a> &gt; <a href="index.source.html" class="el_package">fr.eseo.atribus.controller</a> &gt; <span class="el_source">UtilisateurController.java</span></div><h1>UtilisateurController.java</h1><pre class="source lang-java linenums">package fr.eseo.atribus.controller;
+
+import fr.eseo.atribus.dao.AdminSystDao;
+import fr.eseo.atribus.dao.DirecteurEtudesDao;
+import fr.eseo.atribus.dao.DirecteurProgrammesDao;
+import fr.eseo.atribus.dao.EleveDao;
+import fr.eseo.atribus.dao.EnseignantDao;
+import fr.eseo.atribus.dao.EnseignantRefMatiereDao;
+import fr.eseo.atribus.dao.EnseignantRefUeDao;
+import fr.eseo.atribus.dao.UeDao;
+import fr.eseo.atribus.dao.UtilisateurDao;
+import fr.eseo.atribus.entities.AdminSyst;
+import fr.eseo.atribus.entities.DirecteurEtudes;
+import fr.eseo.atribus.entities.DirecteurProgrammes;
+import fr.eseo.atribus.entities.Eleve;
+import fr.eseo.atribus.entities.Enseignant;
+import fr.eseo.atribus.entities.EnseignantRefMatiere;
+import fr.eseo.atribus.entities.EnseignantRefUe;
+import fr.eseo.atribus.entities.UniteEnseignement;
+import fr.eseo.atribus.entities.Utilisateur;
+import fr.eseo.atribus.forms.AddUserForm;
+import fr.eseo.atribus.forms.ConnexionForm;
+import fr.eseo.atribus.forms.ContacterAdministrateursForm;
+import fr.eseo.atribus.forms.ModifierProfilUtilisateurForm;
+import fr.eseo.atribus.forms.ModifierUtilisateurForm;
+import fr.eseo.atribus.forms.SupprimerUtilisateurForm;
+
+import org.springframework.beans.factory.access.BeanFactoryReference;
+import org.springframework.beans.factory.access.SingletonBeanFactoryLocator;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.ModelAndView;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Set;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+
+/**
+ * Servlet implementation class UtilisateurController.
+ */
+@Controller
+<span class="nc" id="L47">public class UtilisateurController {</span>
+  public static final String CONF_BDD_FACTORY = &quot;DaoFactory&quot;;
+  public static final String ATT_USER = &quot;utilisateur&quot;;
+  public static final String ATT_LISTE_ADMIN = &quot;listeAdminSyst&quot;;
+  public static final String ATT_LISTE_ELEVE = &quot;listeEleve&quot;;
+  public static final String ATT_FORM = &quot;form&quot;;
+  public static final String VUE_ADD_USER = &quot;AdministrateurSysteme/gestionUtilisateurs&quot;;
+  public static final String VUE_CONNEXION = &quot;connexion&quot;;
+  public static final String VUE_CHANGER_UTILISATEUR = &quot;switchUser&quot;;
+  public static final String ATT_SESSION_USER = &quot;sessionUtilisateur&quot;;
+  private static final String SUPPRIMER = &quot;supprimer&quot;;
+  private static final String MODIFIER = &quot;modifier&quot;;
+
+  @RequestMapping(value = &quot;/AdministrateurSysteme/GestionUtilisateurs&quot;, method = RequestMethod.GET)
+  protected ModelAndView afficherAjouterUtilisateur() {
+<span class="nc" id="L62">    final HashMap&lt;String, Object&gt; attributsRequete = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L63">    this.genererVueGestionUtilisateurs(attributsRequete);</span>
+<span class="nc" id="L64">    return new ModelAndView(VUE_ADD_USER, attributsRequete);</span>
+  }
+
+  private void genererVueGestionUtilisateurs(HashMap&lt;String, Object&gt; hashmap) {
+
+    /* Récupération de la lise des utilisateurs */
+    final BeanFactoryReference bf =
+<span class="nc" id="L71">        SingletonBeanFactoryLocator.getInstance().useBeanFactory(&quot;beansDao&quot;);</span>
+
+<span class="nc" id="L73">    final List&lt;Utilisateur&gt; listeUtilisateur =</span>
+<span class="nc" id="L74">        ((UtilisateurDao) bf.getFactory().getBean(&quot;utilisateurDao&quot;)).recupererListe();</span>
+<span class="nc" id="L75">    final List&lt;AdminSyst&gt; listeAdminSyst =</span>
+<span class="nc" id="L76">        ((AdminSystDao) bf.getFactory().getBean(&quot;adminSystDao&quot;)).recupererListe();</span>
+<span class="nc" id="L77">    final List&lt;DirecteurEtudes&gt; listeDirecteurEtudes =</span>
+<span class="nc" id="L78">        ((DirecteurEtudesDao) bf.getFactory().getBean(&quot;directeurEtudesDao&quot;)).recupererListe();</span>
+<span class="nc" id="L79">    final List&lt;DirecteurProgrammes&gt; listeDirecteurProgrammes =</span>
+<span class="nc" id="L80">        ((DirecteurProgrammesDao) bf.getFactory().getBean(&quot;directeurProgrammesDao&quot;))</span>
+<span class="nc" id="L81">            .recupererListe();</span>
+<span class="nc" id="L82">    final List&lt;EnseignantRefUe&gt; listeEnseignantRefUe =</span>
+<span class="nc" id="L83">        ((EnseignantRefUeDao) bf.getFactory().getBean(&quot;enseignantRefUeDao&quot;)).recupererListe();</span>
+<span class="nc" id="L84">    final List&lt;EnseignantRefMatiere&gt; listeEnseignantRefMatiere =</span>
+<span class="nc" id="L85">        ((EnseignantRefMatiereDao) bf.getFactory().getBean(&quot;enseignantRefMatiereDao&quot;))</span>
+<span class="nc" id="L86">            .recupererListe();</span>
+<span class="nc" id="L87">    final List&lt;Enseignant&gt; listeEnseignant =</span>
+<span class="nc" id="L88">        ((EnseignantDao) bf.getFactory().getBean(&quot;enseignantDao&quot;)).recupererListe();</span>
+<span class="nc" id="L89">    final List&lt;Eleve&gt; listeEleve =</span>
+<span class="nc" id="L90">        ((EleveDao) bf.getFactory().getBean(&quot;eleveDao&quot;)).recupererListe();</span>
+
+
+<span class="nc" id="L93">    final String arbreAdmin = this.genererArbreAdmin(listeAdminSyst);</span>
+
+<span class="nc" id="L95">    final String arbreDirecteurEtudes = this.genererArbreDirecteurEtudes(listeDirecteurEtudes);</span>
+
+<span class="nc" id="L97">    final String arbreDirecteurProgrammes =</span>
+<span class="nc" id="L98">        this.genererArbreDirecteurProgrammes(listeDirecteurProgrammes);</span>
+
+<span class="nc" id="L100">    final String arbreEnseignantRefUe = this.genererArbreErue(listeEnseignantRefUe);</span>
+
+<span class="nc" id="L102">    final String arbreEnseignantRefMatiere = this.genererArbreErm(listeEnseignantRefMatiere);</span>
+
+<span class="nc" id="L104">    final String arbreEnseignant = this.genererArbreEnseignant(listeEnseignant);</span>
+
+<span class="nc" id="L106">    final String arbreEleve = this.genererArbreEleve(listeEleve);</span>
+
+<span class="nc" id="L108">    final String arbre = new String(&quot;&quot; + &quot;[&quot;</span>
+        + &quot; { \&quot;roleName\&quot; : \&quot;Administrateurs\&quot;, \&quot;children\&quot; : [&quot; + arbreAdmin + &quot;]},&quot;
+        + &quot; { \&quot;roleName\&quot; : \&quot;Directeur des études\&quot;, \&quot;children\&quot; : [&quot; + arbreDirecteurEtudes
+        + &quot;]},&quot; + &quot; { \&quot;roleName\&quot; : \&quot;Directeur des programmes\&quot;, \&quot;children\&quot; : [&quot;
+        + arbreDirecteurProgrammes + &quot;]},&quot;
+        + &quot; { \&quot;roleName\&quot; : \&quot;Enseignants réf UE\&quot;, \&quot;children\&quot; : [&quot; + arbreEnseignantRefUe
+        + &quot;]},&quot; + &quot; { \&quot;roleName\&quot; : \&quot;Enseignants réf Mat.\&quot;, \&quot;children\&quot; : [&quot;
+        + arbreEnseignantRefMatiere + &quot;]},&quot; + &quot; { \&quot;roleName\&quot; : \&quot;Enseignants\&quot;, \&quot;children\&quot; : [&quot;
+        + arbreEnseignant + &quot;]},&quot; + &quot; { \&quot;roleName\&quot; : \&quot;Eleves\&quot;, \&quot;children\&quot; : [&quot;
+        + &quot; { \&quot;promotion\&quot; : \&quot;Fourrier\&quot;, \&quot;children\&quot; : [&quot; + arbreEleve + &quot;]}&quot; + &quot; ]},&quot; + &quot; ]&quot;);
+
+    /* On met la liste dans la session */
+<span class="nc" id="L120">    hashmap.put(&quot;nbUtilisateur&quot;, listeUtilisateur.size());</span>
+<span class="nc" id="L121">    hashmap.put(&quot;nbAdminSyst&quot;, listeAdminSyst.size());</span>
+<span class="nc" id="L122">    hashmap.put(&quot;nbEleve&quot;, listeEleve.size());</span>
+<span class="nc" id="L123">    hashmap.put(&quot;nbEnseignant&quot;, listeEnseignant.size());</span>
+<span class="nc" id="L124">    hashmap.put(&quot;arbre&quot;, arbre);</span>
+
+<span class="nc" id="L126">  }</span>
+
+  private String genererArbreEleve(final List&lt;Eleve&gt; listeEleve) {
+<span class="nc" id="L129">    String arbreEleve = new String(&quot;&quot;);</span>
+<span class="nc bnc" id="L130" title="All 2 branches missed.">    for (int i = 0; i &lt; listeEleve.size(); i++) {</span>
+<span class="nc bnc" id="L131" title="All 2 branches missed.">      if (i != listeEleve.size() - 1) {</span>
+<span class="nc" id="L132">        arbreEleve += listeEleve.get(i).toJson() + &quot;,&quot;;</span>
+      } else {
+<span class="nc" id="L134">        arbreEleve += listeEleve.get(i).toJson();</span>
+      }
+    }
+<span class="nc" id="L137">    return arbreEleve;</span>
+  }
+
+  private String genererArbreEnseignant(final List&lt;Enseignant&gt; listeEnseignant) {
+<span class="nc" id="L141">    String arbreEnseignant = new String(&quot;&quot;);</span>
+<span class="nc bnc" id="L142" title="All 2 branches missed.">    for (int i = 0; i &lt; listeEnseignant.size(); i++) {</span>
+<span class="nc bnc" id="L143" title="All 2 branches missed.">      if (i != listeEnseignant.size() - 1) {</span>
+<span class="nc" id="L144">        arbreEnseignant += listeEnseignant.get(i).toJson() + &quot;,&quot;;</span>
+      } else {
+<span class="nc" id="L146">        arbreEnseignant += listeEnseignant.get(i).toJson();</span>
+      }
+    }
+<span class="nc" id="L149">    return arbreEnseignant;</span>
+  }
+
+  private String genererArbreErm(final List&lt;EnseignantRefMatiere&gt; listeEnseignantRefMatiere) {
+<span class="nc" id="L153">    String arbreEnseignantRefMatiere = new String(&quot;&quot;);</span>
+<span class="nc bnc" id="L154" title="All 2 branches missed.">    for (int i = 0; i &lt; listeEnseignantRefMatiere.size(); i++) {</span>
+<span class="nc bnc" id="L155" title="All 2 branches missed.">      if (i != listeEnseignantRefMatiere.size() - 1) {</span>
+<span class="nc" id="L156">        arbreEnseignantRefMatiere += listeEnseignantRefMatiere.get(i).toJson() + &quot;,&quot;;</span>
+      } else {
+<span class="nc" id="L158">        arbreEnseignantRefMatiere += listeEnseignantRefMatiere.get(i).toJson();</span>
+      }
+    }
+<span class="nc" id="L161">    return arbreEnseignantRefMatiere;</span>
+  }
+
+  private String genererArbreErue(final List&lt;EnseignantRefUe&gt; listeEnseignantRefUe) {
+<span class="nc" id="L165">    String arbreEnseignantRefUe = new String(&quot;&quot;);</span>
+<span class="nc bnc" id="L166" title="All 2 branches missed.">    for (int i = 0; i &lt; listeEnseignantRefUe.size(); i++) {</span>
+<span class="nc bnc" id="L167" title="All 2 branches missed.">      if (i != listeEnseignantRefUe.size() - 1) {</span>
+<span class="nc" id="L168">        arbreEnseignantRefUe += listeEnseignantRefUe.get(i).toJson() + &quot;,&quot;;</span>
+      } else {
+<span class="nc" id="L170">        arbreEnseignantRefUe += listeEnseignantRefUe.get(i).toJson();</span>
+      }
+    }
+<span class="nc" id="L173">    return arbreEnseignantRefUe;</span>
+  }
+
+  private String genererArbreDirecteurProgrammes(
+      final List&lt;DirecteurProgrammes&gt; listeDirecteurProgrammes) {
+<span class="nc" id="L178">    String arbreDirecteurProgrammes = new String(&quot;&quot;);</span>
+<span class="nc bnc" id="L179" title="All 2 branches missed.">    for (int i = 0; i &lt; listeDirecteurProgrammes.size(); i++) {</span>
+<span class="nc bnc" id="L180" title="All 2 branches missed.">      if (i != listeDirecteurProgrammes.size() - 1) {</span>
+<span class="nc" id="L181">        arbreDirecteurProgrammes += listeDirecteurProgrammes.get(i).toJson() + &quot;,&quot;;</span>
+      } else {
+<span class="nc" id="L183">        arbreDirecteurProgrammes += listeDirecteurProgrammes.get(i).toJson();</span>
+      }
+    }
+<span class="nc" id="L186">    return arbreDirecteurProgrammes;</span>
+  }
+
+  private String genererArbreDirecteurEtudes(final List&lt;DirecteurEtudes&gt; listeDirecteurEtudes) {
+<span class="nc" id="L190">    String arbreDirecteurEtudes = new String(&quot;&quot;);</span>
+<span class="nc bnc" id="L191" title="All 2 branches missed.">    for (int i = 0; i &lt; listeDirecteurEtudes.size(); i++) {</span>
+<span class="nc bnc" id="L192" title="All 2 branches missed.">      if (i != listeDirecteurEtudes.size() - 1) {</span>
+<span class="nc" id="L193">        arbreDirecteurEtudes += listeDirecteurEtudes.get(i).toJson() + &quot;,&quot;;</span>
+      } else {
+<span class="nc" id="L195">        arbreDirecteurEtudes += listeDirecteurEtudes.get(i).toJson();</span>
+      }
+    }
+<span class="nc" id="L198">    return arbreDirecteurEtudes;</span>
+  }
+
+  private String genererArbreAdmin(final List&lt;AdminSyst&gt; listeAdminSyst) {
+<span class="nc" id="L202">    String arbreAdmin = new String(&quot;&quot;);</span>
+<span class="nc bnc" id="L203" title="All 2 branches missed.">    for (int i = 0; i &lt; listeAdminSyst.size(); i++) {</span>
+<span class="nc bnc" id="L204" title="All 2 branches missed.">      if (i != listeAdminSyst.size() - 1) {</span>
+<span class="nc" id="L205">        arbreAdmin += listeAdminSyst.get(i).toJson() + &quot;,&quot;;</span>
+      } else {
+<span class="nc" id="L207">        arbreAdmin += listeAdminSyst.get(i).toJson();</span>
+      }
+    }
+<span class="nc" id="L210">    return arbreAdmin;</span>
+  }
+
+  @RequestMapping(value = &quot;/AdministrateurSysteme/GestionUtilisateurs&quot;, method = RequestMethod.POST)
+  protected ModelAndView ajouterUtilisateur(HttpServletRequest request) {
+<span class="nc" id="L215">    final HashMap&lt;String, Object&gt; attributsRequete = new HashMap&lt;&gt;();</span>
+<span class="nc bnc" id="L216" title="All 2 branches missed.">    if (request.getParameter(&quot;ajouter&quot;) == &quot;&quot;) {</span>
+<span class="nc" id="L217">      final AddUserForm form = new AddUserForm();</span>
+<span class="nc" id="L218">      final Utilisateur utilisateur = form.addUser(request);</span>
+<span class="nc" id="L219">      attributsRequete.put(UtilisateurController.ATT_FORM, form);</span>
+<span class="nc" id="L220">      attributsRequete.put(UtilisateurController.ATT_USER, utilisateur);</span>
+<span class="nc bnc" id="L221" title="All 4 branches missed.">    } else if (request.getParameter(MODIFIER) != null &amp;&amp; request.getParameter(MODIFIER) != &quot;&quot;) {</span>
+<span class="nc" id="L222">      final ModifierUtilisateurForm form = new ModifierUtilisateurForm();</span>
+<span class="nc" id="L223">      form.modifierUtilisateur(request);</span>
+<span class="nc" id="L224">      attributsRequete.put(UtilisateurController.ATT_FORM, form);</span>
+<span class="nc bnc" id="L225" title="All 4 branches missed.">    } else if (request.getParameter(SUPPRIMER) != null &amp;&amp; request.getParameter(SUPPRIMER) != &quot;&quot;) {</span>
+<span class="nc" id="L226">      final SupprimerUtilisateurForm form = new SupprimerUtilisateurForm();</span>
+<span class="nc" id="L227">      form.supprimerUtilisateur(request);</span>
+<span class="nc" id="L228">      attributsRequete.put(UtilisateurController.ATT_FORM, form);</span>
+    }
+
+<span class="nc" id="L231">    this.genererVueGestionUtilisateurs(attributsRequete);</span>
+<span class="nc" id="L232">    return new ModelAndView(VUE_ADD_USER, attributsRequete);</span>
+  }
+
+
+  @RequestMapping(value = &quot;/connexion&quot;, method = RequestMethod.GET)
+  protected ModelAndView afficherConnexion() {
+<span class="nc" id="L238">    return new ModelAndView(VUE_CONNEXION);</span>
+  }
+
+  @SuppressWarnings(&quot;unchecked&quot;)
+  @RequestMapping(value = &quot;/connexion&quot;, method = RequestMethod.POST)
+  protected ModelAndView tenterConnexion(HttpServletRequest request) {
+    /* Préparation de l'objet formulaire */
+<span class="nc" id="L245">    final ConnexionForm form = new ConnexionForm();</span>
+    /* Appel au traitement et à la validation de la requête, et récupération du bean en résultant */
+<span class="nc" id="L247">    form.connecterUtilisateur(request);</span>
+<span class="nc bnc" id="L248" title="All 2 branches missed.">    if (request.getSession().getAttribute(ATT_SESSION_USER) != null) {</span>
+<span class="nc" id="L249">      ((Set&lt;Utilisateur&gt;) request.getServletContext().getAttribute(&quot;utilisateurs&quot;))</span>
+<span class="nc" id="L250">          .add(((List&lt;Utilisateur&gt;) request.getSession().getAttribute(ATT_SESSION_USER)).get(0));</span>
+<span class="nc" id="L251">      return new ModelAndView(&quot;redirect:/&quot;);</span>
+    } else {
+      /* Stockage du formulaire dans l'objet request */
+<span class="nc" id="L254">      final HashMap&lt;String, Object&gt; attributsRequete = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L255">      attributsRequete.put(UtilisateurController.ATT_FORM, form);</span>
+<span class="nc" id="L256">      return new ModelAndView(VUE_CONNEXION, attributsRequete);</span>
+    }
+  }
+
+  @RequestMapping(value = &quot;/deconnexion&quot;, method = RequestMethod.GET)
+  protected ModelAndView seDeconnecter(HttpServletRequest request) {
+<span class="nc" id="L262">    final HttpSession session = request.getSession();</span>
+<span class="nc" id="L263">    session.invalidate();</span>
+<span class="nc" id="L264">    return new ModelAndView(&quot;redirect:/connexion&quot;);</span>
+  }
+
+  @RequestMapping(value = &quot;/ContacterAdministrateur&quot;, method = RequestMethod.GET)
+  protected ModelAndView afficherContactAdmin() {
+<span class="nc" id="L269">    return new ModelAndView(&quot;contacterAdministrateur&quot;);</span>
+  }
+
+  @SuppressWarnings(&quot;unchecked&quot;)
+  @RequestMapping(value = &quot;/ContacterAdministrateur&quot;, method = RequestMethod.POST)
+  protected ModelAndView contactAdmin(
+      @RequestParam(value = &quot;message&quot;, required = false) String message,
+      HttpServletRequest request) {
+<span class="nc" id="L277">    final HashMap&lt;String, Object&gt; attributsRequete = new HashMap&lt;&gt;();</span>
+<span class="nc bnc" id="L278" title="All 2 branches missed.">    if (message != null) {</span>
+<span class="nc" id="L279">      ContacterAdministrateursForm form = new ContacterAdministrateursForm();</span>
+<span class="nc" id="L280">      if (((List&lt;Utilisateur&gt;) request.getSession()</span>
+<span class="nc bnc" id="L281" title="All 2 branches missed.">          .getAttribute(UtilisateurController.ATT_SESSION_USER)) != null) {</span>
+<span class="nc" id="L282">        form.contacterAdministrateurs(((List&lt;Utilisateur&gt;) request.getSession()</span>
+<span class="nc" id="L283">            .getAttribute(UtilisateurController.ATT_SESSION_USER)).get(0), message);</span>
+      } else {
+<span class="nc" id="L285">        form.contacterAdministrateurs(message);</span>
+      }
+<span class="nc bnc" id="L287" title="All 2 branches missed.">      if (!form.getErreurs().isEmpty()) {</span>
+        // On charge la liste des erreurs
+<span class="nc" id="L289">        attributsRequete.put(&quot;erreurs&quot;, form.getErreurs());</span>
+      } else {
+<span class="nc" id="L291">        attributsRequete.put(&quot;succes&quot;, &quot;true&quot;);</span>
+      }
+<span class="nc" id="L293">    } else {</span>
+<span class="nc" id="L294">      attributsRequete.put(&quot;vide&quot;, &quot;true&quot;);</span>
+    }
+<span class="nc" id="L296">    return new ModelAndView(&quot;contacterAdministrateur&quot;, attributsRequete);</span>
+  }
+
+  @SuppressWarnings(&quot;unchecked&quot;)
+  @RequestMapping(value = &quot;/MonProfil&quot;, method = RequestMethod.GET)
+  protected ModelAndView afficherProfil(HttpServletRequest request) {
+<span class="nc" id="L302">    final HashMap&lt;String, Object&gt; attributsRequete = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L303">    attributsRequete.put(ATT_SESSION_USER, request.getSession().getAttribute(ATT_SESSION_USER));</span>
+<span class="nc" id="L304">    attributsRequete.put(&quot;ue&quot;,</span>
+<span class="nc" id="L305">        recupererUe((List&lt;Utilisateur&gt;) request.getSession().getAttribute(ATT_SESSION_USER)));</span>
+<span class="nc" id="L306">    return new ModelAndView(&quot;profilUtilisateur&quot;, attributsRequete);</span>
+  }
+
+  @SuppressWarnings(&quot;unchecked&quot;)
+  @RequestMapping(value = &quot;/MonProfil&quot;, method = RequestMethod.POST)
+  protected ModelAndView modifierProfil(HttpServletRequest request,
+      @RequestParam(value = &quot;options&quot;, required = false) String options,
+      @RequestParam(value = &quot;notificationActif&quot;, required = false) String notification,
+      @RequestParam(value = &quot;mailActif&quot;, required = false) String mail) {
+<span class="nc" id="L315">    final HashMap&lt;String, Object&gt; attributsRequete = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L316">    attributsRequete.put(ATT_SESSION_USER, request.getSession().getAttribute(ATT_SESSION_USER));</span>
+<span class="nc" id="L317">    ModifierProfilUtilisateurForm form = new ModifierProfilUtilisateurForm();</span>
+<span class="nc" id="L318">    form.modifierProfilUtilisateur(options, notification, mail,</span>
+<span class="nc" id="L319">        ((List&lt;Utilisateur&gt;) request.getSession().getAttribute(ATT_SESSION_USER)).get(0));</span>
+<span class="nc" id="L320">    attributsRequete.put(ATT_FORM, form);</span>
+<span class="nc" id="L321">    attributsRequete.put(&quot;ue&quot;,</span>
+<span class="nc" id="L322">        recupererUe((List&lt;Utilisateur&gt;) request.getSession().getAttribute(ATT_SESSION_USER)));</span>
+<span class="nc" id="L323">    return new ModelAndView(&quot;profilUtilisateur&quot;, attributsRequete);</span>
+  }
+
+  private UniteEnseignement recupererUe(final List&lt;Utilisateur&gt; listeUtilisateur) {
+<span class="nc" id="L327">    UniteEnseignement ue = null;</span>
+<span class="nc bnc" id="L328" title="All 2 branches missed.">    for (final Utilisateur utilisateur : listeUtilisateur) {</span>
+<span class="nc bnc" id="L329" title="All 2 branches missed.">      if (utilisateur.getClass().equals(EnseignantRefUe.class)) {</span>
+        final BeanFactoryReference bf =
+<span class="nc" id="L331">            SingletonBeanFactoryLocator.getInstance().useBeanFactory(&quot;beansDao&quot;);</span>
+<span class="nc" id="L332">        final List&lt;UniteEnseignement&gt; ues = ((UeDao) bf.getFactory().getBean(&quot;ueDao&quot;)).listerUe();</span>
+<span class="nc" id="L333">        EnseignantRefUe erue = (EnseignantRefUe) utilisateur;</span>
+<span class="nc bnc" id="L334" title="All 2 branches missed.">        if (verifierUe(ues, erue) != null) {</span>
+<span class="nc" id="L335">          return verifierUe(ues, erue);</span>
+        }
+      }
+<span class="nc" id="L338">    }</span>
+<span class="nc" id="L339">    return ue;</span>
+  }
+
+  private UniteEnseignement verifierUe(final List&lt;UniteEnseignement&gt; ues, EnseignantRefUe erue) {
+<span class="nc bnc" id="L343" title="All 2 branches missed.">    for (UniteEnseignement ueTmp : ues) {</span>
+<span class="nc bnc" id="L344" title="All 2 branches missed.">      if (ueTmp.getEnseignantRefUe() != null &amp;&amp; ueTmp.getEnseignantRefUe().getIdEnseignantRefUe()</span>
+<span class="nc bnc" id="L345" title="All 2 branches missed.">          == erue.getIdEnseignantRefUe()) {</span>
+<span class="nc" id="L346">        return ueTmp;</span>
+      }
+<span class="nc" id="L348">    }</span>
+<span class="nc" id="L349">    return null;</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.6.201602180812</span></div></body></html>

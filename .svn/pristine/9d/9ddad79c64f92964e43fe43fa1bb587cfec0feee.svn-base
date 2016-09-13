@@ -1,0 +1,186 @@
+package fr.eseo.atribus.forms;
+
+import fr.eseo.atribus.controller.ExamenController;
+import fr.eseo.atribus.dao.DaoException;
+import fr.eseo.atribus.dao.ExamenDao;
+import fr.eseo.atribus.dao.MatiereDao;
+import fr.eseo.atribus.entities.Examen;
+
+import org.springframework.beans.factory.access.BeanFactoryReference;
+import org.springframework.beans.factory.access.SingletonBeanFactoryLocator;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.servlet.http.HttpServletRequest;
+
+/**
+ * La classe ModifierExamenForm.
+ */
+public class ModifierExamenForm {
+
+  /** La constante CHAMP_NOM. */
+  private static final String CHAMP_NOM = "nomExamen";
+
+  /** La constante CHAMP_CHOIX_MATIERE. */
+  private static final String CHAMP_CHOIX_MATIERE = "choixMatiere";
+
+  /** La constante LOGGER. */
+  private static final Logger LOGGER = Logger.getLogger(ModifierExamenForm.class.getName());
+
+  /** La constante EXCEPTION. */
+  private static final String EXCEPTION = "Exception";
+
+  /** La variable resultat. */
+  private String resultat;
+
+  /** La variable erreurs. */
+  private final Map<String, String> erreurs = new HashMap<>();
+
+  /** La variable examen dao. */
+  private final ExamenDao examenDao;
+
+  /** La variable matiere dao. */
+  private final MatiereDao matiereDao;
+
+  /**
+   * Instancie un nouveau modifier examen form.
+   */
+  public ModifierExamenForm() {
+    final BeanFactoryReference bf =
+        SingletonBeanFactoryLocator.getInstance().useBeanFactory("beansDao");
+    /* Récupération d'une instance de notre DAO Examen */
+    this.examenDao = (ExamenDao) bf.getFactory().getBean("examenDao");
+    /* Récupération d'une instance de notre DAO Matiere */
+    this.matiereDao = (MatiereDao) bf.getFactory().getBean("matiereDao");
+  }
+
+  /**
+   * Accesseur en lecture sur le paramètre resultat.
+   *
+   * @return le paramètre resultat
+   */
+  public String getResultat() {
+    return this.resultat;
+  }
+
+  /**
+   * Accesseur en lecture sur le paramètre erreurs.
+   *
+   * @return le paramètre erreurs
+   */
+  public Map<String, String> getErreurs() {
+    return this.erreurs;
+  }
+
+  /**
+   * Modifier examen.
+   *
+   * @param request la request
+   * @return Le paramètre examen
+   */
+  public Examen modifierExamen(HttpServletRequest request) {
+    final String nom = ModifierExamenForm.getValeurChamp(request, ModifierExamenForm.CHAMP_NOM);
+    final String matiere =
+        ModifierExamenForm.getValeurChamp(request, ModifierExamenForm.CHAMP_CHOIX_MATIERE);
+    final Examen examen = (Examen) request.getSession().getAttribute(ExamenController.ATT_EXAMEN);
+    final String ancienNom = examen.getNom();
+    try {
+      this.traiterDonnees(nom, matiere, examen);
+      if (this.erreurs.isEmpty()) {
+        this.examenDao.update(examen, ancienNom);
+        this.resultat = "success";
+      } else {
+        this.resultat = "error";
+      }
+    } catch (final DaoException ebdd) {
+      this.resultat = "errorDao";
+      ModifierExamenForm.LOGGER.log(Level.INFO, EXCEPTION, ebdd);
+    }
+    return examen;
+  }
+
+  /**
+   * Traiter donnees.
+   *
+   * @param nom le nom
+   * @param matiere la matiere
+   * @param examen l'examen
+   */
+  private void traiterDonnees(String nom, String matiere, Examen examen) {
+    try {
+      this.validationNom(nom);
+    } catch (final FormValidationException fve) {
+      ModifierExamenForm.LOGGER.log(Level.INFO, EXCEPTION, fve);
+      this.setErreur("nom", fve.getMessage());
+    }
+    examen.setNom(nom);
+    try {
+      this.validationMatiere(matiere);
+    } catch (final FormValidationException fve) {
+      ModifierExamenForm.LOGGER.log(Level.INFO, EXCEPTION, fve);
+      this.setErreur("choixMatiere", "Choix de matière invalide ou inexistant.");
+    }
+    examen.setMatiere(this.matiereDao.trouverParNom(matiere));
+  }
+
+  /**
+   * Validation nom.
+   *
+   * @param nom le nom
+   * @throws FormValidationException de type form validation exception
+   */
+  private void validationNom(String nom) throws FormValidationException {
+    if (nom == null || nom.length() < 3) {
+      throw new FormValidationException("Le nom de l'examen doit avoir au moins 3 caractères.");
+    }
+  }
+
+  /**
+   * Validation matiere.
+   *
+   * @param matiere la matiere
+   * @throws FormValidationException de type form validation exception
+   */
+  private void validationMatiere(String matiere) throws FormValidationException {
+    if (this.matiereDao.trouverParNom(matiere) == null) {
+      throw new FormValidationException("Cette matière n'existe pas");
+    }
+  }
+
+  /**
+   * Ajoute une erreur.
+   *
+   * @param champ le champ
+   * @param message le message
+   */
+  /*
+   * Ajoute un message correspondant au champ spécifié à la map des erreurs.
+   */
+  private void setErreur(String champ, String message) {
+    this.erreurs.put(champ, message);
+  }
+
+  /**
+   * Accesseur en lecture sur le paramètre valeur champ.
+   *
+   * @param request la request
+   * @param nomChamp le nom du champ
+   * @return le paramètre valeur champ
+   */
+  /*
+   * Méthode utilitaire qui retourne null si un champ est vide, et son contenu sinon.
+   */
+  private static String getValeurChamp(HttpServletRequest request, String nomChamp) {
+    final String valeur = request.getParameter(nomChamp);
+    if (valeur == null || valeur.trim().length() == 0) {
+      return null;
+    } else {
+      return valeur.trim();
+    }
+  }
+  
+}
+

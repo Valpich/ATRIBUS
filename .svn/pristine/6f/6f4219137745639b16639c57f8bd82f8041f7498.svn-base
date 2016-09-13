@@ -1,0 +1,86 @@
+package fr.eseo.atribus.forms;
+
+import static org.testng.Assert.assertNotNull;
+
+import fr.eseo.atribus.dao.CompetenceDao;
+
+import org.mockito.Mockito;
+import org.springframework.beans.factory.access.BeanFactoryReference;
+import org.springframework.beans.factory.access.SingletonBeanFactoryLocator;
+import org.testng.annotations.BeforeTest;
+import org.testng.annotations.Test;
+
+import javax.servlet.http.HttpServletRequest;
+
+
+public class ModifierCompetenceFormTest {
+  
+  private ModifierCompetenceForm form;
+  private CompetenceDao competenceDao;
+  
+  /**
+   * Initialisation des variables avant le lancement du test.
+   */
+  @BeforeTest
+  public void beforeTest() {
+    final BeanFactoryReference bf =
+        SingletonBeanFactoryLocator.getInstance().useBeanFactory("beansDao");
+    this.competenceDao = (CompetenceDao) bf.getFactory().getBean("competenceDao");
+    this.form = new ModifierCompetenceForm();
+    
+  }
+  
+  @Test
+  public void modifierCompetence() {
+    
+    final HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
+    final String nomNouvelleCompetence = "Connaisances disciplinaires et raisonnement";
+    final String idAncienneCompetence = "1";
+    
+    Mockito.when(request.getParameter("nomCompetence")).thenReturn(nomNouvelleCompetence);
+    Mockito.when(request.getParameter("idCompetence")).thenReturn(idAncienneCompetence);
+    
+    form.modifierCompetence(request);
+    
+    assertNotNull(this.competenceDao.trouverParNom("Connaisances disciplinaires et raisonnement"));
+    
+  }
+  
+  @Test
+  public void modifierCompetenceErreurNom() {
+    
+    final HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
+    final String nomNouvelleCompetence = "C";
+    final String idAncienneCompetence = "1";
+    
+    Mockito.when(request.getParameter("nomCompetence")).thenReturn(nomNouvelleCompetence);
+    Mockito.when(request.getParameter("idCompetence")).thenReturn(idAncienneCompetence);
+    
+    form.modifierCompetence(request);
+    
+    assertNotNull(form.getErreurs());
+    
+  }
+  
+  @Test
+  public void modifierCompetenceTrouverParNom() { 
+    assertNotNull(this.form.trouverParNom("Physique"));  
+  }
+  
+  @Test
+  public void modifierCompetenceErreurValeurChamp() {
+    
+    final HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
+    final String nomNouvelleCompetence = null;
+    final String idAncienneCompetence = "1";
+    
+    Mockito.when(request.getParameter("nomCompetence")).thenReturn(nomNouvelleCompetence);
+    Mockito.when(request.getParameter("idCompetence")).thenReturn(idAncienneCompetence);
+    
+    form.modifierCompetence(request);
+    
+    assertNotNull(form.getErreurs());
+    
+  }
+
+}

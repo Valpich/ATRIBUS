@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testng-results skipped="0" failed="0" total="4" passed="4">
+  <reporter-output>
+  </reporter-output>
+  <suite name="Default suite" duration-ms="3191" started-at="2016-05-28T21:56:59Z" finished-at="2016-05-28T21:57:03Z">
+    <groups>
+    </groups>
+    <test name="Default test" duration-ms="3191" started-at="2016-05-28T21:56:59Z" finished-at="2016-05-28T21:57:03Z">
+      <class name="fr.eseo.atribus.forms.AddCompetenceFormTest">
+        <test-method status="PASS" signature="beforeTest()[pri:0, instance:fr.eseo.atribus.forms.AddCompetenceFormTest@20de05e5]" name="beforeTest" is-config="true" duration-ms="1965" started-at="2016-05-28T23:56:59Z" finished-at="2016-05-28T23:57:01Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- beforeTest -->
+        <test-method status="PASS" signature="ajouterBonneCompetence()[pri:0, instance:fr.eseo.atribus.forms.AddCompetenceFormTest@20de05e5]" name="ajouterBonneCompetence" duration-ms="1140" started-at="2016-05-28T23:57:01Z" finished-at="2016-05-28T23:57:02Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- ajouterBonneCompetence -->
+        <test-method status="PASS" signature="ajouterFausseCompetence()[pri:0, instance:fr.eseo.atribus.forms.AddCompetenceFormTest@20de05e5]" name="ajouterFausseCompetence" duration-ms="20" started-at="2016-05-28T23:57:02Z" finished-at="2016-05-28T23:57:02Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- ajouterFausseCompetence -->
+        <test-method status="PASS" signature="modifierCompetenceFail()[pri:0, instance:fr.eseo.atribus.forms.AddCompetenceFormTest@20de05e5]" name="modifierCompetenceFail" duration-ms="7" started-at="2016-05-28T23:57:02Z" finished-at="2016-05-28T23:57:02Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- modifierCompetenceFail -->
+        <test-method status="PASS" signature="modifierCompetenceReussi()[pri:0, instance:fr.eseo.atribus.forms.AddCompetenceFormTest@20de05e5]" name="modifierCompetenceReussi" duration-ms="15" started-at="2016-05-28T23:57:02Z" finished-at="2016-05-28T23:57:02Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- modifierCompetenceReussi -->
+      </class> <!-- fr.eseo.atribus.forms.AddCompetenceFormTest -->
+    </test> <!-- Default test -->
+  </suite> <!-- Default suite -->
+</testng-results>

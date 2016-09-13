@@ -1,0 +1,359 @@
+package fr.eseo.atribus.controller;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
+
+import fr.eseo.atribus.dao.EleveDao;
+import fr.eseo.atribus.dao.EnseignantDao;
+import fr.eseo.atribus.dao.EnseignantRefMatiereDao;
+import fr.eseo.atribus.dao.EvaluationDao;
+import fr.eseo.atribus.dao.ExamenDao;
+import fr.eseo.atribus.entities.Utilisateur;
+
+import org.mockito.MockitoAnnotations;
+import org.springframework.beans.factory.access.BeanFactoryReference;
+import org.springframework.beans.factory.access.SingletonBeanFactoryLocator;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpSession;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.web.WebAppConfiguration;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.RequestPostProcessor;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.servlet.view.InternalResourceViewResolver;
+import org.springframework.web.util.NestedServletException;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
+@Test
+@ContextConfiguration({ "classpath:spring-dao.xml", "classpath:spring-daoBeans.xml",
+    "classpath:beanRefFactory.xml",  "classpath:dispatcher-servlet.xml" })
+@WebAppConfiguration
+public class ExamenControllerTest {
+
+  public static final String ATT_EXAMEN = "examen";
+  public static final String ATT_CHOIX_EXAMEN = "choixExamen";
+  public static final String ATT_NOM_EXAMEN = "nomExamen";
+  public static final String ATT_EXAMENS = "examens";
+  public static final String ATT_EVALUATIONS = "evaluations";
+  public static final String ATT_FORM = "form";
+  public static final String ATT_COMPETENCES = "competences";
+  public static final String ATT_COMPETENCES_VIDE = "competencesVide";
+  public static final String ATT_MATIERES = "matieres";
+  public static final String VUE = "EnseignantRefMatiere/addExamen";
+  public static final String VUE_CONSULTER = "Eleve/consulterCompetencesExamen";
+  public static final String VUE_MODIFIER = "EnseignantRefMatiere/modifierExamen";
+  public static final String VUE_CORRIGER = "Enseignant/corrigerExamen";
+  public static final String VUE_PASSER = "Eleve/passerExamen";
+  public static final String VUE_SUPPRIMER = "EnseignantRefMatiere/supprimerExamen";
+  public static final String ATT_SESSION_USER = "sessionUtilisateur";
+  public static final String VUE_CONSULTER_NOTES = "Eleve/consulterNotes";
+  public static final String VUE_AUCUNE_NOTE = "Eleve/aucuneNote";
+
+  private MockMvc mockMvc;
+  private ExamenDao examenDao;
+  private EvaluationDao evaluationDao;
+  private EleveDao eleveDao;
+  private EnseignantDao enseignantDao;
+  private EnseignantRefMatiereDao ermDao;
+  
+  @BeforeClass
+  public void setup() {
+    InternalResourceViewResolver viewResolver = new InternalResourceViewResolver();
+    viewResolver.setPrefix("/WEB-INF/");
+    viewResolver.setSuffix(".jsp");
+    MockitoAnnotations.initMocks(this);
+    ExamenController examenController = new ExamenController();
+    examenController.init();
+    mockMvc =
+        MockMvcBuilders.standaloneSetup(examenController).setViewResolvers(viewResolver).build();
+    final BeanFactoryReference bf =
+        SingletonBeanFactoryLocator.getInstance().useBeanFactory("beansDao");
+    /* Récupération d'une instance de notre DAO Examen */
+    this.examenDao = (ExamenDao) bf.getFactory().getBean("examenDao");
+    /* Récupération d'une instance de notre DAO Eveluation */
+    this.evaluationDao = (EvaluationDao) bf.getFactory().getBean("evaluationDao");
+    /* Récupération d'une instance de notre DAO Eleve */
+    this.eleveDao = (EleveDao) bf.getFactory().getBean("eleveDao");
+    /* Récupération d'une instance de notre DAO Enseignant */
+    this.enseignantDao = (EnseignantDao) bf.getFactory().getBean("enseignantDao");
+    /* Récupération d'une instance de notre DAO Enseignant Reférent Matiere */
+    this.ermDao = (EnseignantRefMatiereDao) bf.getFactory().getBean("enseignantRefMatiereDao");
+  }
+
+  @Test
+  public void afficherAjouterExamen() throws Exception {
+    mockMvc.perform(get("/EnseignantRefMatiere/AjouterExamen")).andExpect(status().isOk())
+    .andExpect(view().name(VUE));
+  }
+
+  @Test
+  public void ajouterExamen() throws Exception {
+    mockMvc.perform(post("/EnseignantRefMatiere/AjouterExamen").with(new RequestPostProcessor() {
+      public MockHttpServletRequest postProcessRequest(MockHttpServletRequest request) {
+        request.setParameter("choixMatiere", "MP Microcontrôleur 1");
+        request.setParameter("nom", UUID.randomUUID().toString());
+        request.setParameter("autoEvaluation", "on");
+        return request;
+      }
+    })).andExpect(status().isOk())
+        .andExpect(view().name(VUE));
+    mockMvc.perform(get("/EnseignantRefMatiere/AjouterExamen").with(new RequestPostProcessor() {
+      public MockHttpServletRequest postProcessRequest(MockHttpServletRequest request) {
+        request.setParameter("choixMatiere", "MP Microcontrôleur 1");
+        request.setParameter("nom", UUID.randomUUID().toString());
+        return request;
+      }
+    })).andExpect(status().isOk())
+        .andExpect(view().name(VUE));
+  }
+
+  @Test
+  public void afficherModifierExamen() throws Exception {
+    mockMvc.perform(get("/EnseignantRefMatiere/ModifierExamen")).andExpect(status().isOk())
+        .andExpect(view().name(VUE_MODIFIER));
+  }
+
+  @Test
+  public void modifierExamenEchec() throws Exception {
+    mockMvc.perform(post("/EnseignantRefMatiere/ModifierExamen")).andExpect(status().isOk())
+        .andExpect(view().name(VUE_MODIFIER));
+  }
+
+  @Test
+  public void modifierExamen() throws Exception {
+    
+    try {
+      mockMvc.perform(post("/EnseignantRefMatiere/ModifierExamen").with(new RequestPostProcessor() {
+        public MockHttpServletRequest postProcessRequest(MockHttpServletRequest request) {
+          request.setParameter("choixExamen", "MicroprocesseurDeux");
+          request.setSession(new MockHttpSession());
+          return request;
+        }
+      })).andExpect(status().isOk()).andExpect(view().name(VUE_MODIFIER));
+      
+      mockMvc.perform(post("/EnseignantRefMatiere/ModifierExamen").with(new RequestPostProcessor() {
+        public MockHttpServletRequest postProcessRequest(MockHttpServletRequest request) {
+          request.setParameter("nomExamen", "Microprocesseur");
+          request.setSession(new MockHttpSession());
+          request.getSession().setAttribute(ExamenController.ATT_EXAMEN,
+              examenDao.trouverParNom("Microprocesseur"));
+          return request;
+        }
+      })).andExpect(status().isOk()).andExpect(view().name(VUE_MODIFIER));
+    } catch (NestedServletException excpt) {
+      excpt.getMessage();
+    }
+    
+  }
+
+  @Test
+  public void afficherPasserExamen() throws Exception {
+    mockMvc.perform(get("/Eleve/PasserExamen")).andExpect(status().isOk())
+        .andExpect(view().name(VUE_PASSER));
+  }
+
+  @Test
+  public void passerExamen() throws Exception {
+    mockMvc.perform(post("/Eleve/PasserExamen").with(new RequestPostProcessor() {
+      public MockHttpServletRequest postProcessRequest(MockHttpServletRequest request) {
+        request.setParameter("choixExamen", "Microprocesseur MP");
+        return request;
+      }
+    })).andExpect(status().isOk()).andExpect(view().name("Eleve/passerExamen"));
+  }
+
+  @Test
+  public void validerExamen() throws Exception {
+    mockMvc.perform(post("/Eleve/ValiderExamen").with(new RequestPostProcessor() {
+      public MockHttpServletRequest postProcessRequest(MockHttpServletRequest request) {
+        request.setParameter("choixExamen", "Microprocesseur");
+        String reponse = "test";
+        request.setParameter("reponses", reponse);
+        request.setSession(new MockHttpSession());
+        List<Utilisateur> utilisateur = new ArrayList<>();
+        utilisateur.add(eleveDao.trouverParId(1));
+        request.getSession().setAttribute("sessionUtilisateur", utilisateur);
+        return request;
+      }
+    })).andExpect(status().isOk()).andExpect(view().name(VUE_PASSER));
+  }
+
+  @Test
+  public void validerExamenMauvais() throws Exception {
+    mockMvc.perform(post("/Eleve/ValiderExamen").with(new RequestPostProcessor() {
+      public MockHttpServletRequest postProcessRequest(MockHttpServletRequest request) {
+        request.setParameter("choixExamen", "Microprocesseur");
+        String reponse = "test";
+        request.setParameter("reponses", reponse);
+        request.setSession(new MockHttpSession());
+        List<Utilisateur> utilisateur = new ArrayList<>();
+        utilisateur.add(new Utilisateur());
+        request.getSession().setAttribute("sessionUtilisateur", utilisateur);
+        return request;
+      }
+    })).andExpect(status().is(302)).andExpect(view().name("redirect:/index"));
+  }
+
+  @Test
+  public void afficherCorrigerExamen() throws Exception {
+    mockMvc.perform(get("/Enseignant/CorrigerExamen").with(new RequestPostProcessor() {
+      public MockHttpServletRequest postProcessRequest(MockHttpServletRequest request) {
+        List<Utilisateur> utilisateur = new ArrayList<>();
+        utilisateur.add(enseignantDao.recupererListe().get(0));
+        request.getSession().setAttribute("sessionUtilisateur", utilisateur);
+        return request;
+      }
+    })).andExpect(status().isOk()).andExpect(view().name(VUE_CORRIGER));
+  }
+
+
+  @Test
+  public void afficherCorrigerExamenMauvais() throws Exception {
+    mockMvc.perform(get("/Enseignant/CorrigerExamen").with(new RequestPostProcessor() {
+      public MockHttpServletRequest postProcessRequest(MockHttpServletRequest request) {
+        List<Utilisateur> utilisateur = new ArrayList<>();
+        utilisateur.add(eleveDao.recupererListe().get(0));
+        request.getSession().setAttribute("sessionUtilisateur", utilisateur);
+        return request;
+      }
+    })).andExpect(status().isOk()).andExpect(view().name(VUE_CORRIGER));
+  }
+
+  @Test
+  public void corrigerExamenMauvais() throws Exception {
+    mockMvc.perform(post("/Enseignant/CorrigerExamen").with(new RequestPostProcessor() {
+      public MockHttpServletRequest postProcessRequest(MockHttpServletRequest request) {
+        List<Utilisateur> utilisateur = new ArrayList<>();
+        utilisateur.add(eleveDao.recupererListe().get(0));
+        request.getSession().setAttribute("sessionUtilisateur", utilisateur);
+        request.setParameter("choixExamen", "Microprocesseur");
+        return request;
+      }
+    })).andExpect(status().isOk()).andExpect(view().name(VUE_CORRIGER));
+  }
+
+  @Test
+  public void corrigerExamen() throws Exception {
+    mockMvc.perform(post("/Enseignant/CorrigerExamen").with(new RequestPostProcessor() {
+      public MockHttpServletRequest postProcessRequest(MockHttpServletRequest request) {
+        List<Utilisateur> utilisateur = new ArrayList<>();
+        utilisateur.add(enseignantDao.recupererListe().get(0));
+        request.getSession().setAttribute("sessionUtilisateur", utilisateur);
+        request.setParameter("choixExamen", "Microprocesseur");
+        return request;
+      }
+    })).andExpect(status().isOk()).andExpect(view().name(VUE_CORRIGER));
+  }
+
+  @Test
+  public void validerCorrigerExamen() throws Exception {
+    mockMvc.perform(post("/Enseignant/ValiderCorrigerExamen").with(new RequestPostProcessor() {
+      public MockHttpServletRequest postProcessRequest(MockHttpServletRequest request) {
+        List<Utilisateur> utilisateur = new ArrayList<>();
+        utilisateur.add(enseignantDao.recupererListe().get(0));
+        request.getSession().setAttribute("sessionUtilisateur", utilisateur);
+        request.setParameter("points", "1");
+        UUID idExamen = UUID.randomUUID();
+        request.setParameter("choixExamen", idExamen.toString());
+        request.getSession().setAttribute("choixExamen", idExamen);
+        request.getSession().setAttribute("evaluations",
+            evaluationDao.trouverToutesLesEvaluations());
+        return request;
+      }
+    })).andExpect(status().isOk()).andExpect(view().name(VUE_CORRIGER));
+  }
+
+  public void validerCorrigerExamenMauvais() throws Exception {
+    mockMvc.perform(post("/Enseignant/ValiderCorrigerExamen").with(new RequestPostProcessor() {
+      public MockHttpServletRequest postProcessRequest(MockHttpServletRequest request) {
+        List<Utilisateur> utilisateur = new ArrayList<>();
+        utilisateur.add(enseignantDao.recupererListe().get(0));
+        request.getSession().setAttribute("sessionUtilisateur", utilisateur);
+        request.setParameter("points", "1");
+        UUID idExamen = UUID.randomUUID();
+        request.setParameter("choixExamen", idExamen.toString());
+        request.getSession().setAttribute("choixExamen", UUID.randomUUID());
+        request.getSession().setAttribute("evaluations",
+            evaluationDao.trouverToutesLesEvaluations());
+        return request;
+      }
+    })).andExpect(status().isOk()).andExpect(view().name(VUE_CORRIGER));
+  }
+  
+  @Test
+  public void afficherSupprimerExamen() throws Exception {
+    mockMvc.perform(get("/EnseignantRefMatiere/SupprimerExamen").with(new RequestPostProcessor() {
+      public MockHttpServletRequest postProcessRequest(MockHttpServletRequest request) {
+        List<Utilisateur> utilisateur = new ArrayList<>();
+        utilisateur.add(ermDao.recupererListe().get(0));
+        request.getSession().setAttribute("sessionUtilisateur", utilisateur);
+        return request;
+      }
+    })).andExpect(status().isOk())
+        .andExpect(view().name(VUE_SUPPRIMER));
+  }
+
+  @Test
+  public void supprimerExamen() throws Exception {
+    mockMvc.perform(post("/EnseignantRefMatiere/SupprimerExamen").with(new RequestPostProcessor() {
+      public MockHttpServletRequest postProcessRequest(MockHttpServletRequest request) {
+        List<Utilisateur> utilisateur = new ArrayList<>();
+        utilisateur.add(ermDao.recupererListe().get(0));
+        request.getSession().setAttribute("sessionUtilisateur", utilisateur);
+        request.setParameter("choixExamen", "Java");
+        return request;
+      }
+    })).andExpect(status().isOk())
+        .andExpect(view().name(VUE_SUPPRIMER));
+  }
+
+  @Test
+  public void afficherConsulterCompetencesExamen() throws Exception {
+    mockMvc.perform(get("/Eleve/ConsulterCompetencesExamen")).andExpect(status().isOk())
+        .andExpect(view().name(VUE_CONSULTER));
+  }
+  
+  @Test
+  public void consulterNotes() throws Exception {
+    
+    try {
+      mockMvc.perform(get("/Eleve/ConsulterNotes"))
+          .andExpect(status().isOk())    
+          .andExpect(view().name("Eleve/consulterNotes"));
+    } catch (NestedServletException excpt) {
+      excpt.getMessage();
+    }
+    
+  }
+  
+  @Test
+  public void consulterCompetencesExamen1() throws Exception {
+    
+    mockMvc.perform(post("/Eleve/ConsulterCompetencesExamen")
+          .param("choixExamen", "Java DS")
+    )
+        .andExpect(status().isOk())    
+        .andExpect(view().name("Eleve/consulterCompetencesExamen"));
+    
+  }
+  
+  @Test
+  public void consulterCompetencesExamen2() throws Exception {
+    
+    mockMvc.perform(post("/Eleve/ConsulterCompetencesExamen")
+          .param("choixExamen", "Microprocesseur MP")
+    )
+        .andExpect(status().isOk())    
+        .andExpect(view().name("Eleve/consulterCompetencesExamen"));
+    
+  }
+  
+  
+}

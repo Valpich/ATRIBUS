@@ -1,0 +1,29 @@
+package fr.eseo.atribus.dao;
+
+import fr.eseo.atribus.entities.Competence;
+import fr.eseo.atribus.entities.Examen;
+import fr.eseo.atribus.entities.Exercice;
+
+import java.util.List;
+
+public interface ExerciceDao {
+
+  void ajouter(Exercice exercice, Competence competence, Examen examen);
+
+  void modifier(Exercice exercice, Competence competence, Examen examen);
+
+  List<Exercice> trouverParExamen(Examen examen);
+
+  int trouverIdParQuestionReponse(String question, String reponse);
+
+  Exercice trouverParQuestionReponse(String question, String reponse);
+
+  void ajouter(Exercice exercice, Examen examen);
+
+  void supprimer(Exercice exercice);
+
+  Exercice trouverParId(int id);
+
+  Exercice trouverParIdAncien(int int1);
+
+}

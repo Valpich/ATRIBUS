@@ -1,0 +1,13 @@
+package fr.eseo.atribus.dao;
+
+import fr.eseo.atribus.entities.Semestre;
+
+import java.util.List;
+
+public interface SemestreDao {
+
+  List<Semestre> listerSemestre();
+
+  Semestre trouverParNumero(int numeroSemestre);
+
+}

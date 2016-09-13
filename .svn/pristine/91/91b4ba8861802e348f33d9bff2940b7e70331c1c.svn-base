@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testng-results skipped="0" failed="0" total="10" passed="10">
+  <reporter-output>
+  </reporter-output>
+  <suite name="Default suite" duration-ms="5647" started-at="2016-05-20T10:45:07Z" finished-at="2016-05-20T10:45:13Z">
+    <groups>
+    </groups>
+    <test name="Default test" duration-ms="5647" started-at="2016-05-20T10:45:07Z" finished-at="2016-05-20T10:45:13Z">
+      <class name="fr.eseo.atribus.controller.MailControllerTest">
+        <test-method status="PASS" signature="setup()[pri:0, instance:fr.eseo.atribus.controller.MailControllerTest@6737fd8f]" name="setup" is-config="true" duration-ms="1609" started-at="2016-05-20T12:45:07Z" finished-at="2016-05-20T12:45:09Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- setup -->
+        <test-method status="PASS" signature="afficherConvoquerEtudiant()[pri:0, instance:fr.eseo.atribus.controller.MailControllerTest@6737fd8f]" name="afficherConvoquerEtudiant" duration-ms="629" started-at="2016-05-20T12:45:09Z" finished-at="2016-05-20T12:45:09Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- afficherConvoquerEtudiant -->
+        <test-method status="PASS" signature="afficherSuggererAjouterCompetenceEnseignantRefMatiere()[pri:0, instance:fr.eseo.atribus.controller.MailControllerTest@6737fd8f]" name="afficherSuggererAjouterCompetenceEnseignantRefMatiere" duration-ms="7" started-at="2016-05-20T12:45:09Z" finished-at="2016-05-20T12:45:09Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- afficherSuggererAjouterCompetenceEnseignantRefMatiere -->
+        <test-method status="PASS" signature="afficherSuggererCompetenceNouvelle()[pri:0, instance:fr.eseo.atribus.controller.MailControllerTest@6737fd8f]" name="afficherSuggererCompetenceNouvelle" duration-ms="3" started-at="2016-05-20T12:45:09Z" finished-at="2016-05-20T12:45:09Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- afficherSuggererCompetenceNouvelle -->
+        <test-method status="PASS" signature="afficherSuggererCompetenceNouvelleEnseignant()[pri:0, instance:fr.eseo.atribus.controller.MailControllerTest@6737fd8f]" name="afficherSuggererCompetenceNouvelleEnseignant" duration-ms="4" started-at="2016-05-20T12:45:09Z" finished-at="2016-05-20T12:45:09Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- afficherSuggererCompetenceNouvelleEnseignant -->
+        <test-method status="PASS" signature="afficherSuggererCompetenceNouvelleRefUe()[pri:0, instance:fr.eseo.atribus.controller.MailControllerTest@6737fd8f]" name="afficherSuggererCompetenceNouvelleRefUe" duration-ms="5" started-at="2016-05-20T12:45:09Z" finished-at="2016-05-20T12:45:09Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- afficherSuggererCompetenceNouvelleRefUe -->
+        <test-method status="PASS" signature="convoquerEtudiant()[pri:0, instance:fr.eseo.atribus.controller.MailControllerTest@6737fd8f]" name="convoquerEtudiant" duration-ms="3197" started-at="2016-05-20T12:45:09Z" finished-at="2016-05-20T12:45:13Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- convoquerEtudiant -->
+        <test-method status="PASS" signature="suggererAjouterCompetenceEnseignantRefMatiere()[pri:0, instance:fr.eseo.atribus.controller.MailControllerTest@6737fd8f]" name="suggererAjouterCompetenceEnseignantRefMatiere" duration-ms="52" started-at="2016-05-20T12:45:13Z" finished-at="2016-05-20T12:45:13Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- suggererAjouterCompetenceEnseignantRefMatiere -->
+        <test-method status="PASS" signature="suggererNouvelleCompetence()[pri:0, instance:fr.eseo.atribus.controller.MailControllerTest@6737fd8f]" name="suggererNouvelleCompetence" duration-ms="15" started-at="2016-05-20T12:45:13Z" finished-at="2016-05-20T12:45:13Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- suggererNouvelleCompetence -->
+        <test-method status="PASS" signature="suggererNouvelleCompetenceEnseignant()[pri:0, instance:fr.eseo.atribus.controller.MailControllerTest@6737fd8f]" name="suggererNouvelleCompetenceEnseignant" duration-ms="52" started-at="2016-05-20T12:45:13Z" finished-at="2016-05-20T12:45:13Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- suggererNouvelleCompetenceEnseignant -->
+        <test-method status="PASS" signature="suggererNouvelleCompetenceRefUe()[pri:0, instance:fr.eseo.atribus.controller.MailControllerTest@6737fd8f]" name="suggererNouvelleCompetenceRefUe" duration-ms="16" started-at="2016-05-20T12:45:13Z" finished-at="2016-05-20T12:45:13Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- suggererNouvelleCompetenceRefUe -->
+      </class> <!-- fr.eseo.atribus.controller.MailControllerTest -->
+    </test> <!-- Default test -->
+  </suite> <!-- Default suite -->
+</testng-results>

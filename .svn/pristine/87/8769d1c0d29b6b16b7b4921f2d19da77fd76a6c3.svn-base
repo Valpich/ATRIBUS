@@ -1,0 +1,135 @@
+package fr.eseo.atribus.controller;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.mockito.MockitoAnnotations;
+import org.springframework.beans.factory.access.BeanFactoryReference;
+import org.springframework.beans.factory.access.SingletonBeanFactoryLocator;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.RequestPostProcessor;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.servlet.view.InternalResourceViewResolver;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
+import fr.eseo.atribus.dao.EleveDao;
+import fr.eseo.atribus.entities.Utilisateur;
+
+public class CompetencesControllerTest {
+
+  public static final String CONF_BDD_FACTORY = "DaoFactory";
+  public static final String REFERENTIEL = "referentiel";
+  public static final String VUE_AFFICHER_COMP = "afficherCompetences";
+  public static final String VUE_AFFICHER_ASSOCIER = "EnseignantRefUE/associerCompetenceUe";
+  public static final String VUE_AFFICHER_MODIFIER = "EnseignantRefUE/modifierAssocierCompetenceUe";
+  public static final String ATT_LISTE_ASSOCIATION = "association";
+  public static final String ATT_UE = "ues";
+  public static final String ATT_ASSOCIATION_UE = "listeUes";
+  public static final String ATT_COMPETENCE = "competences";
+  public static final String ATT_SESSION_USER = "sessionUtilisateur";
+  public static final String ATT_FORM = "form";
+  public static final String VUE_AJOUT_COMPETENCE = "DirecteurProgrammes/ajouterCompetence";
+  public static final String VUE_ETAT_1 = "DirecteurProgrammes/rechercheCompetence";
+  public static final String VUE_ETAT_2 = "DirecteurProgrammes/resultatRechercheCompetence";
+  public static final String VUE_ETAT_3 = "DirecteurProgrammes/modifierCompetence";
+  public static final String VUE_FINALE = "DirecteurProgrammes/modifierCompetence";
+
+  private MockMvc mockMvc; 
+  private EleveDao eleveDao;
+
+  /**
+   * Méthode d'initialisation.
+   */
+  @BeforeClass
+  public void setup() {
+
+    final CompetencesController competenceController = new CompetencesController();
+    final InternalResourceViewResolver viewResolver = new InternalResourceViewResolver();
+
+    viewResolver.setPrefix("/WEB-INF/");
+    viewResolver.setSuffix(".jsp");
+    MockitoAnnotations.initMocks(this);
+
+    competenceController.init();
+
+    this.mockMvc = MockMvcBuilders.standaloneSetup(competenceController)
+        .setViewResolvers(viewResolver).build();
+    
+    final BeanFactoryReference bf =
+        SingletonBeanFactoryLocator.getInstance().useBeanFactory("beansDao");
+    
+    this.eleveDao = (EleveDao) bf.getFactory().getBean("eleveDao");
+    
+  }
+
+  @Test
+  public void ajouterUneCompetenceGet() throws Exception {
+    this.mockMvc.perform(get("/AjouterCompetence")).andExpect(status().isOk())
+        .andExpect(view().name(VUE_AJOUT_COMPETENCE));
+  }
+
+  @Test
+  public void afficherAjouterCompetences() throws Exception {
+    this.mockMvc.perform(get("/AfficherCompetences")).andExpect(status().isOk())
+        .andExpect(view().name(VUE_AFFICHER_COMP));
+  }
+
+  @Test
+  public void afficherAssocierCompetencesUe() throws Exception {
+    this.mockMvc.perform(get("/EnseignantRefUE/AssocierCompetenceUE")).andExpect(status().isOk())
+        .andExpect(view().name(VUE_AFFICHER_ASSOCIER));
+  }
+
+  @Test
+  public void afficherModifierAssocierCompetencesUe() throws Exception {
+    this.mockMvc.perform(get("/EnseignantRefUE/ModifierAssocierCompetenceUE"))
+        .andExpect(status().isOk()).andExpect(view().name(VUE_AFFICHER_MODIFIER));
+  }
+
+  @Test
+  public void associerCompetenceUe() throws Exception {
+
+    this.mockMvc
+        .perform(post("/EnseignantRefUE/AssocierCompetenceUE").param("listeUe", "Automatique")
+            .param("listeCompetence", "Travail en équipe").param("niveau", "1"))
+        .andExpect(status().isOk()).andExpect(view().name(VUE_AFFICHER_ASSOCIER));
+
+  }
+
+  @Test
+  public void modifierCompetenceGet() throws Exception {
+    this.mockMvc.perform(get("/DirecteurProgrammes/ModifierCompetences")).andExpect(status().isOk())
+        .andExpect(view().name("DirecteurProgrammes/modifierCompetence"));
+  }
+
+  @Test
+  public void modifierCompetencePost1() throws Exception {
+
+    this.mockMvc
+        .perform(post("/DirecteurProgrammes/ModifierCompetences").param("modifier", "on")
+            .param("nomCompetence", "Connaisances disciplinaires et raisonnement")
+            .param("idCompetence", "1"))
+        .andExpect(status().isOk())
+        .andExpect(view().name("DirecteurProgrammes/modifierCompetence"));
+
+  }
+
+  @Test
+  public void ajouterCompetencePost() throws Exception {
+
+    this.mockMvc
+        .perform(post("/AjouterCompetence").param("ajouter", "on")
+            .param("nomCompetence", "Connaissance de base en ingénierie").param("parentId", "1")
+            .param("profondeur", "2"))
+        .andExpect(status().isOk()).andExpect(view().name(VUE_AJOUT_COMPETENCE));
+
+  }
+
+}

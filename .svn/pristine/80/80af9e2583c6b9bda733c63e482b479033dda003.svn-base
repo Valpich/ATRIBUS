@@ -1,0 +1,362 @@
+package fr.eseo.atribus.forms;
+
+import fr.eseo.atribus.beans.PasswordStorage;
+import fr.eseo.atribus.beans.PasswordStorage.CannotPerformOperationException;
+import fr.eseo.atribus.beans.PasswordStorage.InvalidHashException;
+import fr.eseo.atribus.dao.AdminSystDao;
+import fr.eseo.atribus.dao.DaoException;
+import fr.eseo.atribus.dao.DirecteurEtudesDao;
+import fr.eseo.atribus.dao.DirecteurProgrammesDao;
+import fr.eseo.atribus.dao.EleveDao;
+import fr.eseo.atribus.dao.EnseignantDao;
+import fr.eseo.atribus.dao.EnseignantRefMatiereDao;
+import fr.eseo.atribus.dao.EnseignantRefUeDao;
+import fr.eseo.atribus.dao.UtilisateurDao;
+import fr.eseo.atribus.entities.AdminSyst;
+import fr.eseo.atribus.entities.DirecteurEtudes;
+import fr.eseo.atribus.entities.DirecteurProgrammes;
+import fr.eseo.atribus.entities.Eleve;
+import fr.eseo.atribus.entities.Enseignant;
+import fr.eseo.atribus.entities.EnseignantRefMatiere;
+import fr.eseo.atribus.entities.EnseignantRefUe;
+import fr.eseo.atribus.entities.Utilisateur;
+
+import org.springframework.beans.factory.access.BeanFactoryReference;
+import org.springframework.beans.factory.access.SingletonBeanFactoryLocator;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.servlet.http.HttpServletRequest;
+
+/**
+ * La classe ConnexionForm.
+ */
+public class ConnexionForm {
+
+  /** La constante ATT_SESSION_USER. */
+  public static final String ATT_SESSION_USER = "sessionUtilisateur";
+
+  /** La constante LOGGER. */
+  private static final Logger LOGGER = Logger.getLogger(ConnexionForm.class.getName());
+
+  /** La constante CHAMP_LOGIN. */
+  private static final String CHAMP_LOGIN = "login";
+
+  /** La constante CHAMP_PASS. */
+  private static final String CHAMP_PASS = "password";
+
+  /** La constante CHECK_LOGIN_MDP. */
+  private static final String CHECK_LOGIN_MDP = "checkloginpassword";
+
+  /** La constante EXCEPTION. */
+  private static final String EXCEPTION = "Exception";
+
+  /** La variable resultat. */
+  private String resultat;
+
+  /** La variable erreurs. */
+  private final Map<String, String> erreurs = new HashMap<>();
+
+  /** La variable utilisateur dao. */
+  private final UtilisateurDao utilisateurDao;
+
+  /** La variable admin syst dao. */
+  private final AdminSystDao adminSystDao;
+
+  /** La variable directeur etudes dao. */
+  private final DirecteurEtudesDao directeurEtudesDao;
+
+  /** La variable directeur programmes dao. */
+  private final DirecteurProgrammesDao directeurProgrammesDao;
+
+  /** La variable enseignant dao. */
+  private final EnseignantDao enseignantDao;
+
+  /** La variable enseignant ref ue dao. */
+  private final EnseignantRefUeDao enseignantRefUeDao;
+
+  /** La variable enseignant ref matiere dao. */
+  private final EnseignantRefMatiereDao enseignantRefMatiereDao;
+
+  /** La variable eleve dao. */
+  private final EleveDao eleveDao;
+
+  /**
+   * Instancie un nouveau connexion form.
+   */
+  public ConnexionForm() {
+    final BeanFactoryReference bf =
+        SingletonBeanFactoryLocator.getInstance().useBeanFactory("beansDao");
+    /* Récupération d'une instance de notre DAO Utilisateur */
+    this.utilisateurDao = (UtilisateurDao) bf.getFactory().getBean("utilisateurDao");
+    /* Récupération d'une instance de notre DAO AdminSyst */
+    this.adminSystDao = (AdminSystDao) bf.getFactory().getBean("adminSystDao");
+    /* Récupération d'une instance de notre DAO DirecteurEtudes */
+    this.directeurEtudesDao = (DirecteurEtudesDao) bf.getFactory().getBean("directeurEtudesDao");
+    /* Récupération d'une instance de notre DAO DirecteurProgrammes */
+    this.directeurProgrammesDao =
+        (DirecteurProgrammesDao) bf.getFactory().getBean("directeurProgrammesDao");
+    /* Récupération d'une instance de notre DAO Enseignant */
+    this.enseignantDao = (EnseignantDao) bf.getFactory().getBean("enseignantDao");
+    /* Récupération d'une instance de notre DAO EnseignantRefUe */
+    this.enseignantRefUeDao = (EnseignantRefUeDao) bf.getFactory().getBean("enseignantRefUeDao");
+    /* Récupération d'une instance de notre DAO EnseignantRefMatiere */
+    this.enseignantRefMatiereDao =
+        (EnseignantRefMatiereDao) bf.getFactory().getBean("enseignantRefMatiereDao");
+    /* Récupération d'une instance de notre DAO Eleve */
+    this.eleveDao = (EleveDao) bf.getFactory().getBean("eleveDao");
+  }
+
+  /**
+   * Accesseur en lecture sur le paramètre resultat.
+   *
+   * @return le paramètre resultat
+   */
+  public String getResultat() {
+    return this.resultat;
+  }
+
+  /**
+   * Accesseur en lecture sur le paramètre erreurs.
+   *
+   * @return le paramètre erreurs
+   */
+  public Map<String, String> getErreurs() {
+    return this.erreurs;
+  }
+
+  /**
+   * Connecter utilisateur.
+   *
+   * @param request la request
+   */
+  public void connecterUtilisateur(HttpServletRequest request) {
+    final String login = ConnexionForm.getValeurChamp(request, ConnexionForm.CHAMP_LOGIN);
+    final String password = ConnexionForm.getValeurChamp(request, ConnexionForm.CHAMP_PASS);
+    final Utilisateur utilisateur = new Utilisateur();
+
+    try {
+      this.traiterLogin(login, utilisateur);
+      this.traiterPassword(password, utilisateur);
+
+      if (this.erreurs.isEmpty()) {
+        this.traiterConnexion(utilisateur, request);
+      }
+
+      if (this.erreurs.isEmpty()) {
+        this.resultat = "Succès de la connexion.";
+      } else {
+        this.resultat = "Echec de la connexion.";
+      }
+    } catch (final DaoException bdde) {
+      this.resultat = "Échec de l'inscription : une erreur imprévue est survenue,"
+          + " merci de réessayer dans quelques instants.";
+      ConnexionForm.LOGGER.log(Level.INFO, EXCEPTION, bdde);
+    }
+
+  }
+
+  /**
+   * Traiter login.
+   *
+   * @param login le login
+   * @param utilisateur l'utilisateur
+   */
+  private void traiterLogin(String login, Utilisateur utilisateur) {
+    try {
+      this.validationLogin(login);
+      utilisateur.setLogin(login);
+    } catch (final FormValidationException fve) {
+      ConnexionForm.LOGGER.log(Level.INFO, EXCEPTION, fve);
+      this.setErreur(ConnexionForm.CHAMP_LOGIN, fve.getMessage());
+    }
+  }
+
+  /**
+   * Traiter password.
+   *
+   * @param password le password
+   * @param utilisateur l'utilisateur
+   */
+  private void traiterPassword(String password, Utilisateur utilisateur) {
+    try {
+      this.validationPassword(password);
+      utilisateur.setPassword(password);
+    } catch (final FormValidationException fve) {
+      ConnexionForm.LOGGER.log(Level.INFO, EXCEPTION, fve);
+      this.setErreur(ConnexionForm.CHAMP_PASS, fve.getMessage());
+    } catch (final Exception fve) {
+      ConnexionForm.LOGGER.log(Level.INFO, EXCEPTION, fve);
+      this.setErreur(ConnexionForm.CHAMP_PASS, "Impossible de générer le hash du mot de passe.");
+    }
+  }
+
+  /**
+   * Traiter connexion.
+   *
+   * @param utilisateur l'utilisateur
+   * @param request la request
+   */
+  private void traiterConnexion(Utilisateur utilisateur, HttpServletRequest request) {
+    try {
+      this.validationConnexion(utilisateur, request);
+    } catch (final FormValidationException fve) {
+      ConnexionForm.LOGGER.log(Level.INFO, EXCEPTION, fve);
+      this.setErreur(ConnexionForm.CHECK_LOGIN_MDP, fve.getMessage());
+    }
+  }
+
+  /**
+   * Validation login.
+   *
+   * @param login le login
+   * @throws FormValidationException de type form validation exception
+   */
+  private void validationLogin(String login) throws FormValidationException {
+    if (login == null || login.length() < 5) {
+      throw new FormValidationException(
+          "Le nom d'utilisateur doit contenir au moins 5 caractères.");
+    }
+  }
+
+  /**
+   * Validation password.
+   *
+   * @param password le password
+   * @throws FormValidationException de type form validation exception
+   */
+  private void validationPassword(String password) throws FormValidationException {
+    if (password != null) {
+      if (password.length() < 5) {
+        throw new FormValidationException(
+            "Les mots de passe doivent contenir au moins 5 caractères.");
+      }
+    } else {
+      throw new FormValidationException("Merci de saisir un mot de passe.");
+    }
+  }
+
+  /**
+   * Validation connexion.
+   *
+   * @param utilisateur l'utilisateur
+   * @param request la request
+   * @throws FormValidationException de type form validation exception
+   */
+  private void validationConnexion(Utilisateur utilisateur, HttpServletRequest request)
+      throws FormValidationException {
+    final Utilisateur utilisateurCheck =
+        this.utilisateurDao.trouverParLogin(utilisateur.getLogin());
+    if (utilisateurCheck != null) {
+      try {
+        if (!PasswordStorage.verifyPassword(utilisateur.getPassword(),
+            utilisateurCheck.getPassword())) {
+          throw new FormValidationException("Couple login/password incorrect.");
+        }
+
+        final List<Utilisateur> listeUtilisateur = new ArrayList<>();
+        listeUtilisateur.add(utilisateurCheck);
+
+        this.chercherGroupe(utilisateurCheck, listeUtilisateur);
+
+        request.getSession().setAttribute(ConnexionForm.ATT_SESSION_USER, listeUtilisateur);
+
+      } catch (CannotPerformOperationException | InvalidHashException cpoe) {
+        ConnexionForm.LOGGER.log(Level.INFO, "Exception", cpoe);
+        throw new FormValidationException("Une erreur est survenue avec la fonciton de hachage.");
+      }
+    } else {
+      throw new FormValidationException("Couple login/password incorrect.");
+    }
+  }
+
+  /**
+   * Chercher groupe.
+   *
+   * @param utilisateurCheck l'utilisateur check
+   * @param listeUtilisateur le liste utilisateur
+   */
+  private void chercherGroupe(final Utilisateur utilisateurCheck,
+      final List<Utilisateur> listeUtilisateur) {
+    // On cherche un groupe appartenant à l'utilisateur
+    final AdminSyst utilisateurCheckAdminSyst = this.adminSystDao
+        .trouverParLoginHash(utilisateurCheck.getLogin(), utilisateurCheck.getPassword());
+    if (utilisateurCheckAdminSyst != null) {
+      listeUtilisateur.add(utilisateurCheckAdminSyst);
+    }
+
+    final DirecteurEtudes utilisateurCheckDirecteurEtudes = this.directeurEtudesDao
+        .trouverParLoginHash(utilisateurCheck.getLogin(), utilisateurCheck.getPassword());
+    if (utilisateurCheckDirecteurEtudes != null) {
+      listeUtilisateur.add(utilisateurCheckDirecteurEtudes);
+    }
+
+    final DirecteurProgrammes utilisateurCheckDirecteurProgrammes = this.directeurProgrammesDao
+        .trouverParLoginHash(utilisateurCheck.getLogin(), utilisateurCheck.getPassword());
+    if (utilisateurCheckDirecteurProgrammes != null) {
+      listeUtilisateur.add(utilisateurCheckDirecteurProgrammes);
+    }
+
+    final Enseignant utilisateurCheckEnseignant = this.enseignantDao
+        .trouverParLoginHash(utilisateurCheck.getLogin(), utilisateurCheck.getPassword());
+    if (utilisateurCheckEnseignant != null) {
+      listeUtilisateur.add(utilisateurCheckEnseignant);
+    }
+
+    final EnseignantRefUe utilisateurCheckEnseignantRefUe = this.enseignantRefUeDao
+        .trouverParLoginHash(utilisateurCheck.getLogin(), utilisateurCheck.getPassword());
+    if (utilisateurCheckEnseignantRefUe != null) {
+      listeUtilisateur.add(utilisateurCheckEnseignantRefUe);
+    }
+
+    final EnseignantRefMatiere utilisateurCheckEnseignantRefMatiere = this.enseignantRefMatiereDao
+        .trouverParLoginHash(utilisateurCheck.getLogin(), utilisateurCheck.getPassword());
+    if (utilisateurCheckEnseignantRefMatiere != null) {
+      listeUtilisateur.add(utilisateurCheckEnseignantRefMatiere);
+    }
+
+    final Eleve utilisateurCheckEl = this.eleveDao.trouverParLoginHash(utilisateurCheck.getLogin(),
+        utilisateurCheck.getPassword());
+    if (utilisateurCheckEl != null) {
+      listeUtilisateur.add(utilisateurCheckEl);
+    }
+  }
+
+  /**
+   * Ajoute une erreur.
+   *
+   * @param champ le champ
+   * @param message le message
+   */
+  /*
+   * Ajoute un message correspondant au champ spécifié à la map des erreurs.
+   */
+  private void setErreur(String champ, String message) {
+    this.erreurs.put(champ, message);
+  }
+
+  /**
+   * Accesseur en lecture sur le paramètre valeur champ.
+   *
+   * @param request le request
+   * @param nomChamp le nom champ
+   * @return le paramètre valeur champ
+   */
+  /*
+   * Méthode utilitaire qui retourne null si un champ est vide, et son contenu sinon.
+   */
+  private static String getValeurChamp(HttpServletRequest request, String nomChamp) {
+    final String valeur = request.getParameter(nomChamp);
+    if (valeur == null || valeur.trim().length() == 0) {
+      return null;
+    } else {
+      return valeur.trim();
+    }
+  }
+}
+

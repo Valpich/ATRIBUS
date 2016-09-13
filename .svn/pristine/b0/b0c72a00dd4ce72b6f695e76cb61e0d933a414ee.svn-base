@@ -1,0 +1,16 @@
+package fr.eseo.atribus.filters;
+
+import javax.servlet.FilterConfig;
+import javax.servlet.ServletException;
+
+public class FiltreLimiteurInit {
+  public void destroy() {
+    return;
+  }
+
+  public void init(FilterConfig arg0) throws ServletException {
+    final FilterConfig tmp = arg0;
+    tmp.getClass();
+    return;
+  }
+}

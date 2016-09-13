@@ -1,0 +1,209 @@
+package fr.eseo.atribus.forms;
+
+import fr.eseo.atribus.dao.DaoException;
+import fr.eseo.atribus.dao.EnseignantRefMatiereDao;
+import fr.eseo.atribus.dao.MatiereDao;
+import fr.eseo.atribus.dao.SemestreDao;
+import fr.eseo.atribus.dao.UeDao;
+import fr.eseo.atribus.entities.EnseignantRefMatiere;
+import fr.eseo.atribus.entities.Matiere;
+import fr.eseo.atribus.entities.Semestre;
+import fr.eseo.atribus.entities.UniteEnseignement;
+import fr.eseo.atribus.entities.Utilisateur;
+
+import org.springframework.beans.factory.access.BeanFactoryReference;
+import org.springframework.beans.factory.access.SingletonBeanFactoryLocator;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+
+public class AddMatiereForm {
+  private static final Logger LOGGER = Logger.getLogger(AddMatiereForm.class.getName());
+
+  private static final String CHAMP_NOM = "nom";
+  private static final String CHAMP_COEFFICIENT = "coefficient_matiere";
+  private static final String CHAMP_SEMESTRE = "listeSemestre";
+  private static final String CHAMP_UE = "listeUe";
+  private static final String EXCEPTION = "Exception";
+  private static final String CHAMP_ENSEIGNANT_REF = "listeEnseignant";
+  public static final String ATT_SESSION_USER = "sessionUtilisateur";
+  private String resultat;
+  private final Map<String, String> erreurs = new HashMap<>();
+
+  private final MatiereDao matiereDao;
+  private final SemestreDao semestreDao;
+  private final UeDao ueDao;
+  private final EnseignantRefMatiereDao enseignantDao;
+
+
+  /**
+   * Constructeur.
+   */
+  public AddMatiereForm() {
+    final BeanFactoryReference bf =
+        SingletonBeanFactoryLocator.getInstance().useBeanFactory("beansDao");
+    /* Récupération d'une instance de notre DAO Matiere */
+    this.matiereDao = (MatiereDao) bf.getFactory().getBean("matiereDao");
+
+    /* Récupération d'une instance de notre DAO Semestre */
+    this.semestreDao = (SemestreDao) bf.getFactory().getBean("semestreDao");
+
+    /* Récupération d'une instance de notre DAO Ue */
+    this.ueDao = (UeDao) bf.getFactory().getBean("ueDao");
+
+    /* Récupération d'une instance de notre DAO EnseignantRefMatiere */
+    this.enseignantDao =
+        (EnseignantRefMatiereDao) bf.getFactory().getBean("enseignantRefMatiereDao");
+
+  }
+
+  public String getResultat() {
+    return this.resultat;
+  }
+
+  public Map<String, String> getErreurs() {
+    return this.erreurs;
+  }
+
+  /**
+   * Méthode qui permet l'ajout d'une matière en fonction des informations saisies.
+   * @param request requête
+   * @return la matière créée
+   */
+  public Matiere addMatiere(HttpServletRequest request) {
+    final String nom = AddMatiereForm.getValeurChamp(request, AddMatiereForm.CHAMP_NOM);
+    final String coefficient =
+        AddMatiereForm.getValeurChamp(request, AddMatiereForm.CHAMP_COEFFICIENT);
+    final String semestre = AddMatiereForm.getValeurChamp(request, AddMatiereForm.CHAMP_SEMESTRE);
+    final String nomUe = AddMatiereForm.getValeurChamp(request, AddMatiereForm.CHAMP_UE);
+    AddMatiereForm.getValeurChamp(request, AddMatiereForm.CHAMP_ENSEIGNANT_REF);
+
+    final Matiere matiere = new Matiere();
+    EnseignantRefMatiere utilisateur = null;
+
+    final HttpServletRequest requete = request;
+    final HttpSession session = requete.getSession();
+    @SuppressWarnings("unchecked")
+    final List<Utilisateur> listeUtilisateur =
+        (List<Utilisateur>) session.getAttribute(ATT_SESSION_USER);
+    for (int i = 0; i < listeUtilisateur.size(); i++) {
+      if (listeUtilisateur.get(i).getClass().equals(EnseignantRefMatiere.class)) {
+        utilisateur = (EnseignantRefMatiere) listeUtilisateur.get(i);
+      }
+    }
+
+    try {
+      this.traiterNom(nom, matiere);
+      this.traiterSemestre(semestre, matiere);
+      this.traiterCoefficient(coefficient, matiere);
+      this.traiterUe(nomUe, matiere);
+      if (this.erreurs.isEmpty()) {
+        this.matiereDao.ajouter(matiere, utilisateur);
+        this.resultat = "success";
+      } else {
+        this.resultat = "echec";
+      }
+    } catch (final DaoException bdde) {
+      this.resultat = "echecDao";
+      AddMatiereForm.LOGGER.log(Level.INFO, EXCEPTION, bdde);
+    }
+    return matiere;
+  }
+
+  private void traiterUe(String ue, Matiere matiere) {
+    try {
+      if (ue != null) {
+        matiere.setUe(this.ueDao.trouverUeParNom(ue));
+      } else {
+        matiere.setUe(null);
+      }
+    } catch (final Exception exc) {
+      AddMatiereForm.LOGGER.log(Level.INFO, EXCEPTION, exc);
+      this.setErreur("ue", exc.getMessage());
+    }
+  }
+
+  private void traiterCoefficient(String coefficient, Matiere matiere) {
+    try {
+      if (coefficient != null) {
+        matiere.setCoefficient(Float.parseFloat(coefficient));
+      } else {
+        matiere.setCoefficient(0);
+      }
+    } catch (final Exception exc) {
+      this.setErreur("coefficient_matiere", exc.getMessage());
+      AddMatiereForm.LOGGER.log(Level.INFO, EXCEPTION, exc);
+    }
+  }
+
+  private void traiterNom(String nom, Matiere matiere) {
+    try {
+      this.validationNom(nom);
+    } catch (final FormValidationException fve) {
+      this.setErreur(AddMatiereForm.CHAMP_NOM, fve.getMessage());
+      AddMatiereForm.LOGGER.log(Level.INFO, EXCEPTION, fve);
+    }
+    matiere.setNom(nom);
+  }
+
+  private void validationNom(String nom) throws FormValidationException {
+    if (nom == null) {
+      throw new FormValidationException(
+          "Le nom de la matière doit contenir au maximum 20 caractères.");
+    } else if (this.matiereDao.trouverParNom(nom) != null) {
+      throw new FormValidationException(
+          "Cette matière existe déjà, merci d'en choisir un autre nom.");
+    }
+  }
+
+  private void traiterSemestre(String semestre, Matiere matiere) {
+    try {
+      if (this.semestreDao.trouverParNumero(Integer.parseInt(semestre)) == null) {
+        matiere.setSemestre(null);
+        throw new FormValidationException("Le semestre saisi n'existe pas");
+      }
+    } catch (final Exception exc) {
+      this.setErreur("semestre", exc.getMessage());
+      AddMatiereForm.LOGGER.log(Level.INFO, EXCEPTION, exc);
+
+    }
+  }
+
+  /*
+   * Ajoute un message correspondant au champ spécifié à la map des erreurs.
+   */
+  private void setErreur(String champ, String message) {
+    this.erreurs.put(champ, message);
+  }
+
+  /*
+   * Méthode utilitaire qui retourne null si un champ est vide, et son contenu sinon.
+   */
+  private static String getValeurChamp(HttpServletRequest request, String nomChamp) {
+    final String valeur = request.getParameter(nomChamp);
+    if (valeur == null || valeur.trim().length() == 0) {
+      return null;
+    } else {
+      return valeur.trim();
+    }
+  }
+
+  public List<UniteEnseignement> getListUe() {
+    return this.ueDao.listerUe();
+  }
+
+  public List<Semestre> getListSemestre() {
+    return this.semestreDao.listerSemestre();
+  }
+
+  public List<EnseignantRefMatiere> getListEnseignantRef() {
+    return this.enseignantDao.recupererListe();
+  }
+
+}

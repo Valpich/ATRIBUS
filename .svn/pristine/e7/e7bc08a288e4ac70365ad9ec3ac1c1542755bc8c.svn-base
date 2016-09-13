@@ -1,0 +1,41 @@
+package fr.eseo.atribus.entities;
+
+import org.testng.annotations.Test;
+import static org.testng.Assert.*;
+
+import org.testng.Assert;
+
+import fr.eseo.atribus.entities.DirecteurEtudes;
+import fr.eseo.atribus.entities.Utilisateur;
+
+public class DirecteurEtudesTest {
+  DirecteurEtudes de;
+
+  @Test
+  public void DirecteurEtudes() {
+    Utilisateur utilisateur = new Utilisateur();
+    de = new DirecteurEtudes(utilisateur);
+    assertNotNull(de);
+  }
+  
+  @Test
+  public void DirecteurEtudesConstructeur() {
+    assertNotNull(de);  
+    
+  }
+  
+  @Test
+  public void DirecteurEtudestoString() {
+    DirecteurEtudes de = new DirecteurEtudes(); 
+    Assert.assertEquals(de.toString(),de.toString());
+  }
+  @Test
+  public void DirecteurEtudesgetId(){
+    DirecteurEtudes de = new DirecteurEtudes(); 
+    de.setIdDirecteurEtudes(-1); 
+    
+    Assert.assertEquals(de.getIdDirecteurEtudes(),-1); 
+  }
+}
+
+

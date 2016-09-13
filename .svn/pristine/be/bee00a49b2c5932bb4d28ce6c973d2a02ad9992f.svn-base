@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>ModifierUeForm.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Atribus</a> &gt; <a href="index.source.html" class="el_package">fr.eseo.atribus.forms</a> &gt; <span class="el_source">ModifierUeForm.java</span></div><h1>ModifierUeForm.java</h1><pre class="source lang-java linenums">package fr.eseo.atribus.forms;
+
+import fr.eseo.atribus.dao.DaoException;
+import fr.eseo.atribus.dao.EnseignantDao;
+import fr.eseo.atribus.dao.EnseignantRefUeDao;
+import fr.eseo.atribus.dao.SemestreDao;
+import fr.eseo.atribus.dao.UeDao;
+import fr.eseo.atribus.entities.EnseignantRefUe;
+import fr.eseo.atribus.entities.Matiere;
+import fr.eseo.atribus.entities.UniteEnseignement;
+import org.springframework.beans.factory.access.BeanFactoryReference;
+import org.springframework.beans.factory.access.SingletonBeanFactoryLocator;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.servlet.http.HttpServletRequest;
+
+public class ModifierUeForm {
+<span class="nc" id="L23">  private static final Logger LOGGER = Logger.getLogger(ModifierUeForm.class.getName());</span>
+  private static final String EXCEPTION = &quot;Exception&quot;;
+
+  private static final String CHAMP_UE = &quot;listeUe&quot;;
+  private static final String CHAMP_MATIERE = &quot;nomMatiere&quot;;
+
+  private UeDao ueDao;
+  private final EnseignantDao enseignantDao;
+  private final EnseignantRefUeDao enseignantRefUeDao;
+  private final SemestreDao semestreDao;
+
+  private List&lt;UniteEnseignement&gt; listeDesUes;
+  private List&lt;Matiere&gt; listeDesMatieres;
+<span class="nc" id="L36">  private Map&lt;String, String&gt; erreurs = new HashMap&lt;&gt;();</span>
+  private String resultat;
+
+  /**
+   * Constructeur.
+   */
+<span class="nc" id="L42">  public ModifierUeForm() {</span>
+
+    final BeanFactoryReference bf =
+<span class="nc" id="L45">        SingletonBeanFactoryLocator.getInstance().useBeanFactory(&quot;beansDao&quot;);</span>
+<span class="nc" id="L46">    this.ueDao = (UeDao) bf.getFactory().getBean(&quot;ueDao&quot;);</span>
+<span class="nc" id="L47">    this.enseignantDao = (EnseignantDao) bf.getFactory().getBean(&quot;enseignantDao&quot;);</span>
+<span class="nc" id="L48">    this.enseignantRefUeDao = (EnseignantRefUeDao) bf.getFactory().getBean(&quot;enseignantRefUeDao&quot;);</span>
+<span class="nc" id="L49">    this.semestreDao = (SemestreDao) bf.getFactory().getBean(&quot;semestreDao&quot;);</span>
+
+<span class="nc" id="L51">  }</span>
+
+  /**
+   * Méthode qui permet la modification d'une unité d'enseignement.
+   */
+  public void modifierUe(HttpServletRequest request) {
+
+<span class="nc" id="L58">    final String nomNouvelleUe = ModifierUeForm.getValeurChamp(request, &quot;nomNouvelleUe&quot;);</span>
+<span class="nc" id="L59">    final String ectsNouvelleUe = ModifierUeForm.getValeurChamp(request, &quot;ectsNouvelleUe&quot;);</span>
+<span class="nc" id="L60">    final String nbHeuresNouvelleUe = ModifierUeForm.getValeurChamp(request, &quot;nbHeuresNouvelleUe&quot;);</span>
+<span class="nc" id="L61">    final String semestreNouvelleUe = ModifierUeForm.getValeurChamp(request, &quot;semestreNouvelleUe&quot;);</span>
+<span class="nc" id="L62">    final String enseignantNouvelleUe =</span>
+<span class="nc" id="L63">        ModifierUeForm.getValeurChamp(request, &quot;enseignantNouvelleUe&quot;);</span>
+<span class="nc" id="L64">    final String idUe = ModifierUeForm.getValeurChamp(request, &quot;idUe&quot;);</span>
+
+    try {
+
+<span class="nc" id="L68">      this.traiterDonnees(nomNouvelleUe, ectsNouvelleUe, nbHeuresNouvelleUe, semestreNouvelleUe,</span>
+          enseignantNouvelleUe);
+
+<span class="nc bnc" id="L71" title="All 2 branches missed.">      if (this.getErreurs().isEmpty()) {</span>
+
+<span class="nc" id="L73">        final UniteEnseignement ancienneUe = this.ueDao.trouverUeParId(Integer.parseInt(idUe));</span>
+<span class="nc" id="L74">        UniteEnseignement nouvelleUe = new UniteEnseignement();</span>
+<span class="nc" id="L75">        final EnseignantRefUe nouveauEnseignantRefUe = new EnseignantRefUe(</span>
+<span class="nc" id="L76">            this.enseignantDao.trouverParIdUtilisateur(Integer.parseInt(enseignantNouvelleUe)));</span>
+
+<span class="nc" id="L78">        nouvelleUe.setNom(nomNouvelleUe);</span>
+<span class="nc" id="L79">        nouvelleUe.setNbCreditsEcts(Integer.parseInt(ectsNouvelleUe));</span>
+<span class="nc" id="L80">        nouvelleUe.setNbHeures(Integer.parseInt(nbHeuresNouvelleUe));</span>
+<span class="nc" id="L81">        nouvelleUe</span>
+<span class="nc" id="L82">            .setSemestre(this.semestreDao.trouverParNumero(Integer.parseInt(semestreNouvelleUe)));</span>
+
+<span class="nc" id="L84">        this.enseignantRefUeDao.ajouter(nouveauEnseignantRefUe);</span>
+
+        // On supprime l'ancienne Ue
+<span class="nc" id="L87">        this.ueDao.supprimerUe(ancienneUe);</span>
+
+<span class="nc" id="L89">        int idErue = this.enseignantDao.trouverParIdUtilisateur(nouveauEnseignantRefUe.getId())</span>
+<span class="nc" id="L90">            .getIdEnseignant();</span>
+<span class="nc" id="L91">        nouveauEnseignantRefUe.setIdEnseignantRefUe(idErue);</span>
+<span class="nc" id="L92">        nouvelleUe.setEnseignantRefUe(nouveauEnseignantRefUe);</span>
+
+        // On ajoute le nouvelle Ue
+<span class="nc" id="L95">        this.ueDao.ajouterUe(nouvelleUe);</span>
+
+<span class="nc" id="L97">        this.setResultat(&quot;success&quot;);</span>
+
+<span class="nc" id="L99">      } else {</span>
+<span class="nc" id="L100">        this.setResultat(&quot;erreur&quot;);</span>
+      }
+
+<span class="nc" id="L103">    } catch (final DaoException daoException) {</span>
+<span class="nc" id="L104">      this.setResultat(&quot;erreurDao&quot;);</span>
+<span class="nc" id="L105">      ModifierUeForm.LOGGER.log(Level.INFO, EXCEPTION, daoException);</span>
+<span class="nc" id="L106">    }</span>
+
+<span class="nc" id="L108">  }</span>
+
+  private void traiterDonnees(String nom, String ects, String nbHeures, String semestre,
+      String enseignant) {
+
+    try {
+<span class="nc" id="L114">      this.validationNomUe(nom);</span>
+<span class="nc" id="L115">    } catch (final FormValidationException fve) {</span>
+<span class="nc" id="L116">      ModifierUeForm.LOGGER.log(Level.INFO, EXCEPTION, fve);</span>
+<span class="nc" id="L117">    }</span>
+
+    try {
+<span class="nc" id="L120">      this.validationEcts(ects);</span>
+<span class="nc" id="L121">    } catch (final FormValidationException fve) {</span>
+<span class="nc" id="L122">      ModifierUeForm.LOGGER.log(Level.INFO, EXCEPTION, fve);</span>
+<span class="nc" id="L123">    }</span>
+
+    try {
+<span class="nc" id="L126">      this.validationNbHeures(nbHeures);</span>
+<span class="nc" id="L127">    } catch (final FormValidationException fve) {</span>
+<span class="nc" id="L128">      ModifierUeForm.LOGGER.log(Level.INFO, EXCEPTION, fve);</span>
+<span class="nc" id="L129">    }</span>
+
+    try {
+<span class="nc" id="L132">      this.validationSemestre(semestre);;</span>
+<span class="nc" id="L133">    } catch (final FormValidationException fve) {</span>
+<span class="nc" id="L134">      ModifierUeForm.LOGGER.log(Level.INFO, EXCEPTION, fve);</span>
+<span class="nc" id="L135">    }</span>
+
+    try {
+<span class="nc" id="L138">      this.validationEnseignant(enseignant);;</span>
+<span class="nc" id="L139">    } catch (final FormValidationException fve) {</span>
+<span class="nc" id="L140">      ModifierUeForm.LOGGER.log(Level.INFO, EXCEPTION, fve);</span>
+<span class="nc" id="L141">    }</span>
+
+<span class="nc" id="L143">  }</span>
+
+  private void validationNomUe(String nom) throws FormValidationException {
+<span class="nc bnc" id="L146" title="All 4 branches missed.">    if (nom == null || nom.length() &lt; 3) {</span>
+<span class="nc" id="L147">      this.setErreur(&quot;ue&quot;, &quot;Veuillez remplir une UE avec plus de 3 caractères&quot;);</span>
+<span class="nc" id="L148">      throw new FormValidationException(&quot;Veuillez remplir une UE avec plus de 3 caractères.&quot;);</span>
+    }
+<span class="nc" id="L150">  }</span>
+
+  private void validationEcts(String ects) throws FormValidationException {
+    try {
+<span class="nc bnc" id="L154" title="All 2 branches missed.">      if (Integer.parseInt(ects) &lt; 0) {</span>
+<span class="nc" id="L155">        this.setErreur(&quot;pointEcts&quot;, &quot;Merci d'inscrire un nombre de point ECTS supérieur à 0&quot;);</span>
+<span class="nc" id="L156">        throw new FormValidationException(&quot;Merci d'inscrire un nombre de point ECTS supérieur à 0&quot;);</span>
+      }
+<span class="nc" id="L158">    } catch (final NumberFormatException nfe) {</span>
+<span class="nc" id="L159">      this.setErreur(&quot;pointEcts&quot;, &quot;Le nombre d'ECTS inscrit est invalide&quot;);</span>
+<span class="nc" id="L160">      throw new FormValidationException(&quot;Le nombre d'ECTS inscrit est invalide&quot;);</span>
+<span class="nc" id="L161">    }</span>
+<span class="nc" id="L162">  }</span>
+
+  private void validationNbHeures(String nbHeures) throws FormValidationException {
+    try {
+<span class="nc bnc" id="L166" title="All 2 branches missed.">      if (Integer.parseInt(nbHeures) &lt; 0) {</span>
+<span class="nc" id="L167">        this.setErreur(&quot;nbHeures&quot;, &quot;Merci d'inscrire un nombre d'heures supérieur à 0&quot;);</span>
+<span class="nc" id="L168">        throw new FormValidationException(&quot;Merci d'inscrire un nombre d'heures supérieur à 0&quot;);</span>
+      }
+<span class="nc" id="L170">    } catch (final NumberFormatException nfe) {</span>
+<span class="nc" id="L171">      this.setErreur(&quot;nbHeures&quot;, &quot;Le nombre d'heure inscrit est invalide.&quot;);</span>
+<span class="nc" id="L172">      throw new FormValidationException(&quot;Le nombre d'heure inscrit est invalide.&quot;);</span>
+<span class="nc" id="L173">    }</span>
+<span class="nc" id="L174">  }</span>
+
+  private void validationSemestre(String semestre) throws FormValidationException {
+    try {
+<span class="nc bnc" id="L178" title="All 2 branches missed.">      if (Integer.parseInt(semestre) &lt; 0) {</span>
+<span class="nc" id="L179">        this.setErreur(&quot;semestre&quot;, &quot;Merci d'inscrire un semstre supérieur à 0&quot;);</span>
+<span class="nc" id="L180">        throw new FormValidationException(&quot;Merci d'inscrire un semstre supérieur à 0&quot;);</span>
+      }
+<span class="nc" id="L182">    } catch (final NumberFormatException nfe) {</span>
+<span class="nc" id="L183">      this.setErreur(&quot;semestre&quot;, &quot;Le numéro de semestre inscrit est invalide&quot;);</span>
+<span class="nc" id="L184">      throw new FormValidationException(&quot;Le numéro de semestre inscrit est invalide&quot;);</span>
+<span class="nc" id="L185">    }</span>
+<span class="nc" id="L186">  }</span>
+
+  protected void validationEnseignant(String enseignant) throws FormValidationException {
+<span class="nc bnc" id="L189" title="All 2 branches missed.">    if (enseignant == null) {</span>
+<span class="nc" id="L190">      this.setErreur(&quot;enseignant&quot;, &quot;Aucun enseignant n'a été saisi, veuillez réessayer&quot;);</span>
+<span class="nc" id="L191">      throw new FormValidationException(&quot;Aucun enseignant n'a été saisi, veuillez réessayer&quot;);</span>
+    }
+<span class="nc" id="L193">  }</span>
+
+  /**
+   * Méthode qui permet de modifier l'association d'une matière à une UE.
+   * 
+   * @param request Requête
+   */
+  public void modifierCompositionUe(HttpServletRequest request) {
+
+<span class="nc" id="L202">    String nomUe = UeFormMethods.getValeurChamp(request, ModifierUeForm.CHAMP_UE);</span>
+<span class="nc" id="L203">    String nomMatiere = UeFormMethods.getValeurChamp(request, ModifierUeForm.CHAMP_MATIERE);</span>
+
+    try {
+<span class="nc bnc" id="L206" title="All 4 branches missed.">      if (nomUe != null &amp;&amp; nomMatiere != null) {</span>
+<span class="nc" id="L207">        this.ueDao.supprimerAssociationMatiereUe(nomUe, nomMatiere);</span>
+<span class="nc" id="L208">        this.resultat = &quot;success&quot;;</span>
+
+      }
+<span class="nc" id="L211">    } catch (final DaoException daoEx) {</span>
+
+<span class="nc" id="L213">      this.resultat = &quot;erreurDao&quot;;</span>
+<span class="nc" id="L214">      ModifierUeForm.LOGGER.log(Level.INFO, EXCEPTION, daoEx);</span>
+<span class="nc" id="L215">    }</span>
+
+<span class="nc" id="L217">  }</span>
+
+  public List&lt;UniteEnseignement&gt; getListeDesUes() {
+<span class="nc" id="L220">    return listeDesUes;</span>
+  }
+
+  public void setListeDesUes(List&lt;UniteEnseignement&gt; listeDesUes) {
+<span class="nc" id="L224">    this.listeDesUes = listeDesUes;</span>
+<span class="nc" id="L225">  }</span>
+
+  public List&lt;Matiere&gt; getListeDesMatieres() {
+<span class="nc" id="L228">    return listeDesMatieres;</span>
+  }
+
+  public void setListeDesMatieres(List&lt;Matiere&gt; listeDesMatieres) {
+<span class="nc" id="L232">    this.listeDesMatieres = listeDesMatieres;</span>
+<span class="nc" id="L233">  }</span>
+
+  public String getResultat() {
+<span class="nc" id="L236">    return this.resultat;</span>
+  }
+
+  public Map&lt;String, String&gt; getErreurs() {
+<span class="nc" id="L240">    return this.erreurs;</span>
+  }
+
+  public void setResultat(String resultat) {
+<span class="nc" id="L244">    this.resultat = resultat;</span>
+<span class="nc" id="L245">  }</span>
+
+  private void setErreur(String champ, String message) {
+<span class="nc" id="L248">    this.erreurs.put(champ, message);</span>
+<span class="nc" id="L249">  }</span>
+
+  protected static String getValeurChamp(HttpServletRequest request, String nomChamp) {
+<span class="nc" id="L252">    final String valeur = request.getParameter(nomChamp);</span>
+<span class="nc bnc" id="L253" title="All 4 branches missed.">    if (valeur == null || valeur.trim().length() == 0) {</span>
+<span class="nc" id="L254">      return null;</span>
+    } else {
+<span class="nc" id="L256">      return valeur.trim();</span>
+    }
+  }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.6.201602180812</span></div></body></html>

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testng-results skipped="0" failed="0" total="5" passed="5">
+  <reporter-output>
+  </reporter-output>
+  <suite name="Default suite" duration-ms="1309" started-at="2016-05-20T10:27:41Z" finished-at="2016-05-20T10:27:42Z">
+    <groups>
+    </groups>
+    <test name="Default test" duration-ms="1309" started-at="2016-05-20T10:27:41Z" finished-at="2016-05-20T10:27:42Z">
+      <class name="fr.eseo.atribus.dao.ExerciceDaoImplTest">
+        <test-method status="PASS" signature="beforeTest()[pri:0, instance:fr.eseo.atribus.dao.ExerciceDaoImplTest@2758fe70]" name="beforeTest" is-config="true" duration-ms="812" started-at="2016-05-20T12:27:41Z" finished-at="2016-05-20T12:27:42Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- beforeTest -->
+        <test-method status="PASS" signature="trouverParQuestionReponse()[pri:1, instance:fr.eseo.atribus.dao.ExerciceDaoImplTest@2758fe70]" name="trouverParQuestionReponse" duration-ms="373" started-at="2016-05-20T12:27:42Z" finished-at="2016-05-20T12:27:42Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- trouverParQuestionReponse -->
+        <test-method status="PASS" signature="trouverParId()[pri:2, instance:fr.eseo.atribus.dao.ExerciceDaoImplTest@2758fe70]" name="trouverParId" duration-ms="10" started-at="2016-05-20T12:27:42Z" finished-at="2016-05-20T12:27:42Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- trouverParId -->
+        <test-method status="PASS" signature="ajouterBonExercice()[pri:3, instance:fr.eseo.atribus.dao.ExerciceDaoImplTest@2758fe70]" name="ajouterBonExercice" duration-ms="53" started-at="2016-05-20T12:27:42Z" finished-at="2016-05-20T12:27:42Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- ajouterBonExercice -->
+        <test-method status="PASS" signature="supprimerExercice()[pri:4, instance:fr.eseo.atribus.dao.ExerciceDaoImplTest@2758fe70]" name="supprimerExercice" duration-ms="9" started-at="2016-05-20T12:27:42Z" finished-at="2016-05-20T12:27:42Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- supprimerExercice -->
+        <test-method status="PASS" signature="modifierExercice()[pri:5, instance:fr.eseo.atribus.dao.ExerciceDaoImplTest@2758fe70]" name="modifierExercice" duration-ms="16" started-at="2016-05-20T12:27:42Z" finished-at="2016-05-20T12:27:42Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- modifierExercice -->
+      </class> <!-- fr.eseo.atribus.dao.ExerciceDaoImplTest -->
+    </test> <!-- Default test -->
+  </suite> <!-- Default suite -->
+</testng-results>

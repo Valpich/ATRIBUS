@@ -1,0 +1,59 @@
+package fr.eseo.atribus.forms;
+
+import static org.testng.Assert.assertNotNull;
+
+import org.mockito.Mockito;
+import org.testng.annotations.BeforeTest;
+import org.testng.annotations.Test;
+
+import javax.servlet.http.HttpServletRequest;
+
+public class AddCompetenceFormTest {
+  
+  AddCompetenceForm form;
+  
+  private static final String CHAMP_NOM = "nomCompetence";
+  private static final String CHAMP_PARENT_ID = "parentId";
+  private static final String CHAMP_PROFONDEUR = "profondeur";
+  
+  @BeforeTest
+  public void beforeTest() {
+    form = new AddCompetenceForm();
+  }
+
+  @Test
+  public void ajouterBonneCompetence() {
+    
+    final HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
+    final String nom = "nomCompetenceTest";
+    final String parentId = "1";
+    final String profondeur = "1";
+    
+    Mockito.when(request.getParameter(AddCompetenceFormTest.CHAMP_NOM)).thenReturn(nom);
+    Mockito.when(request.getParameter(AddCompetenceFormTest.CHAMP_PARENT_ID)).thenReturn(parentId);
+    Mockito.when(request.getParameter(AddCompetenceFormTest.CHAMP_PROFONDEUR))
+        .thenReturn(profondeur);
+    
+    assertNotNull(form.ajouterCompetence(request));
+    
+  }
+  
+  @Test
+  public void ajouterFausseCompetence() {
+    
+    final HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
+    final String nom = "nom";
+    final String parentId = "-5";
+    final String profondeur = "12";
+    
+    Mockito.when(request.getParameter(AddCompetenceFormTest.CHAMP_NOM)).thenReturn(nom);
+    Mockito.when(request.getParameter(AddCompetenceFormTest.CHAMP_PARENT_ID)).thenReturn(parentId);
+    Mockito.when(request.getParameter(AddCompetenceFormTest.CHAMP_PROFONDEUR))
+        .thenReturn(profondeur);
+    
+    assertNotNull(form.ajouterCompetence(request));
+    
+  }
+  
+  
+}

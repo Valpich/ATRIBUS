@@ -1,0 +1,139 @@
+package fr.eseo.atribus.forms;
+
+import fr.eseo.atribus.dao.CompetenceDao;
+import fr.eseo.atribus.dao.DaoException;
+import fr.eseo.atribus.entities.Competence;
+
+import org.springframework.beans.factory.access.BeanFactoryReference;
+import org.springframework.beans.factory.access.SingletonBeanFactoryLocator;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.servlet.http.HttpServletRequest;
+
+public class ModifierCompetenceForm {
+  
+  private static final Logger LOGGER = Logger.getLogger(ModifierCompetenceForm.class.getName());
+  private static final String EXCEPTION = "Exception";
+
+  private final CompetenceDao competenceDao;
+
+  private String resultat;
+  private final Map<String, String> erreurs = new HashMap<>();
+
+  /**
+   * Constructeur.
+   */
+  public ModifierCompetenceForm() {
+    final BeanFactoryReference bf =
+        SingletonBeanFactoryLocator.getInstance().useBeanFactory("beansDao");
+    /* Récupération d'une instance de notre DAO Competence */
+    this.competenceDao = (CompetenceDao) bf.getFactory().getBean("competenceDao");
+  }
+
+  public String getResultat() {
+    return this.resultat;
+  }
+
+  public Map<String, String> getErreurs() {
+    return this.erreurs;
+  }
+
+  /**
+   * Méthode pour modifier une compétence.
+   * @param request requête
+   */
+  public void modifierCompetence(HttpServletRequest request) {
+
+    request.getSession();
+    final String nouveauNom =
+        ModifierCompetenceForm.getValeurChamp(request, "nomNouvelleCompetence");
+    final String profondeur =
+        ModifierCompetenceForm.getValeurChamp(request, "profondeurNouvelleCompetence");
+
+    final int idAncienneCompetence = Integer.parseInt(request.getParameter("idAncienneCompetence"));
+    final Competence ancienneCompetence = this.competenceDao.trouverParId(idAncienneCompetence);
+
+    try {
+
+      this.validerDonnees(nouveauNom, profondeur);
+
+      if (this.erreurs.isEmpty()) {
+
+        Competence competence = new Competence();
+        
+        competence.setNom(nouveauNom);
+        competence.setIdParent(0);
+        competence.setProfondeur(Integer.parseInt(profondeur));
+        
+        this.competenceDao.modifierCompetence(competence, ancienneCompetence);
+        
+        this.resultat = "succes";
+
+      } else {
+        this.resultat = "echec";
+      }
+
+    } catch (final DaoException bdde) {
+      this.resultat = "echecDao";
+      ModifierCompetenceForm.LOGGER.log(Level.INFO, EXCEPTION, bdde);
+    }
+  }
+  
+  private void validerDonnees(String nouveauNom, String profondeur) {
+    
+    try {
+      this.validationNomCompetence(nouveauNom);
+    } catch (FormValidationException fve) {
+      this.setErreur("nom", fve.getMessage());
+      ModifierCompetenceForm.LOGGER.log(Level.INFO, EXCEPTION, fve);
+    }
+    
+    try {
+      this.validationProfondeurCompetence(profondeur);
+    } catch (FormValidationException fve) {
+      this.setErreur("profondeur", fve.getMessage());
+      ModifierCompetenceForm.LOGGER.log(Level.INFO, EXCEPTION, fve);
+    }
+    
+  }
+
+  private void validationNomCompetence(String nouveauNom) throws FormValidationException {
+    if (nouveauNom == null || nouveauNom.length() < 3) {
+      throw new FormValidationException(
+          "Veuillez remplir une compétence avec plus de 3 caractères.");
+    }
+  }
+  
+  private void validationProfondeurCompetence(String profondeur) throws FormValidationException {
+    try {
+      if (Integer.parseInt(profondeur) < 0) {
+        throw new FormValidationException("Merci d'inscrire une profondeur supérieur à 0");
+      }
+    } catch (final NumberFormatException nfe) {
+      throw new FormValidationException("La chiffre de la profondeur saisie est incorrecte");
+    }
+  }
+  
+  private static String getValeurChamp(HttpServletRequest request, String nomChamp) {
+    final String valeur = request.getParameter(nomChamp);
+    if (valeur == null || valeur.trim().length() == 0) {
+      return null;
+    } else {
+      return valeur.trim();
+    }
+  }
+  
+  private void setErreur(String champ, String message) {
+    this.erreurs.put(champ, message);
+  }
+
+  public List<Competence> trouverParNom(String nom) {
+    return this.competenceDao.trouverParNom(nom);
+
+  }
+}

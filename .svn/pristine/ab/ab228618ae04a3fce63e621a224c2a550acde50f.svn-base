@@ -1,0 +1,302 @@
+package fr.eseo.atribus.forms;
+
+import fr.eseo.atribus.dao.CompetenceDao;
+import fr.eseo.atribus.dao.DaoException;
+import fr.eseo.atribus.dao.ExamenDao;
+import fr.eseo.atribus.dao.ExerciceDao;
+import fr.eseo.atribus.entities.Examen;
+import fr.eseo.atribus.entities.Exercice;
+
+import org.springframework.beans.factory.access.BeanFactoryReference;
+import org.springframework.beans.factory.access.SingletonBeanFactoryLocator;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.servlet.http.HttpServletRequest;
+
+// TODO: Auto-generated Javadoc
+/**
+ * The Class AddExerciceForm.
+ */
+public class AddExerciceForm extends ExerciceFormMethods {
+
+  /** La constante LOGGER. */
+  private static final Logger LOGGER = Logger.getLogger(AddExerciceForm.class.getName());
+
+  /**
+   * Instancie un nouveau adds the exercice form.
+   */
+  public AddExerciceForm() {
+    final BeanFactoryReference bf =
+        SingletonBeanFactoryLocator.getInstance().useBeanFactory("beansDao");
+    this.data.setExerciceBdd((ExerciceDao) bf.getFactory().getBean("exerciceDao"));
+    this.data.setCompetenceBdd((CompetenceDao) bf.getFactory().getBean("competenceDao"));
+    this.data.setExamenBdd((ExamenDao) bf.getFactory().getBean("examenDao"));
+  }
+
+  /**
+   * Ajout d'une auto evaluation dans la DAO en fonction du formulaire.
+   *
+   * @param question le question
+   * @param reponses le reponses
+   * @param nbPoints le nb points
+   * @param competences le competences
+   * @param pourcentages le pourcentages
+   * @param examen le examen
+   * @param bonneReponses le bonne reponses
+   * @return Examen
+   */
+  public Exercice ajouterAutoEvaluation(String question, List<String> reponses, String nbPoints,
+      List<String> competences, List<String> pourcentages, String examen, String bonneReponses) {
+    final Exercice exercice = new Exercice();
+    try {
+      this.traiterCompetencesPourcentages(competences, pourcentages, exercice);
+      this.traiterValeursAuto(question, reponses, nbPoints, exercice, bonneReponses);
+      final Examen examenTemp = this.traiterDonneesAuto(examen, exercice);
+      if (this.data.getErreurs().isEmpty()) {
+        this.data.getExerciceBdd().ajouter(exercice, examenTemp);
+        this.data.setResultat("success");
+      } else {
+        this.data.setResultat("error");
+      }
+    } catch (final DaoException ebdd) {
+      this.data.setResultat("errorDao");
+      AddExerciceForm.LOGGER.log(Level.INFO, ExerciceFormData.EXCEPTION, ebdd);
+    }
+    return exercice;
+  }
+
+  /**
+   * Traiter valeurs auto.
+   *
+   * @param question le question
+   * @param reponses le reponses
+   * @param nbPoints le nb points
+   * @param exercice le exercice
+   * @param bonneReponses le bonne reponses
+   */
+  private void traiterValeursAuto(String question, List<String> reponses, String nbPoints,
+      Exercice exercice, String bonneReponses) {
+    final String reponse = String.join("/**REPONSES**/", reponses);
+    try {
+      this.validationQuestion(question);
+      exercice.setQuestion(question);
+    } catch (final FormValidationException fve) {
+      this.setErreur(ExerciceFormData.CHAMP_QUESTION, fve.getMessage());
+      AddExerciceForm.LOGGER.log(Level.INFO, ExerciceFormData.EXCEPTION, fve);
+    }
+    try {
+      this.validationReponseQcm(reponse, bonneReponses);
+      exercice.setReponse(reponse);
+    } catch (final FormValidationException fve) {
+      this.setErreur(ExerciceFormData.CHAMP_REPONSE, fve.getMessage());
+      AddExerciceForm.LOGGER.log(Level.INFO, ExerciceFormData.EXCEPTION, fve);
+    }
+    this.validerPoints(nbPoints, exercice);
+    exercice.setReponse(exercice.getReponse() + "/**VALIDES**/" + bonneReponses);
+  }
+
+  /**
+   * Traiter competences pourcentages.
+   *
+   * @param competences le competences
+   * @param pourcentages le pourcentages
+   * @param exercice le exercice
+   */
+  private void traiterCompetencesPourcentages(List<String> competences, List<String> pourcentages,
+      final Exercice exercice) {
+    for (Long i = new Long(0); i < Math.max(pourcentages.size(), competences.size()); i++) {
+      try {
+        this.validationPourcentage(pourcentages.get(i.intValue()));
+        if (exercice.getPourcentages() == null) {
+          exercice.setPourcentages(new HashMap<>());
+        }
+        exercice.getPourcentages().put(new Long(i + 1),
+            Integer.parseInt(pourcentages.get(i.intValue())));
+      } catch (final FormValidationException fve) {
+        this.setErreur(ExerciceFormData.CHAMP_POURCENTAGE, fve.getMessage());
+        AddExerciceForm.LOGGER.log(Level.INFO, ExerciceFormData.EXCEPTION, fve);
+      }
+      try {
+        this.validationCompetence(competences.get(i.intValue()));
+        if (exercice.getCompetences() == null) {
+          exercice.setCompetences(new HashMap<>());
+        }
+        exercice.getCompetences().put(new Long(i + 1),
+            this.data.getCompetenceBdd().trouverUniqueParNom(competences.get(i.intValue())));
+      } catch (final FormValidationException fve) {
+        this.setErreur(ExerciceFormData.CHAMP_COMPETENCE, fve.getMessage());
+        AddExerciceForm.LOGGER.log(Level.INFO, ExerciceFormData.EXCEPTION, fve);
+      }
+    }
+  }
+
+
+  /**
+   * Traiter donnees auto.
+   *
+   * @param examen le examen
+   * @param exercice le exercice
+   * @return Le paramètre examen
+   */
+  private Examen traiterDonneesAuto(String examen, Exercice exercice) {
+    Examen examenDao = null;
+    try {
+      this.validationExamen(examen);
+      examenDao = this.data.getExamenBdd().trouverParNom(examen);
+      examenDao.getExercices().add(exercice);
+    } catch (final FormValidationException fve) {
+      this.setErreur(ExerciceFormData.CHAMP_COMPETENCE, fve.getMessage());
+      AddExerciceForm.LOGGER.log(Level.INFO, ExerciceFormData.EXCEPTION, fve);
+    }
+    return examenDao;
+  }
+
+  /**
+   * Adds the exercice.
+   *
+   * @param request le request
+   * @return Le paramètre exercice
+   */
+  public Exercice addExercice(HttpServletRequest request) {
+    final Map<String, String[]> parameters = request.getParameterMap();
+    final Map<Long, String> pourcentages = new HashMap<>();
+    final Map<Long, String> competences = new HashMap<>();
+    int indexMax = 0;
+    for (final String parameter : parameters.keySet()) {
+      if (parameter.startsWith(ExerciceFormData.CHAMP_POURCENTAGE)) {
+        final Integer index = new Integer(Integer
+            .parseInt(parameter.substring(parameter.indexOf(ExerciceFormData.CHAMP_POURCENTAGE)
+                + ExerciceFormData.CHAMP_POURCENTAGE.length())));
+        if (index > indexMax) {
+          indexMax = index;
+        }
+        for (final String pourcentage : parameters.get(parameter)) {
+          pourcentages.put(new Long(index), pourcentage);
+        }
+      }
+      if (parameter.startsWith(ExerciceFormData.CHAMP_COMPETENCE)) {
+        final Integer index = new Integer(Integer
+            .parseInt(parameter.substring(parameter.indexOf(ExerciceFormData.CHAMP_COMPETENCE)
+                + ExerciceFormData.CHAMP_COMPETENCE.length())));
+        if (index > indexMax) {
+          indexMax = index;
+        }
+        for (final String competence : parameters.get(parameter)) {
+          competences.put(new Long(index), competence);
+        }
+      }
+    }
+    final String question =
+        ExerciceFormMethods.getValeurChamp(request, ExerciceFormData.CHAMP_QUESTION);
+    final String reponse =
+        ExerciceFormMethods.getValeurChamp(request, ExerciceFormData.CHAMP_REPONSE);
+    final String nbPoints =
+        ExerciceFormMethods.getValeurChamp(request, ExerciceFormData.CHAMP_POINTS);
+    final String examen =
+        ExerciceFormMethods.getValeurChamp(request, ExerciceFormData.CHAMP_EXAMEN);
+    final Exercice exercice = new Exercice();
+    final Examen exam = new Examen();
+    exam.setNom(examen);
+    try {
+      this.traiterValeurs(question, reponse, nbPoints, exercice);
+      this.traiterDonnees(competences, pourcentages, exercice, indexMax);
+      if (this.data.getErreurs().isEmpty()) {
+        this.data.getExerciceBdd().ajouter(exercice, exam);
+        this.data.setResultat("success");
+      } else {
+        this.data.setResultat("error");
+      }
+    } catch (final DaoException ebdd) {
+      this.data.setResultat("errorDao");
+      AddExerciceForm.LOGGER.log(Level.INFO, ExerciceFormData.EXCEPTION, ebdd);
+    }
+
+    return exercice;
+  }
+
+  /**
+   * Traiter donnees.
+   *
+   * @param competences le competences
+   * @param pourcentages le pourcentages
+   * @param exercice le exercice
+   * @param index le index
+   */
+  private void traiterDonnees(Map<Long, String> competences, Map<Long, String> pourcentages,
+      Exercice exercice, int index) {
+    for (Long i = new Long(1); i < index + 1; i++) {
+      try {
+        this.validationPourcentage(pourcentages.get(i));
+        if (exercice.getPourcentages() == null) {
+          exercice.setPourcentages(new HashMap<>());
+        }
+        exercice.getPourcentages().put(new Long(i), Integer.parseInt(pourcentages.get(i)));
+      } catch (final FormValidationException fve) {
+        this.setErreur(ExerciceFormData.CHAMP_POURCENTAGE, fve.getMessage());
+        AddExerciceForm.LOGGER.log(Level.INFO, ExerciceFormData.EXCEPTION, fve);
+      }
+    }
+    for (Long i = new Long(1); i < index + 1; i++) {
+      try {
+        this.validationCompetence(competences.get(i));
+        if (exercice.getCompetences() == null) {
+          exercice.setCompetences(new HashMap<>());
+        }
+        exercice.getCompetences().put(new Long(i),
+            this.data.getCompetenceBdd().trouverUniqueParNom(competences.get(i)));
+      } catch (final FormValidationException fve) {
+        this.setErreur(ExerciceFormData.CHAMP_COMPETENCE, fve.getMessage());
+        AddExerciceForm.LOGGER.log(Level.INFO, ExerciceFormData.EXCEPTION, fve);
+      }
+    }
+  }
+
+  /**
+   * Traiter valeurs.
+   *
+   * @param question le question
+   * @param reponse le reponse
+   * @param nbPoints le nb points
+   * @param exercice le exercice
+   */
+  private void traiterValeurs(String question, String reponse, String nbPoints, Exercice exercice) {
+    try {
+      this.validationQuestion(question);
+      exercice.setQuestion(question);
+    } catch (final FormValidationException fve) {
+      this.setErreur(ExerciceFormData.CHAMP_QUESTION, fve.getMessage());
+      AddExerciceForm.LOGGER.log(Level.INFO, ExerciceFormData.EXCEPTION, fve);
+    }
+    try {
+      this.validationReponse(reponse);
+      exercice.setReponse(reponse);
+    } catch (final FormValidationException fve) {
+      this.setErreur(ExerciceFormData.CHAMP_REPONSE, fve.getMessage());
+      AddExerciceForm.LOGGER.log(Level.INFO, ExerciceFormData.EXCEPTION, fve);
+    }
+    this.validerPoints(nbPoints, exercice);
+  }
+
+  /**
+   * Valider points.
+   *
+   * @param nbPoints le nb points
+   * @param exercice le exercice
+   */
+  private void validerPoints(String nbPoints, Exercice exercice) {
+    try {
+      this.validationPoints(nbPoints);
+      exercice.setNbPoints(Float.parseFloat(nbPoints));
+    } catch (final FormValidationException fve) {
+      this.setErreur(ExerciceFormData.CHAMP_POINTS, fve.getMessage());
+      AddExerciceForm.LOGGER.log(Level.INFO, ExerciceFormData.EXCEPTION, fve);
+    }
+  }
+
+}
+

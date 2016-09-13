@@ -1,0 +1,62 @@
+package fr.eseo.atribus.controller;
+
+
+import fr.eseo.atribus.entities.Matiere;
+import fr.eseo.atribus.forms.AddMatiereForm;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.servlet.ModelAndView;
+
+import java.util.HashMap;
+import java.util.logging.Logger;
+
+import javax.servlet.http.HttpServletRequest;
+
+/**
+ * Servlet implementation class MatiereController.
+ */
+@Controller
+public class MatiereController {
+  public static final String CONF_BDD_FACTORY = "DaoFactory";
+  public static final String ATT_MATIERE = "matiere";
+  public static final String ATT_SEMESTRES = "semestres";
+  public static final String ATT_UES = "ues";
+  public static final String ATT_FORM = "form";
+  public static final String VUE = "EnseignantRefMatiere/addMatiere";
+  public static final String ATT_ENSEIGNANT_REF = "enseignant";
+  private static final Logger LOGGER = Logger.getLogger(MatiereController.class.getName());
+
+  @RequestMapping(value = "/EnseignantRefUE/AjouterMatiere", method = RequestMethod.GET)
+  protected ModelAndView afficherAjouterMatiere() {
+
+    final HashMap<String, Object> attributsRequete = new HashMap<>();
+
+    /* Préparation de l'objt formulaire */
+    final AddMatiereForm form = new AddMatiereForm();
+
+    /* Stockage du formulaire et du bean dans l'objet request */
+    attributsRequete.put(MatiereController.ATT_SEMESTRES, form.getListSemestre());
+    attributsRequete.put(MatiereController.ATT_UES, form.getListUe());
+    attributsRequete.put(MatiereController.ATT_ENSEIGNANT_REF, form.getListEnseignantRef());
+    MatiereController.LOGGER.info(form.getListEnseignantRef().toString());
+    return new ModelAndView(VUE, attributsRequete);
+  }
+
+  @RequestMapping(value = "/EnseignantRefMatiere/AjouterMatiere", method = RequestMethod.POST)
+
+  protected ModelAndView ajouterMatiere(HttpServletRequest request) {
+    final AddMatiereForm form = new AddMatiereForm();
+    final Matiere matiere = form.addMatiere(request);
+
+    final HashMap<String, Object> attributsRequete = new HashMap<>();
+    attributsRequete.put(MatiereController.ATT_SEMESTRES, form.getListSemestre());
+    attributsRequete.put(MatiereController.ATT_UES, form.getListUe());
+    attributsRequete.put(MatiereController.ATT_MATIERE, matiere);
+    attributsRequete.put(MatiereController.ATT_ENSEIGNANT_REF, form.getListEnseignantRef());
+    attributsRequete.put(MatiereController.ATT_FORM, form);
+    return new ModelAndView(VUE, attributsRequete);
+  }
+
+}

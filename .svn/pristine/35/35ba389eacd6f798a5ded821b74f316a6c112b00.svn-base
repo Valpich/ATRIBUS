@@ -1,0 +1,71 @@
+package fr.eseo.atribus.dao;
+
+import fr.eseo.atribus.entities.Examen;
+import fr.eseo.atribus.entities.Matiere;
+
+import java.util.Date;
+import java.util.List;
+
+// TODO: Auto-generated Javadoc
+/**
+ * The Interface ExamenDao.
+ */
+public interface ExamenDao {
+
+  /**
+   * Ajouter.
+   *
+   * @param examen le examen
+   * @param matiere le matiere
+   */
+  void ajouter(Examen examen, Matiere matiere);
+
+  /**
+   * Trouver par nom.
+   *
+   * @param nom le nom
+   * @return Le paramètre examen
+   */
+  Examen trouverParNom(String nom);
+
+  /**
+   * Trouver tous les examens.
+   *
+   * @return Le paramètre list
+   */
+  List<Examen> trouverTousLesExamens();
+
+  /**
+   * Trouver id par nom.
+   *
+   * @param nom le nom
+   * @return Le paramètre int
+   */
+  int trouverIdParNom(String nom);
+
+  /**
+   * Update.
+   *
+   * @param examen le examen
+   * @param ancienNom le ancien nom
+   */
+  void update(Examen examen, String ancienNom);
+
+  /**
+   * Supprimer.
+   *
+   * @param examen le examen
+   */
+  void supprimer(Examen examen);
+
+  /**
+   * Calculer historique.
+   *
+   * @param examen le examen
+   * @param dateDebut le date debut
+   * @param dateFin le date fin
+   * @return Le paramètre int
+   */
+  int calculerHistorique(Examen examen, Date dateDebut, Date dateFin);
+
+}

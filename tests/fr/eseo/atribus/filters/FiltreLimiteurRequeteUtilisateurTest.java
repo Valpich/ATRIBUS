@@ -1,0 +1,256 @@
+package fr.eseo.atribus.filters;
+
+import fr.eseo.atribus.entities.Utilisateur;
+
+import org.mockito.Mockito;
+import org.testng.Assert;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
+import java.io.IOException;
+import java.lang.reflect.Field;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import javax.servlet.http.HttpSessionContext;
+
+public class FiltreLimiteurRequeteUtilisateurTest {
+
+  @BeforeClass
+  public void beforeClass() {}
+
+  @Test(priority = 1)
+  public void testConstructeurVide() {
+    final FiltreLimiteurRequeteUtilisateur filtrelimiteurrequeteutilisateur =
+        new FiltreLimiteurRequeteUtilisateur();
+    Assert.assertNotNull(filtrelimiteurrequeteutilisateur);
+  }
+
+  @Test(priority = 2)
+  public void testMethodeDestroy() {
+    final FiltreLimiteurRequeteUtilisateur filtrelimiteurrequeteutilisateur =
+        new FiltreLimiteurRequeteUtilisateur();
+    Assert.assertNotNull(filtrelimiteurrequeteutilisateur);
+    filtrelimiteurrequeteutilisateur.destroy();
+  }
+
+  @Test(priority = 3)
+  public void testMethodeDoFilterServletRequestServletResponseFilterChain() {
+    final HttpServletRequest httpServletRequest = Mockito.mock(HttpServletRequest.class);
+    final HttpServletResponse httpServletResponse = Mockito.mock(HttpServletResponse.class);
+    final FilterChain filterChain = Mockito.mock(FilterChain.class);
+    Field attribut;
+    Field attributDeux;
+    final MockHttpSession mockHttpSession = new MockHttpSession();
+    Mockito.when(httpServletRequest.getSession()).thenReturn(mockHttpSession);
+
+    // Erreur sans utilisateur connecté
+    final FiltreLimiteurRequeteUtilisateur filtrelimiteurrequeteutilisateur =
+        new FiltreLimiteurRequeteUtilisateur();
+    try {
+      attribut = new FiltreLimiteurRequeteUtilisateur().getClass().getDeclaredField("actuel");
+      attributDeux = new FiltreLimiteurRequeteUtilisateur().getClass().getDeclaredField("verrou");
+      attribut.setAccessible(true);
+      attributDeux.setAccessible(true);
+      try {
+        attribut.set(filtrelimiteurrequeteutilisateur,200);
+        attributDeux.set(filtrelimiteurrequeteutilisateur, new Boolean(false));
+        try {
+          filtrelimiteurrequeteutilisateur.doFilter(httpServletRequest, httpServletResponse,
+              filterChain);
+          Assert.assertEquals(attribut.getInt(filtrelimiteurrequeteutilisateur), 200, "test");
+        } catch (final IOException ioe) {
+          ioe.printStackTrace();
+        } catch (final ServletException sev) {
+          sev.printStackTrace();
+        }
+      } catch (final IllegalArgumentException iae) {
+        iae.printStackTrace();
+      } catch (final IllegalAccessException iae) {
+        iae.printStackTrace();
+      }
+
+    } catch (final NoSuchFieldException nsfe) {
+      nsfe.printStackTrace();
+    } catch (final SecurityException sec) {
+      sec.printStackTrace();
+    }
+
+    // Erreur avec un utilisateur connecté
+    mockHttpSession.setAttribute("utilisateur", new Utilisateur());
+    Mockito.when(httpServletRequest.getSession()).thenReturn(mockHttpSession);
+
+    try {
+      attribut = new FiltreLimiteurRequeteUtilisateur().getClass().getDeclaredField("actuel");
+      attributDeux = new FiltreLimiteurRequeteUtilisateur().getClass().getDeclaredField("verrou");
+      attribut.setAccessible(true);
+      attributDeux.setAccessible(true);
+      try {
+        attribut.set(filtrelimiteurrequeteutilisateur, 5);
+        attributDeux.set(filtrelimiteurrequeteutilisateur, new Boolean(false));
+        try {
+          filtrelimiteurrequeteutilisateur.doFilter(httpServletRequest, httpServletResponse,
+              filterChain);
+          Assert.assertEquals(attribut.getInt(filtrelimiteurrequeteutilisateur), 5, "test");
+        } catch (final IOException ioe) {
+          ioe.printStackTrace();
+        } catch (final ServletException sev) {
+          sev.printStackTrace();
+        }
+      } catch (final IllegalArgumentException iae) {
+        iae.printStackTrace();
+      } catch (final IllegalAccessException iae) {
+        iae.printStackTrace();
+      }
+
+    } catch (final NoSuchFieldException nsfe) {
+      nsfe.printStackTrace();
+    } catch (final SecurityException sec) {
+      sec.printStackTrace();
+    }
+
+    // Pas d'erreur avec un utilisateur connecté
+    mockHttpSession.setAttribute("utilisateur", new Utilisateur());
+    Mockito.when(httpServletRequest.getSession()).thenReturn(mockHttpSession);
+
+    try {
+      attribut = new FiltreLimiteurRequeteUtilisateur().getClass().getDeclaredField("actuel");
+      attributDeux = new FiltreLimiteurRequeteUtilisateur().getClass().getDeclaredField("verrou");
+      attribut.setAccessible(true);
+      attributDeux.setAccessible(true);
+      try {
+        attribut.set(filtrelimiteurrequeteutilisateur, 3);
+        attributDeux.set(filtrelimiteurrequeteutilisateur, new Boolean(false));
+        try {
+          filtrelimiteurrequeteutilisateur.doFilter(httpServletRequest, httpServletResponse,
+              filterChain);
+          Assert.assertEquals(attribut.getInt(filtrelimiteurrequeteutilisateur), 3, "test");
+        } catch (final IOException ioe) {
+          ioe.printStackTrace();
+        } catch (final ServletException sev) {
+          sev.printStackTrace();
+        }
+      } catch (final IllegalArgumentException iae) {
+        iae.printStackTrace();
+      } catch (final IllegalAccessException iae) {
+        iae.printStackTrace();
+      }
+
+    } catch (final NoSuchFieldException nsfe) {
+      nsfe.printStackTrace();
+    } catch (final SecurityException sec) {
+      sec.printStackTrace();
+    }
+
+
+
+  }
+
+
+  @Test(priority = 4)
+  public void testMethodeInitFilterConfig() {
+    final FilterConfig config = Mockito.mock(FilterConfig.class);
+    final FiltreLimiteurRequeteUtilisateur filtrelimiteurrequeteutilisateur =
+        new FiltreLimiteurRequeteUtilisateur();
+    Assert.assertNotNull(filtrelimiteurrequeteutilisateur);
+    try {
+      filtrelimiteurrequeteutilisateur.init(config);
+    } catch (final ServletException sev) {
+      sev.printStackTrace();
+    }
+  }
+
+  @AfterClass
+  public void afterClass() {}
+
+  private class MockHttpSession implements HttpSession {
+    Map<String, Object> map = new HashMap<>();
+
+    @Override
+    public Object getAttribute(String name) {
+      return this.map.get(name);
+    }
+
+    @Override
+    public void setAttribute(String name, Object value) {
+      this.map.put(name, value);
+    }
+
+    @Override
+    public Enumeration<String> getAttributeNames() {
+      return null;
+    }
+
+    @Override
+    public long getCreationTime() {
+      return 0;
+    }
+
+    @Override
+    public String getId() {
+      return null;
+    }
+
+    @Override
+    public long getLastAccessedTime() {
+      return 0;
+    }
+
+    @Override
+    public int getMaxInactiveInterval() {
+      return 0;
+    }
+
+    @Override
+    public ServletContext getServletContext() {
+      return null;
+    }
+
+    @SuppressWarnings("deprecation")
+    @Override
+    public HttpSessionContext getSessionContext() {
+      return null;
+    }
+
+    @Override
+    public Object getValue(String arg0) {
+      return null;
+    }
+
+    @Override
+    public String[] getValueNames() {
+      return null;
+    }
+
+    @Override
+    public void invalidate() {}
+
+    @Override
+    public boolean isNew() {
+      return false;
+    }
+
+    @Override
+    public void putValue(String arg0, Object arg1) {}
+
+    @Override
+    public void removeAttribute(String arg0) {}
+
+    @Override
+    public void removeValue(String arg0) {}
+
+    @Override
+    public void setMaxInactiveInterval(int arg0) {}
+
+  }
+
+}

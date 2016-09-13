@@ -1,0 +1,81 @@
+package fr.eseo.atribus.entities;
+
+import java.io.Serializable;
+import java.util.Date;
+
+public class Evaluation implements Serializable {
+
+  private static final long serialVersionUID = 2722236148177332532L;
+
+  private int id;
+
+  private Float note;
+
+  private Date dateExamen;
+
+  private Eleve eleve;
+
+  private String reponse;
+
+  private Exercice exercice;
+
+  public Evaluation() {
+    super();
+  }
+
+  public int getId() {
+    return this.id;
+  }
+
+  public void setId(int id) {
+    this.id = id;
+  }
+
+  public Float getNote() {
+    return this.note;
+  }
+
+  public void setNote(Float note) {
+    this.note = note;
+  }
+
+  public Date getDateExamen() {
+    return this.dateExamen;
+  }
+
+  public void setDateExamen(Date dateExamen) {
+    this.dateExamen = dateExamen;
+  }
+
+  public Eleve getEleve() {
+    return this.eleve;
+  }
+
+  public void setEleve(Eleve eleve) {
+    this.eleve = eleve;
+  }
+
+  public String getReponse() {
+    return this.reponse;
+  }
+
+  public void setReponse(String reponse) {
+    this.reponse = reponse;
+  }
+
+  public Exercice getExercice() {
+    return this.exercice;
+  }
+
+  public void setExercice(Exercice exercice) {
+    this.exercice = exercice;
+  }
+
+  @Override
+  public String toString() {
+    return "Evaluation [id=" + this.id + ", note=" + this.note + ", dateExamen=" + this.dateExamen
+        + ", eleve=" + this.eleve + ", reponse=" + this.reponse + ", exercice=" + this.exercice
+        + "]";
+  }
+
+}

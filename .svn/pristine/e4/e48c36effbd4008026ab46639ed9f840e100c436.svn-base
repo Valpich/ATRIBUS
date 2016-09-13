@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>EnseignantRefMatiereDaoImpl.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Atribus</a> &gt; <a href="index.source.html" class="el_package">fr.eseo.atribus.dao</a> &gt; <span class="el_source">EnseignantRefMatiereDaoImpl.java</span></div><h1>EnseignantRefMatiereDaoImpl.java</h1><pre class="source lang-java linenums">package fr.eseo.atribus.dao;
+
+import fr.eseo.atribus.entities.EnseignantRefMatiere;
+import fr.eseo.atribus.entities.Matiere;
+
+import org.springframework.beans.factory.access.BeanFactoryReference;
+import org.springframework.beans.factory.access.SingletonBeanFactoryLocator;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+public class EnseignantRefMatiereDaoImpl implements EnseignantRefMatiereDao {
+<span class="nc" id="L19">  private static final Logger LOGGER =</span>
+<span class="nc" id="L20">      Logger.getLogger(EnseignantRefMatiereDaoImpl.class.getName());</span>
+  private final DaoFactory daoFactory;
+
+  private static final String SQL_SELECT_PAR_LOGIN_HASH =
+      &quot;SELECT enseignant_ref_matiere.id &quot;
+          + &quot;AS id_enseignant_ref_matiere, enseignant.id &quot;
+          + &quot;AS id_enseignant, utilisateur.* &quot;
+          + &quot;FROM enseignant_ref_matiere &quot;
+          + &quot;LEFT JOIN enseignant ON enseignant.id = enseignant_ref_matiere.id_enseignant &quot;
+          + &quot;LEFT JOIN utilisateur ON utilisateur.id = enseignant.id_utilisateur &quot;
+          + &quot;WHERE utilisateur.login = ?&quot; + &quot; AND utilisateur.password = ?&quot;;
+
+  private static final String SQL_SELECT_ALL =
+      &quot;SELECT enseignant_ref_matiere.id &quot;
+          + &quot;AS id_enseignant_ref_matiere, enseignant.id &quot;
+          + &quot;AS id_enseignant, utilisateur.*&quot;
+          + &quot; FROM enseignant_ref_matiere&quot;
+          + &quot; LEFT JOIN enseignant ON enseignant.id = enseignant_ref_matiere.id_enseignant&quot;
+          + &quot; LEFT JOIN utilisateur ON utilisateur.id = enseignant.id_utilisateur&quot;;
+
+  private static final String SQL_INSERT =
+      &quot;INSERT INTO enseignant_ref_matiere (id_enseignant)&quot; + &quot; VALUES (?)&quot;;
+  
+
+  /**
+   * Constructeur.
+   */
+<span class="nc" id="L47">  public EnseignantRefMatiereDaoImpl() {</span>
+    final BeanFactoryReference bf =
+<span class="nc" id="L49">        SingletonBeanFactoryLocator.getInstance().useBeanFactory(&quot;contextDao&quot;);</span>
+<span class="nc" id="L50">    this.daoFactory = (DaoFactory) bf.getFactory().getBean(&quot;daoFactory&quot;);</span>
+<span class="nc" id="L51">  }</span>
+
+  @Override
+  public List&lt;EnseignantRefMatiere&gt; recupererListe() {
+<span class="nc" id="L55">    final List&lt;EnseignantRefMatiere&gt; listeEnseignantRefMatiere = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L56">    Connection connexion = null;</span>
+<span class="nc" id="L57">    PreparedStatement preparedStatement = null;</span>
+<span class="nc" id="L58">    ResultSet resultSet = null;</span>
+
+    try {
+      /* Récupération d'une connexion depuis la Factory */
+<span class="nc" id="L62">      connexion = this.daoFactory.getConnection();</span>
+<span class="nc" id="L63">      preparedStatement = DaoUtilitaire.initialisationRequetePreparee(connexion,</span>
+          EnseignantRefMatiereDaoImpl.SQL_SELECT_ALL, false);
+<span class="nc" id="L65">      resultSet = preparedStatement.executeQuery();</span>
+      /* Parcours de la ligne de données retournée dans le ResultSet */
+<span class="nc bnc" id="L67" title="All 2 branches missed.">      while (resultSet.next()) {</span>
+<span class="nc" id="L68">        listeEnseignantRefMatiere.add(EnseignantRefMatiereDaoImpl.map(resultSet));</span>
+      }
+<span class="nc" id="L70">    } catch (final SQLException sqle) {</span>
+<span class="nc" id="L71">      throw new DaoException(sqle);</span>
+    } finally {
+<span class="nc" id="L73">      DaoUtilitaire.fermeturesSilencieuses(resultSet, preparedStatement, connexion);</span>
+<span class="nc" id="L74">    }</span>
+
+<span class="nc" id="L76">    return listeEnseignantRefMatiere;</span>
+  }
+
+  /* Implémentation de la méthode trouverParLogin() définie dans l'interface UtilisateurBdd */
+  @Override
+  public EnseignantRefMatiere trouverParLoginHash(String login, String hash) {
+<span class="nc" id="L82">    return this.trouver(EnseignantRefMatiereDaoImpl.SQL_SELECT_PAR_LOGIN_HASH, login, hash);</span>
+  }
+
+  @Override
+  public EnseignantRefMatiere ajouter(EnseignantRefMatiere enseignantRefMatiere) {
+<span class="nc" id="L87">    Connection connexion = null;</span>
+<span class="nc" id="L88">    PreparedStatement preparedStatement = null;</span>
+<span class="nc" id="L89">    final ResultSet valeursAutoGenerees = null;</span>
+
+    try {
+      final BeanFactoryReference bf =
+<span class="nc" id="L93">          SingletonBeanFactoryLocator.getInstance().useBeanFactory(&quot;beansDao&quot;);</span>
+<span class="nc" id="L94">      final int idEnseignant = ((EnseignantDao) bf.getFactory().getBean(&quot;enseignantDao&quot;))</span>
+<span class="nc" id="L95">          .trouverIdParLogin(enseignantRefMatiere.getLogin());</span>
+<span class="nc" id="L96">      connexion = this.daoFactory.getConnection();</span>
+<span class="nc" id="L97">      preparedStatement = DaoUtilitaire.initialisationRequetePreparee(connexion,</span>
+<span class="nc" id="L98">          EnseignantRefMatiereDaoImpl.SQL_INSERT, true, idEnseignant);</span>
+<span class="nc" id="L99">      final int statut = preparedStatement.executeUpdate();</span>
+      /* Analyse du statut retourné par la requête d'insertion */
+<span class="nc bnc" id="L101" title="All 2 branches missed.">      if (statut == 0) {</span>
+<span class="nc" id="L102">        throw new DaoException(</span>
+            &quot;Échec de la création de l'enseignantRefMatiere, aucune ligne ajoutée dans la table.&quot;);
+      }
+<span class="nc" id="L105">    } catch (final SQLException sqle) {</span>
+<span class="nc" id="L106">      EnseignantRefMatiereDaoImpl.LOGGER.log(Level.INFO, &quot;Exception&quot;, sqle);</span>
+<span class="nc" id="L107">      throw new DaoException(sqle);</span>
+    } finally {
+<span class="nc" id="L109">      DaoUtilitaire.fermeturesSilencieuses(valeursAutoGenerees, preparedStatement, connexion);</span>
+<span class="nc" id="L110">    }</span>
+
+<span class="nc" id="L112">    return enseignantRefMatiere;</span>
+  }
+
+
+  /*
+   * Méthode générique utilisée pour retourner un adminsys depuis la base de données, correspondant
+   * à la requête SQL donnée prenant en paramètres les objets passés en argument.
+   */
+  private EnseignantRefMatiere trouver(String sql, Object... objets) {
+<span class="nc" id="L121">    Connection connexion = null;</span>
+<span class="nc" id="L122">    PreparedStatement preparedStatement = null;</span>
+<span class="nc" id="L123">    ResultSet resultSet = null;</span>
+<span class="nc" id="L124">    EnseignantRefMatiere enseignantRefMatiere = null;</span>
+
+    try {
+      /* Récupération d'une connexion depuis la Factory */
+<span class="nc" id="L128">      connexion = this.daoFactory.getConnection();</span>
+      /*
+       * Préparation de la requête avec les objets passés en arguments (ici, uniquement un id) et
+       * exécution.
+       */
+<span class="nc" id="L133">      preparedStatement =</span>
+<span class="nc" id="L134">          DaoUtilitaire.initialisationRequetePreparee(connexion, sql, false, objets);</span>
+<span class="nc" id="L135">      resultSet = preparedStatement.executeQuery();</span>
+      /* Parcours de la ligne de données retournée dans le ResultSet */
+<span class="nc bnc" id="L137" title="All 2 branches missed.">      if (resultSet.next()) {</span>
+<span class="nc" id="L138">        enseignantRefMatiere = map(resultSet);</span>
+      }
+<span class="nc" id="L140">    } catch (final SQLException sqle) {</span>
+<span class="nc" id="L141">      throw new DaoException(sqle);</span>
+    } finally {
+<span class="nc" id="L143">      DaoUtilitaire.fermeturesSilencieuses(resultSet, preparedStatement, connexion);</span>
+<span class="nc" id="L144">    }</span>
+<span class="nc" id="L145">    return enseignantRefMatiere;</span>
+  }
+
+  /*
+   * Simple méthode utilitaire permettant de faire la correspondance (le mapping) entre une ligne
+   * issue de la table des EnseignantRefMatiere (un ResultSet) et un bean ERM .
+   */
+  private static EnseignantRefMatiere map(ResultSet resultSet) throws SQLException {
+<span class="nc" id="L153">    final EnseignantRefMatiere enseignantRefMatiere = new EnseignantRefMatiere();</span>
+<span class="nc" id="L154">    enseignantRefMatiere.setId(resultSet.getInt(&quot;id&quot;));</span>
+<span class="nc" id="L155">    enseignantRefMatiere.setIdEnseignant(resultSet.getInt(&quot;id_enseignant&quot;));</span>
+<span class="nc" id="L156">    enseignantRefMatiere.setIdEnseignantRefMatiere(resultSet.getInt(&quot;id_enseignant_ref_matiere&quot;));</span>
+<span class="nc" id="L157">    enseignantRefMatiere.setLogin(resultSet.getString(&quot;login&quot;));</span>
+<span class="nc" id="L158">    enseignantRefMatiere.setPassword(resultSet.getString(&quot;password&quot;));</span>
+<span class="nc" id="L159">    enseignantRefMatiere.setNom(resultSet.getString(&quot;nom&quot;));</span>
+<span class="nc" id="L160">    enseignantRefMatiere.setPrenom(resultSet.getString(&quot;prenom&quot;));</span>
+<span class="nc" id="L161">    enseignantRefMatiere.setEmail(resultSet.getString(&quot;email&quot;));</span>
+<span class="nc" id="L162">    enseignantRefMatiere.setDateInscription(resultSet.getTimestamp(&quot;date_inscription&quot;));</span>
+    final BeanFactoryReference bf =
+<span class="nc" id="L164">        SingletonBeanFactoryLocator.getInstance().useBeanFactory(&quot;beansDao&quot;);</span>
+
+<span class="nc" id="L166">    final Matiere matiere = ((MatiereDao) bf.getFactory().getBean(&quot;matiereDao&quot;))</span>
+<span class="nc" id="L167">        .trouverParId(enseignantRefMatiere.getIdEnseignantRefMatiere());</span>
+<span class="nc" id="L168">    enseignantRefMatiere.setMatiere(matiere);</span>
+<span class="nc" id="L169">    enseignantRefMatiere.setNotificationActive(resultSet.getBoolean(&quot;notification_active&quot;));</span>
+<span class="nc" id="L170">    enseignantRefMatiere.setNotificationMail(resultSet.getBoolean(&quot;notification_mail&quot;));</span>
+<span class="nc" id="L171">    enseignantRefMatiere</span>
+<span class="nc" id="L172">        .setFrequenceNotificationMail(resultSet.getInt(&quot;frequence_notification_mail&quot;));</span>
+<span class="nc" id="L173">    return enseignantRefMatiere;</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.6.201602180812</span></div></body></html>

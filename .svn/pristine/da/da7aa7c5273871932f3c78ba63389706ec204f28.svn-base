@@ -1,0 +1,110 @@
+package fr.eseo.atribus.forms;
+
+import fr.eseo.atribus.dao.DaoException;
+import fr.eseo.atribus.entities.Utilisateur;
+
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+/**
+ * La classe ModifierProfilUtilisateurForm.
+ */
+public class ModifierProfilUtilisateurForm extends UtilisateurForm {
+
+  /** La constante LOGGER. */
+  private static final Logger LOGGER =
+      Logger.getLogger(ModifierProfilUtilisateurForm.class.getName());
+
+  /**
+   * Instancie un nouveau modifier profil utilisateur form.
+   */
+  public ModifierProfilUtilisateurForm() {
+    super();
+  }
+
+  /**
+   * Accesseur en lecture sur le paramètre resultat.
+   *
+   * @return le paramètre resultat
+   */
+  public String getResultat() {
+    return this.resultat;
+  }
+
+  /**
+   * Accesseur en lecture sur le paramètre erreurs.
+   *
+   * @return le paramètre erreurs
+   */
+  public Map<String, String> getErreurs() {
+    return this.erreurs;
+  }
+
+  /**
+   * Modifier profil utilisateur.
+   *
+   * @param options les options
+   * @param notification la notification
+   * @param mail l'adresse mail
+   * @param utilisateur l'utilisateur
+   */
+  public void modifierProfilUtilisateur(String options, String notification, String mail,
+      Utilisateur utilisateur) {
+    try {
+      this.traiterDonnees(options, notification, mail, utilisateur);
+      this.utilisateurDao.update(utilisateur);
+    } catch (final DaoException bdde) {
+      this.setErreur("erreur", "Impossible d'effectuer la mise à jour");
+      this.setErreur("success", "Votre profil a bien été mis à jour");
+      try {
+        this.traiterDonnees(options, notification, mail, utilisateur);
+        this.utilisateurDao.trouverParId(utilisateur.getId());
+      } catch (final DaoException bde) {
+        this.setErreur("erreur", "Impossible d'effectuer la mise à jour.");
+        ModifierProfilUtilisateurForm.LOGGER.log(Level.INFO, "Exception", bde);
+        this.resultat = "Échec lors de la modification : une erreur imprévue est survenue,"
+            + " merci de réessayer dans quelques instants.";
+      }
+      ModifierProfilUtilisateurForm.LOGGER.log(Level.INFO, "Exception", bdde);
+      this.resultat = "Échec lors de la modification : une erreur imprévue est survenue,"
+          + " merci de réessayer dans quelques instants.";
+    }
+  }
+
+  /**
+   * Traiter donnees.
+   *
+   * @param options les options
+   * @param notification la notification
+   * @param mail l'adresse mail
+   * @param utilisateur l'utilisateur
+   */
+  private void traiterDonnees(String options, String notification, String mail,
+      Utilisateur utilisateur) {
+    if ("heure".equals(options)) {
+      utilisateur.setFrequenceNotificationMail(1);
+    }
+    if ("jour".equals(options)) {
+      utilisateur.setFrequenceNotificationMail(2);
+    }
+    if ("semaine".equals(options)) {
+      utilisateur.setFrequenceNotificationMail(3);
+    }
+    if ("jamais".equals(options)) {
+      utilisateur.setFrequenceNotificationMail(0);
+    }
+    if (notification != null) {
+      utilisateur.setNotificationActive(true);
+    } else {
+      utilisateur.setNotificationActive(false);
+    }
+    if (mail != null) {
+      utilisateur.setNotificationMail(true);
+    } else {
+      utilisateur.setNotificationMail(false);
+    }
+  }
+  
+}
+

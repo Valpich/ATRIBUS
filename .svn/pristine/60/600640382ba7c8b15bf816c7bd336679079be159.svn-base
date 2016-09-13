@@ -1,0 +1,186 @@
+package fr.eseo.atribus.dao;
+
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
+
+import fr.eseo.atribus.entities.Utilisateur;
+
+import org.powermock.api.mockito.PowerMockito;
+import org.testng.annotations.Test;
+
+public class UtilisateurDaoImplTest {
+
+  UtilisateurDaoImpl utilisateurDao = new UtilisateurDaoImpl();
+
+
+  @Test(priority = 1)
+  public void ajouter() {
+
+    Utilisateur utilisateur = new Utilisateur();
+
+    utilisateur.setLogin("user");
+    utilisateur.setPassword("password");
+    utilisateur.setNom("Utilisateur 1");
+    utilisateur.setPrenom("Ldcr");
+    utilisateur.setEmail("user@reseau.eseo.fr");
+
+    utilisateurDao.ajouter(utilisateur);
+
+    assertEquals(utilisateurDao.trouverParLogin("user").getNom(), new String("Utilisateur 1"),
+        "L'utilisateur a bien été trouvé dans la BDD.");
+
+  }
+
+  @Test(priority = 2)
+  public void trouver() throws Exception {
+
+    UtilisateurDaoImpl mockedUtilisateurDao = PowerMockito.spy(new UtilisateurDaoImpl());
+
+    String requeteSql = "SELECT * FROM utilisateur WHERE login = ?";
+    String login = "admin";
+
+    PowerMockito.doReturn(1).when(mockedUtilisateurDao, "trouver", requeteSql, login);
+
+  }
+
+  @Test(priority = 3)
+  public void trouverIdParLogin() {
+    assertEquals(utilisateurDao.trouverIdParLogin("admin"), 1,
+        "L'ID en fonction du login a été trouvé.");
+  }
+
+  @Test(priority = 4)
+  public void trouverParLogin() {
+    assertEquals(utilisateurDao.trouverParLogin("admin").getPrenom(), "Administrateur",
+        "Le nom en fonction du login et du password a été trouvé.");
+  }
+
+  @Test(priority = 5)
+  public void trouverParLoginPassword() {
+    assertEquals(utilisateurDao.trouverParLoginPassword("user", "password").getPrenom(), "Ldcr",
+        "Le prenom en fonction du login a été trouvé.");
+  }
+
+  @Test(priority = 6)
+  public void trouverParNomPrenom() {
+    assertEquals(utilisateurDao.trouverParNomPrenom("DEMAY", "Alexix").getEmail(),
+        "alexis.deay@reseau.eseo.fr", "L'email en fonction du login a été trouvé.");
+  }
+
+  @Test(priority = 7)
+  public void supprimerParLoginFail() {
+    boolean test = false;
+    try {
+      utilisateurDao.supprimerParLogin("");
+    } catch (DaoException daoe) {
+      test = true;
+    }
+    assertEquals(test, true, "Il est bien impossible de supprimer un utilisateut non présent.");
+  }
+
+
+  @Test(priority = 8)
+  public void supprimerParLoginFailDeux() {
+    boolean test = false;
+    try {
+      utilisateurDao.supprimerParLogin(null);
+    } catch (DaoException daoe) {
+      test = true;
+    }
+    assertEquals(test, true, "Il est bien impossible de supprimer un utilisateut non présent.");
+  }
+
+  @Test(priority = 9)
+  public void supprimerParEmail() {
+    assertEquals(utilisateurDao.supprimerParLogin("user"), 1, "L'utilisateur a bien été supprimé.");
+  }
+
+  @Test(priority = 10)
+  public void trouverListe() {
+    assertNotNull(utilisateurDao.recupererListe());
+  }
+
+  @Test(priority = 11)
+  public void ajouterFail() {
+
+    Utilisateur utilisateur = new Utilisateur();
+
+    utilisateur.setLogin(null);
+    utilisateur.setPassword("password");
+    utilisateur.setNom("Utilisateur 1");
+    utilisateur.setPrenom("Ldcr");
+    utilisateur.setEmail("user@reseau.eseo.fr");
+    boolean test = false;
+    try {
+      utilisateurDao.ajouter(utilisateur);
+    } catch (DaoException daoe) {
+      test = true;
+    }
+    assertEquals(test, true, "L'utilisateur n'a pas été ajouté dans la BDD.");
+  }
+  
+  @Test(priority = 12)
+  public void modifier() {
+
+    Utilisateur utilisateur = this.utilisateurDao.trouverParLogin("admin");
+    boolean test = false;
+    try {
+      utilisateurDao.modifier("admin",utilisateur);
+    } catch (DaoException daoe) {
+      test = true;
+    }
+    assertEquals(test, false, "L'utilisateur n'a pas été ajouté dans la BDD.");
+  }
+  
+  @Test(priority = 13)
+  public void modifierFail() {
+    Utilisateur utilisateur = this.utilisateurDao.trouverParLogin("admin");
+    boolean test = false;
+    try {
+      utilisateurDao.modifier(null,utilisateur);
+    } catch (DaoException daoe) {
+      test = true;
+    }
+    assertEquals(test, true, "L'utilisateur n'a pas été ajouté dans la BDD.");
+  }
+  
+  @Test(priority = 14)
+  public void modifierFailDeux() {
+    Utilisateur utilisateur = this.utilisateurDao.trouverParLogin("admin");
+    boolean test = false;
+    try {
+      utilisateur.setPassword(null);
+      utilisateurDao.modifier(null,utilisateur);
+    } catch (DaoException daoe) {
+      test = true;
+    }
+    assertEquals(test, true, "L'utilisateur n'a pas été ajouté dans la BDD.");
+  }
+  
+  @Test(priority = 15)
+  public void modifierFailTrois() {
+    Utilisateur utilisateur = this.utilisateurDao.trouverParLogin("admin");
+    boolean test = false;
+    try {
+      utilisateur.setPassword(null);
+      utilisateur.setLogin(null);
+      utilisateurDao.modifier(null,utilisateur);
+    } catch (DaoException daoe) {
+      test = true;
+    }
+    assertEquals(test, true, "L'utilisateur n'a pas été ajouté dans la BDD.");
+  }
+  
+  @Test(priority = 16)
+  public void modifierFailQuatre() {
+    Utilisateur utilisateur = this.utilisateurDao.trouverParLogin("admin");
+    boolean test = false;
+    try {
+      utilisateur.setLogin(null);
+      utilisateurDao.modifier(null,utilisateur);
+    } catch (DaoException daoe) {
+      test = true;
+    }
+    assertEquals(test, true, "L'utilisateur n'a pas été ajouté dans la BDD.");
+  }
+}

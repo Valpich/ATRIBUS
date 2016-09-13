@@ -1,0 +1,91 @@
+package fr.eseo.atribus.forms;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+
+/**
+ * La classe UeFormMethods.
+ */
+public class UeFormMethods {
+
+  /** La variable data. */
+  protected UeFormData data = new UeFormData(new HashMap<>());
+
+  /**
+   * Instancie un nouvel UeFormMethods.
+   */
+  public UeFormMethods() {
+    super();
+  }
+
+  /**
+   * Accesseur en lecture qui récupère la valeur champ.
+   *
+   * @param request la request
+   * @param nomChamp le nom du champ
+   * @return le paramètre la valeur valeur champ
+   */
+  protected static String getValeurChamp(HttpServletRequest request, String nomChamp) {
+    final String valeur = request.getParameter(nomChamp);
+    if (valeur == null || valeur.trim().length() == 0) {
+      return null;
+    } else {
+      return valeur.trim();
+    }
+  }
+
+  /**
+   * Accesseur en lecture sur le paramètre résultat.
+   *
+   * @return le paramètre résultat
+   */
+  public String getResultat() {
+    return this.data.getResultat();
+  }
+
+  /**
+   * Accesseur en lecture sur le paramètre erreurs.
+   *
+   * @return le paramètre erreurs
+   */
+  public Map<String, String> getErreurs() {
+    return this.data.getErreurs();
+  }
+
+  /**
+   * Validation compétence.
+   *
+   * @param compétence la compétence
+   * @throws FormValidationException de type FormValidationException
+   */
+  protected void validationCompetence(String competence) throws FormValidationException {
+    if (this.data.getCompetenceBdd().trouverUniqueParNom(competence) == null) {
+      throw new FormValidationException("Cette compétence n'existe pas");
+    }
+  }
+
+  /**
+   * Validation enseignant.
+   *
+   * @param enseignant l'enseignant
+   * @throws FormValidationException de type FormValidationException
+   */
+  protected void validationEnseignant(String enseignant) throws FormValidationException {
+    if (this.data.getEnseignantBdd().trouverParNom(enseignant) == null) {
+      throw new FormValidationException("Cet enseignant n'existe pas");
+    }
+  }
+
+  /**
+   * Ajoute une erreur.
+   *
+   * @param champ le champ
+   * @param message le message
+   */
+  protected void setErreur(String champ, String message) {
+    this.getErreurs().put(champ, message);
+  }
+  
+}

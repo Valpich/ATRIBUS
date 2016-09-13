@@ -1,0 +1,31 @@
+package fr.eseo.atribus.dao;
+
+import fr.eseo.atribus.entities.Ressource;
+import fr.eseo.atribus.entities.Utilisateur;
+
+import java.util.List;
+import java.util.Map;
+
+public interface RessourceDao {
+
+  void ajouter(Ressource ressource, String path);
+
+  void modifier(Ressource ressource);
+  
+  void consulter(Ressource ressource, Utilisateur utilisateur);
+
+  void supprimer(Ressource ressource);
+
+  Ressource trouverParNomEtType(String nom, String type);
+
+  List<Ressource> trouverToutesLesRessources();
+
+  String trouverPath(Ressource ressource);
+
+  Ressource trouverParNomEtMatiere(String nom, String matiere);
+
+  List<Ressource> trouverToutesLesRessourcesCompetence(String competence);
+
+  Map<Ressource, Integer> listerConsultations();
+
+}

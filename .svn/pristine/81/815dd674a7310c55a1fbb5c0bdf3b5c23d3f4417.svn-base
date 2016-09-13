@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>SupprimerNotificationForm.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Atribus</a> &gt; <a href="index.source.html" class="el_package">fr.eseo.atribus.forms</a> &gt; <span class="el_source">SupprimerNotificationForm.java</span></div><h1>SupprimerNotificationForm.java</h1><pre class="source lang-java linenums">package fr.eseo.atribus.forms;
+
+import fr.eseo.atribus.dao.DaoException;
+import fr.eseo.atribus.dao.NotificationDao;
+import fr.eseo.atribus.entities.Notification;
+import fr.eseo.atribus.entities.Utilisateur;
+
+import org.springframework.beans.factory.access.BeanFactoryReference;
+import org.springframework.beans.factory.access.SingletonBeanFactoryLocator;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+public class SupprimerNotificationForm {
+
+<span class="nc" id="L19">  protected static final Logger LOGGER =</span>
+<span class="nc" id="L20">      Logger.getLogger(SupprimerNotificationForm.class.getName());</span>
+  protected static final String EXCEPTION = &quot;Exception&quot;;
+
+  protected String resultat;
+<span class="nc" id="L24">  protected final Map&lt;String, String&gt; erreurs = new HashMap&lt;&gt;();</span>
+  protected final NotificationDao notificationDao;
+
+  /**
+   * Constructeur.
+   */
+<span class="nc" id="L30">  public SupprimerNotificationForm() {</span>
+    final BeanFactoryReference bf =
+<span class="nc" id="L32">        SingletonBeanFactoryLocator.getInstance().useBeanFactory(&quot;beansDao&quot;);</span>
+    /* Récupération d'une instance de notre DAO Notification */
+<span class="nc" id="L34">    this.notificationDao = (NotificationDao) bf.getFactory().getBean(&quot;notificationDao&quot;);</span>
+<span class="nc" id="L35">  }</span>
+
+  public String getResultat() {
+<span class="nc" id="L38">    return this.resultat;</span>
+  }
+
+  public Map&lt;String, String&gt; getErreurs() {
+<span class="nc" id="L42">    return this.erreurs;</span>
+  }
+
+  /**
+   * Méthode qui supprime les notifications en fonction des cases cochées.
+   * 
+   * @param coches cases cochées
+   * @param utilisateur utilisateur
+   */
+  public void supprimerNotification(List&lt;String&gt; coches, Utilisateur utilisateur) {
+<span class="nc bnc" id="L52" title="All 2 branches missed.">    for (String coche : coches) {</span>
+      try {
+<span class="nc" id="L54">        Notification notification = verifierNotification(utilisateur, coche);</span>
+<span class="nc bnc" id="L55" title="All 2 branches missed.">        if (this.erreurs.isEmpty()) {</span>
+<span class="nc" id="L56">          this.notificationDao.supprimer(notification);</span>
+<span class="nc" id="L57">          utilisateur.setNotifications(notificationDao.trouverToutesLesNotification(utilisateur));</span>
+<span class="nc" id="L58">          this.resultat = &quot;success&quot;;</span>
+        } else {
+<span class="nc" id="L60">          this.resultat = &quot;error&quot;;</span>
+        }
+<span class="nc" id="L62">      } catch (final DaoException ebdd) {</span>
+<span class="nc" id="L63">        this.resultat = &quot;errorDao&quot;;</span>
+<span class="nc" id="L64">        SupprimerNotificationForm.LOGGER.log(Level.INFO, EXCEPTION, ebdd);</span>
+<span class="nc" id="L65">      }</span>
+<span class="nc" id="L66">    }</span>
+<span class="nc" id="L67">  }</span>
+
+  private Notification verifierNotification(Utilisateur utilisateur, String coche) {
+<span class="nc" id="L70">    Notification notification2 = new Notification();</span>
+    try {
+<span class="nc" id="L72">      notification2 = this.validationDestinataire(coche, utilisateur);</span>
+<span class="nc" id="L73">    } catch (FormValidationException fve) {</span>
+<span class="nc" id="L74">      SupprimerNotificationForm.LOGGER.log(Level.INFO, EXCEPTION, fve);</span>
+<span class="nc" id="L75">      this.setErreur(&quot;badId&quot;,</span>
+          &quot;Tentative de suppression d'une notification d'un autre utilisateur.&quot;);
+<span class="nc" id="L77">    }</span>
+<span class="nc" id="L78">    return notification2;</span>
+  }
+
+  protected Notification validationDestinataire(String coche, Utilisateur utilisateur)
+      throws FormValidationException {
+    Integer id;
+    try {
+<span class="nc" id="L85">      id = Integer.parseInt(coche);</span>
+<span class="nc" id="L86">    } catch (NumberFormatException nfe) {</span>
+<span class="nc" id="L87">      throw new FormValidationException(&quot;Impossible de récupérer l'ID.&quot;);</span>
+<span class="nc" id="L88">    }</span>
+<span class="nc bnc" id="L89" title="All 2 branches missed.">    for (Notification notification : utilisateur.getNotifications()) {</span>
+<span class="nc bnc" id="L90" title="All 2 branches missed.">      if (id.equals(notification.getId())) {</span>
+<span class="nc" id="L91">        return notification;</span>
+      }
+<span class="nc" id="L93">    }</span>
+<span class="nc" id="L94">    throw new FormValidationException(&quot;La notification ne lui était pas destinée.&quot;);</span>
+  }
+
+  /*
+   * Ajoute un message correspondant au champ spécifié à la map des erreurs.
+   */
+  protected void setErreur(String champ, String message) {
+<span class="nc" id="L101">    this.erreurs.put(champ, message);</span>
+<span class="nc" id="L102">  }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.6.201602180812</span></div></body></html>

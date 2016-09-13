@@ -1,0 +1,207 @@
+package fr.eseo.atribus.controller;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
+
+import fr.eseo.atribus.beans.Mail;
+import fr.eseo.atribus.beans.MessagesParDefaut;
+import fr.eseo.atribus.dao.DirecteurEtudesDao;
+import fr.eseo.atribus.dao.EleveDao;
+import fr.eseo.atribus.dao.EnseignantDao;
+import fr.eseo.atribus.dao.EnseignantRefMatiereDao;
+import fr.eseo.atribus.dao.EnseignantRefUeDao;
+import fr.eseo.atribus.entities.Utilisateur;
+import fr.eseo.atribus.forms.ConvoquerEtudiantForm;
+import fr.eseo.atribus.forms.SuggererAjouterCompetenceForm;
+import fr.eseo.atribus.forms.SuggererNouvelleCompetenceForm;
+
+import org.mockito.MockitoAnnotations;
+import org.springframework.beans.factory.access.BeanFactoryReference;
+import org.springframework.beans.factory.access.SingletonBeanFactoryLocator;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.web.WebAppConfiguration;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.RequestPostProcessor;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.servlet.view.InternalResourceViewResolver;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@Test
+@ContextConfiguration({ "classpath:spring-dao.xml", "classpath:spring-daoBeans.xml",
+    "classpath:beanRefFactory.xml", "classpath:dispatcher-servlet.xml" })
+@WebAppConfiguration
+public class MailControllerTest {
+
+  public static final String ATT_FORM = "form";
+  public static final String ATT_SESSION_USER = "sessionUtilisateur";
+  private static final String VUE_SUGGERER_AJOUTER = "suggererCompetenceExistantes";
+  private static final String VUE_SUGGERER_NOUVELLE = "suggererNouvelleCompetence";
+  private static final String VUE_CONVOQUER = "DirecteurEtudes/convoquerEtudiant";
+  private static final String REDIRECT_INDEX = "redirect:/index";
+
+  private MockMvc mockMvc;
+  private DirecteurEtudesDao deDao;
+  private MailController mailController = new MailController();
+  private EleveDao eleveDao;
+  private EnseignantDao enseignantDao;
+  private EnseignantRefMatiereDao ermDao;
+  private EnseignantRefUeDao erueDao;
+
+  @BeforeClass
+  public void setup() {
+    InternalResourceViewResolver viewResolver = new InternalResourceViewResolver();
+    viewResolver.setPrefix("/WEB-INF/");
+    viewResolver.setSuffix(".jsp");
+    MockitoAnnotations.initMocks(this);
+    mockMvc =
+        MockMvcBuilders.standaloneSetup(mailController).setViewResolvers(viewResolver).build();
+    ConvoquerEtudiantForm convoquerEtudiantForm = new ConvoquerEtudiantForm();
+    Mail mail = new Mail("projetjavaeseo@gmail.com", "projetjavaeseo@gmail.com", "eseoeseo",
+        "smtp.gmail.com");
+    MessagesParDefaut messages = new MessagesParDefaut();
+    convoquerEtudiantForm.setMessages(messages);
+    convoquerEtudiantForm.setMail(mail);
+    SuggererAjouterCompetenceForm suggererAjouterCompetenceForm =
+        new SuggererAjouterCompetenceForm();
+    SuggererNouvelleCompetenceForm suggererNouvelleCompetenceForm =
+        new SuggererNouvelleCompetenceForm();
+    suggererAjouterCompetenceForm.setMail(mail);
+    suggererAjouterCompetenceForm.setMessages(messages);
+    suggererNouvelleCompetenceForm.setMail(mail);
+    suggererNouvelleCompetenceForm.setMessages(messages);
+    mailController.setConvoquerEtudiantForm(convoquerEtudiantForm);
+    mailController.setSuggererAjouterCompetenceForm(suggererAjouterCompetenceForm);
+    mailController.setSuggererNouvelleCompetenceForm(suggererNouvelleCompetenceForm);
+    final BeanFactoryReference bf =
+        SingletonBeanFactoryLocator.getInstance().useBeanFactory("beansDao");
+    /* Récupération d'une instance de notre DAO Examen */
+    this.deDao = (DirecteurEtudesDao) bf.getFactory().getBean("directeurEtudesDao");
+    /* Récupération d'une instance de notre DAO Eleve */
+    this.eleveDao = (EleveDao) bf.getFactory().getBean("eleveDao");
+    /* Récupération d'une instance de notre DAO Enseignant */
+    this.enseignantDao = (EnseignantDao) bf.getFactory().getBean("enseignantDao");
+    /* Récupération d'une instance de notre DAO Enseignant Reférent Matiere */
+    this.ermDao = (EnseignantRefMatiereDao) bf.getFactory().getBean("enseignantRefMatiereDao");
+    /* Récupération d'une instance de notre DAO Enseignant Reférent Matiere */
+    this.erueDao = (EnseignantRefUeDao) bf.getFactory().getBean("enseignantRefUeDao");
+  }
+
+
+  @Test
+  public void afficherConvoquerEtudiant() throws Exception {
+    mockMvc.perform(get("/DirecteurEtudes/ConvoquerEtudiant")).andExpect(status().isOk())
+        .andExpect(view().name(VUE_CONVOQUER));
+  }
+
+  @Test
+  public void convoquerEtudiant() throws Exception {
+    mockMvc.perform(post("/DirecteurEtudes/ConvoquerEtudiant").with(new RequestPostProcessor() {
+      public MockHttpServletRequest postProcessRequest(MockHttpServletRequest request) {
+        List<Utilisateur> utilisateur = new ArrayList<>();
+        utilisateur.add(deDao.recupererListe().get(0));
+        request.getSession().setAttribute("sessionUtilisateur", utilisateur);
+        request.addParameter("choixEleve", "1");
+        request.addParameter("date", "le 18/04/2016 à 17h30");
+        return request;
+      }
+    })).andExpect(status().isOk()).andExpect(view().name(VUE_CONVOQUER));
+    mockMvc.perform(post("/DirecteurEtudes/ConvoquerEtudiant").with(new RequestPostProcessor() {
+      public MockHttpServletRequest postProcessRequest(MockHttpServletRequest request) {
+        List<Utilisateur> utilisateur = new ArrayList<>();
+        request.getSession().setAttribute("sessionUtilisateur", utilisateur);
+        request.addParameter("choixEleve", "1");
+        request.addParameter("date", "le 18/04/2016 à 17h30");
+        return request;
+      }
+    })).andExpect(status().is(302)).andExpect(view().name(REDIRECT_INDEX));
+  }
+
+  @Test
+  public void afficherSuggererCompetenceNouvelle() throws Exception {
+    mockMvc.perform(get("/Eleve/SuggererCompetence")).andExpect(status().isOk())
+        .andExpect(view().name(VUE_SUGGERER_NOUVELLE));
+  }
+
+  @Test
+  public void suggererNouvelleCompetence() throws Exception {
+    mockMvc.perform(post("/Eleve/SuggererCompetence").with(new RequestPostProcessor() {
+      public MockHttpServletRequest postProcessRequest(MockHttpServletRequest request) {
+        List<Utilisateur> utilisateur = new ArrayList<>();
+        utilisateur.add(eleveDao.recupererListe().get(0));
+        request.getSession().setAttribute("sessionUtilisateur", utilisateur);
+        request.addParameter("competence", "CompetenceTest");
+        request.addParameter("commentaire", "CommentaireTest");
+        return request;
+      }
+    })).andExpect(status().isOk()).andExpect(view().name(VUE_SUGGERER_NOUVELLE));
+  }
+
+  @Test
+  public void afficherSuggererCompetenceNouvelleRefUe() throws Exception {
+    mockMvc.perform(get("/EnseignantRefUE/SuggererCompetence")).andExpect(status().isOk())
+        .andExpect(view().name(VUE_SUGGERER_NOUVELLE));
+  }
+
+  @Test
+  public void suggererNouvelleCompetenceRefUe() throws Exception {
+    mockMvc.perform(post("/EnseignantRefUE/SuggererCompetence").with(new RequestPostProcessor() {
+      public MockHttpServletRequest postProcessRequest(MockHttpServletRequest request) {
+        List<Utilisateur> utilisateur = new ArrayList<>();
+        utilisateur.add(erueDao.recupererListe().get(0));
+        request.getSession().setAttribute("sessionUtilisateur", utilisateur);
+        request.addParameter("competence", "CompetenceTest");
+        request.addParameter("commentaire", "CommentaireTest");
+        return request;
+      }
+    })).andExpect(status().isOk()).andExpect(view().name(VUE_SUGGERER_NOUVELLE));
+  }
+
+  @Test
+  public void afficherSuggererCompetenceNouvelleEnseignant() throws Exception {
+    mockMvc.perform(get("/Enseignant/SuggererCompetence")).andExpect(status().isOk())
+        .andExpect(view().name(VUE_SUGGERER_AJOUTER));
+  }
+
+  @Test
+  public void suggererNouvelleCompetenceEnseignant() throws Exception {
+    mockMvc.perform(post("/Enseignant/SuggererCompetence").with(new RequestPostProcessor() {
+      public MockHttpServletRequest postProcessRequest(MockHttpServletRequest request) {
+        List<Utilisateur> utilisateur = new ArrayList<>();
+        utilisateur.add(enseignantDao.recupererListe().get(0));
+        request.getSession().setAttribute("sessionUtilisateur", utilisateur);
+        request.addParameter("choixCompetence", "1");
+        request.addParameter("commentaire", "CommentaireTest");
+        return request;
+      }
+    })).andExpect(status().isOk()).andExpect(view().name(VUE_SUGGERER_AJOUTER));
+  }
+
+  @Test
+  public void afficherSuggererAjouterCompetenceEnseignantRefMatiere() throws Exception {
+    mockMvc.perform(get("/EnseignantRefMatiere/SuggererCompetence")).andExpect(status().isOk())
+        .andExpect(view().name(VUE_SUGGERER_AJOUTER));
+  }
+
+  @Test
+  public void suggererAjouterCompetenceEnseignantRefMatiere() throws Exception {
+    mockMvc
+        .perform(post("/EnseignantRefMatiere/SuggererCompetence").with(new RequestPostProcessor() {
+          public MockHttpServletRequest postProcessRequest(MockHttpServletRequest request) {
+            List<Utilisateur> utilisateur = new ArrayList<>();
+            utilisateur.add(ermDao.recupererListe().get(0));
+            request.getSession().setAttribute("sessionUtilisateur", utilisateur);
+            request.addParameter("choixCompetence", "1");
+            request.addParameter("commentaire", "CommentaireTest");
+            return request;
+          }
+        })).andExpect(status().isOk()).andExpect(view().name(VUE_SUGGERER_AJOUTER));
+  }
+}
+

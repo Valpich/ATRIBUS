@@ -1,0 +1,137 @@
+package fr.eseo.atribus.dao;
+
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNull;
+
+import fr.eseo.atribus.entities.Competence;
+import fr.eseo.atribus.entities.Examen;
+import fr.eseo.atribus.entities.Exercice;
+
+import org.testng.annotations.BeforeTest;
+import org.testng.annotations.Test;
+
+import java.util.HashMap;
+
+public class ExerciceDaoImplTest {
+
+  ExerciceDaoImpl exerciceDao;
+  ExamenDaoImpl examenDao;
+  CompetenceDaoImpl competenceDao;
+  Examen examen;
+  Competence competence;
+  Exercice exerciceAjoute;
+
+  /**
+   * Initialisation des variables.
+   */
+  @BeforeTest
+  public void beforeTest() {
+    this.exerciceDao = new ExerciceDaoImpl();
+    this.competenceDao = new CompetenceDaoImpl();
+    this.examenDao = new ExamenDaoImpl();
+    this.examen = new Examen();
+    this.competence = new Competence();
+    this.exerciceAjoute = new Exercice();
+  }
+
+  @Test(priority = 1)
+  public void trouverParQuestionReponse() {
+
+    Exercice exerciceTrouve = new Exercice();
+
+    final String question = "Coucou";
+    final String reponse = "ça va ?";
+
+    exerciceTrouve = this.exerciceDao.trouverParQuestionReponse(question, reponse);
+
+    assertEquals(exerciceTrouve.getQuestion(), question);
+    assertEquals(exerciceTrouve.getReponse(), reponse);
+    assertEquals(exerciceTrouve.getNbPoints(), new Float(1));
+
+  }
+
+  @Test(priority = 2)
+  public void trouverParId() {
+
+    Exercice exerciceTrouve = new Exercice();
+
+    final int id = 1;
+    final String question = "Coucou";
+    final String reponse = "ça va ?";
+    this.exerciceDao.trouverParIdAncien(id);
+
+    exerciceTrouve = this.exerciceDao.trouverParId(id);
+
+    assertEquals(exerciceTrouve.getQuestion(), question);
+    assertEquals(exerciceTrouve.getReponse(), reponse);
+    assertEquals(exerciceTrouve.getNbPoints(), new Float(1));
+
+  }
+
+  @Test(priority = 3)
+  public void ajouterBonExercice() {
+
+    final String question = "Question test 11";
+    final String reponse = "Réponse test 11";
+    final Exercice exercice = new Exercice();
+
+    exercice.setQuestion(question);
+    exercice.setReponse(reponse);
+    exercice.setNbPoints(new Float(1));
+
+    this.competence = this.competenceDao.trouverParId(2);
+    this.examen = this.examenDao.trouverParNom("Microprocesseur MP");
+    exercice.setCompetences(new HashMap<>());
+    this.exerciceDao.ajouter(exercice, this.competence, this.examen);
+    this.exerciceAjoute = this.exerciceDao.trouverParQuestionReponse(question, reponse);
+    this.exerciceDao.supprimer(exerciceAjoute);
+    this.exerciceDao.ajouter(exercice, this.examen);
+    this.exerciceAjoute = this.exerciceDao.trouverParQuestionReponse(question, reponse);
+    assertEquals(this.exerciceAjoute.getQuestion(), question);
+    assertEquals(this.exerciceAjoute.getReponse(), reponse);
+    this.exerciceDao.supprimer(exerciceAjoute);
+    this.exerciceAjoute = this.exerciceDao.trouverParQuestionReponse(question, reponse);
+    this.exerciceDao.supprimer(exerciceAjoute);
+
+  }
+
+  @Test(priority = 4)
+  public void supprimerExercice() {
+
+    final String question = "Question test 1";
+    final String reponse = "Réponse test 1";
+    Exercice exercice = new Exercice();
+    exercice.setQuestion(question);
+    exercice.setReponse(reponse);
+    exercice.setNbPoints(new Float(1));
+    exercice.setCompetences(new HashMap<>());
+    exercice.getCompetences().put(1L, this.competenceDao.trouverParId(1));
+    exercice.setPourcentages(new HashMap<>());
+    exercice.getPourcentages().put(1L, 10);
+    this.exerciceDao.ajouter(exercice, this.examen);
+    this.exerciceDao.supprimer(exercice);
+    exercice = this.exerciceDao.trouverParId(exercice.getId());
+    assertNull(exercice);
+
+  }
+
+  @Test(priority = 5)
+  public void modifierExercice() {
+
+    try {
+      final String question = "Coucou";
+      final String reponse = "ça va ?";
+
+      this.exerciceAjoute = this.exerciceDao.trouverParQuestionReponse(question, reponse);
+      this.examen = this.examenDao.trouverParNom("Microprocesseur");
+
+      this.competence = this.competenceDao.trouverParId(1);
+
+      this.exerciceDao.modifier(this.exerciceAjoute, this.competence, this.examen);
+    } catch (final DaoException excpt) {
+      excpt.getMessage();
+    }
+
+  }
+
+}

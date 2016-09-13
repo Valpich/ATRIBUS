@@ -1,0 +1,81 @@
+package fr.eseo.atribus.dao;
+
+import fr.eseo.atribus.entities.UniteEnseignement;
+
+import java.util.List;
+
+// TODO: Auto-generated Javadoc
+/**
+ * The Interface UeDao.
+ */
+public interface UeDao {
+
+  /**
+   * Ajouter ue.
+   *
+   * @param ue le ue
+   */
+  void ajouterUe(UniteEnseignement ue);
+
+  /**
+   * Supprimer ue.
+   *
+   * @param ue le ue
+   */
+  void supprimerUe(UniteEnseignement ue);
+
+  /**
+   * Trouver ue par nom.
+   *
+   * @param nomUe le nom ue
+   * @return Le paramètre unite enseignement
+   */
+  UniteEnseignement trouverUeParNom(String nomUe);
+
+  /**
+   * Lister ue.
+   *
+   * @return Le paramètre list
+   */
+  List<UniteEnseignement> listerUe();
+
+  /**
+   * Trouver id par nom.
+   *
+   * @param nom le nom
+   * @return Le paramètre int
+   */
+  int trouverIdParNom(String nom);
+
+  /**
+   * Trouver ue par id.
+   *
+   * @param idUe le id ue
+   * @return Le paramètre unite enseignement
+   */
+  UniteEnseignement trouverUeParId(int idUe);
+
+  /**
+   * Lister ue association competence ue.
+   *
+   * @return Le paramètre list
+   */
+  List<UniteEnseignement> listerUeAssociationCompetenceUe();
+
+  /**
+   * Supprimer association competence ue.
+   *
+   * @param nomUe le nom ue
+   * @param nomCompetence le nom competence
+   */
+  void supprimerAssociationCompetenceUe(String nomUe, String nomCompetence);
+
+  /**
+   * Supprimer association matiere ue.
+   *
+   * @param nomUe le nom ue
+   * @param nomMatiere le nom matiere
+   */
+  void supprimerAssociationMatiereUe(String nomUe, String nomMatiere);
+
+}

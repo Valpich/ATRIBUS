@@ -1,0 +1,65 @@
+package fr.eseo.atribus.entities;
+
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
+
+import org.testng.annotations.Test;
+
+import java.util.Date;
+
+public class EvaluationTest {
+  
+  Evaluation evaluation;
+
+  @Test
+  public void evaluation() {
+    evaluation = new Evaluation();
+    assertNotNull(evaluation);
+  }
+
+  @SuppressWarnings("deprecation")
+  @Test
+  public void getDateExamen() {
+    evaluation.setDateExamen(new Date(1, 1, 1));
+    assertEquals(evaluation.getDateExamen(), new Date(1, 1, 1));
+  }
+
+  @Test
+  public void getEleve() {
+    Eleve eleve = new Eleve();
+    eleve.setNom("TestNom");
+    evaluation.setEleve(eleve);
+    assertEquals(evaluation.getEleve().getNom(), "TestNom");
+  }
+
+  @Test
+  public void getExercice() {
+    Exercice exercice = new Exercice();
+    exercice.setReponse("TestReponse");
+    evaluation.setExercice(exercice);
+    assertEquals(evaluation.getExercice().getReponse(), "TestReponse");
+  }
+
+  @Test
+  public void getId() {
+    evaluation.setId(1);
+    assertEquals(evaluation.getId(), 1);
+  }
+
+  @Test
+  public void getNote() {
+    evaluation.setNote(new Float(1));
+    assertEquals(evaluation.getNote(), new Float(1));
+  }
+
+  @Test
+  public void getReponse() {
+    evaluation.setReponse("ReponseTest");
+    assertEquals(evaluation.getReponse(), "ReponseTest");
+  }
+
+  @Test
+  public void methodToString() {
+    assertEquals(evaluation.toString(), evaluation.toString());
+  }
+}

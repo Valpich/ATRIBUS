@@ -1,0 +1,154 @@
+package fr.eseo.atribus.filters;
+
+import fr.eseo.atribus.beans.Mail;
+import fr.eseo.atribus.beans.MessagesParDefaut;
+import fr.eseo.atribus.dao.AdminSystDao;
+import fr.eseo.atribus.entities.AdminSyst;
+import fr.eseo.atribus.entities.Utilisateur;
+
+import org.springframework.beans.factory.BeanCreationException;
+import org.springframework.beans.factory.access.BeanFactoryReference;
+import org.springframework.beans.factory.access.SingletonBeanFactoryLocator;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.mail.MessagingException;
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+// TODO: Auto-generated Javadoc
+/**
+ * Servlet Filre controlant le nombre maximal de requête en simultané par utilisateur.
+ */
+public class FiltreLimiteurRequeteUtilisateur extends FiltreLimiteurInit implements Filter {
+
+  /** La constante LIMITE. */
+  private static final int LIMITE = 20;
+
+  /** La variable actuel. */
+  private int actuel;
+
+  /** La variable spring context. */
+  private ApplicationContext springContext;
+
+  /** La variable verrou. */
+  private final Object verrou = new Object();
+
+  /** La variable mail. */
+  @Autowired
+  private Mail mail;
+
+  /** La variable messages. */
+  @Autowired
+  private MessagesParDefaut messages;
+
+  /** La constante LOGGER. */
+  private static final Logger LOGGER =
+      Logger.getLogger(FiltreLimiteurRequeteUtilisateur.class.getName());
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see javax.servlet.Filter#doFilter(javax.servlet.ServletRequest, javax.servlet.ServletResponse,
+   * javax.servlet.FilterChain)
+   */
+  @Override
+  public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+      throws IOException, ServletException {
+
+    final HttpServletRequest requete = (HttpServletRequest) request;
+    final HttpServletResponse reponse = (HttpServletResponse) response;
+
+    /* Récupération de la session depuis la requête */
+    final HttpSession session = requete.getSession();
+    final Utilisateur utilisateur = (Utilisateur) session.getAttribute("utilisateur");
+
+    // On récupére l'adresse IP de l'utilisateur
+    String adresseIp = ((HttpServletRequest) request).getHeader("X-FORWARDED-FOR");
+    if (adresseIp == null) {
+      adresseIp = request.getRemoteAddr();
+    }
+
+    try {
+      boolean ok;
+      // Lors qu'on commence une requête, on augmente le nombre de requête en cours pour
+      // l'utilisateur
+      synchronized (this.verrou) {
+        ok = this.actuel++ < LIMITE;
+      }
+      if (ok) {
+        chain.doFilter(request, response);
+      } else {
+        // On vire l'utilisateur !
+        // Ecriture des logs
+        this.ecrireLog(utilisateur, adresseIp);
+        session.invalidate();
+        reponse.sendError(429, "Trop de requête sur notre serveur ! Votre session est expirée !");
+      }
+    } finally {
+      // Lors qu'on a fini la requête, on réduit le nombre de requête en cours pour l'utilisateur
+      synchronized (this.verrou) {
+        this.actuel--;
+      }
+    }
+  }
+
+  /**
+   * Ecrire log.
+   *
+   * @param utilisateur le utilisateur
+   * @param adresseIp le adresse ip
+   */
+  private void ecrireLog(Utilisateur utilisateur, String adresseIp) {
+    if (utilisateur != null) {
+      FiltreLimiteurRequeteUtilisateur.LOGGER.setLevel(Level.SEVERE);
+      FiltreLimiteurRequeteUtilisateur.LOGGER.severe("L'utilisateur : " + utilisateur
+          + ", à l'adresse IP : " + adresseIp + " a soumis plus de 5 requêtes en simultané !");
+    } else {
+      FiltreLimiteurRequeteUtilisateur.LOGGER.setLevel(Level.SEVERE);
+      FiltreLimiteurRequeteUtilisateur.LOGGER
+          .severe("L'utilisateur non identifié, à l'adresse IP : " + adresseIp
+              + " a soumis plus de 20 requêtes en simultané !");
+    }
+    try (ClassPathXmlApplicationContext context =
+        new ClassPathXmlApplicationContext("classpath:dispatcher-servlet.xml")) {
+      this.springContext = context;
+      this.mail = (Mail) this.springContext.getBean("mail");
+      this.messages = (MessagesParDefaut) this.springContext.getBean("messagesParDefaut");
+    } catch (final BeanCreationException bce) {
+      FiltreLimiteurRequeteUtilisateur.LOGGER.log(Level.SEVERE, "Exception", bce);
+    }      
+    new Thread(() -> this.prevenirLesAdministrateursSurchargeUtilisateur()).start();
+  }
+
+  /**
+   * Prevenir les administrateurs surcharge utilisateur.
+   */
+  private void prevenirLesAdministrateursSurchargeUtilisateur() {
+    final BeanFactoryReference bf =
+        SingletonBeanFactoryLocator.getInstance().useBeanFactory("beansDao");
+    final List<AdminSyst> adminSyst =
+        ((AdminSystDao) bf.getFactory().getBean("adminSystDao")).recupererListe();
+    for (final AdminSyst admin : adminSyst) {
+      try {
+        this.mail.mailAutomatiqueSsl(admin.getEmail(), "Avertissement !",
+            this.messages.getAdminSystProblemeDeux());
+      } catch (final MessagingException me) {
+        LOGGER.log(Level.INFO, "Exception", me);
+      }
+    }
+  }
+
+}

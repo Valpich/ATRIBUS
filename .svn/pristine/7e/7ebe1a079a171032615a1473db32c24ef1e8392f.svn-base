@@ -1,0 +1,52 @@
+package fr.eseo.atribus.entities;
+
+import java.io.Serializable;
+import java.util.List;
+
+public class Eleve extends Utilisateur implements Serializable {
+
+  private static final long serialVersionUID = 6254840008027131964L;
+
+  private int idEleve;
+  private Promotion promotion;
+  private List<CompetenceEleve> competenceEleve;
+
+  public Eleve() {
+    super();
+  }
+
+  public Eleve(Utilisateur utilisateur) {
+    super(utilisateur);
+  }
+
+  public Promotion getPromotion() {
+    return this.promotion;
+  }
+
+  public void setPromotion(Promotion promotion) {
+    this.promotion = promotion;
+  }
+
+  public int getIdEleve() {
+    return this.idEleve;
+  }
+
+  public void setIdEleve(int idEleve) {
+    this.idEleve = idEleve;
+  }
+  
+  public List<CompetenceEleve> getCompetenceEleve() {
+    return competenceEleve;
+  }
+  
+  public void setCompetenceEleve(List<CompetenceEleve> competenceEleve) {
+    this.competenceEleve = competenceEleve;
+  }
+
+  @Override
+  public String toString() {
+    return "Eleve [idEleve=" + idEleve + ", promotion=" + promotion + ", competenceEleve="
+        + competenceEleve;
+  }
+
+}

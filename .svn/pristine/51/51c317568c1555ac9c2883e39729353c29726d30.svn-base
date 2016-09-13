@@ -1,0 +1,42 @@
+package fr.eseo.atribus.entities;
+
+import java.io.Serializable;
+import java.util.List;
+
+public class Enseignant extends Utilisateur implements Serializable {
+
+  private static final long serialVersionUID = -6061038723633320784L;
+
+  private int idEnseignant;
+  private List<Matiere> enseigneMatiere;
+
+  public Enseignant() {
+    super();
+  }
+
+  public Enseignant(Utilisateur utilisateur) {
+    super(utilisateur);
+  }
+
+  public int getIdEnseignant() {
+    return this.idEnseignant;
+  }
+
+  public void setIdEnseignant(int idEnseignant) {
+    this.idEnseignant = idEnseignant;
+  }
+
+  public List<Matiere> getEnseigneMatiere() {
+    return this.enseigneMatiere;
+  }
+
+  public void setEnseigneMatiere(List<Matiere> enseigneMatiere) {
+    this.enseigneMatiere = enseigneMatiere;
+  }
+
+  @Override
+  public String toString() {
+    return "Enseignant [idEnseignant=" + this.idEnseignant + ", enseigneMatiere="
+        + this.enseigneMatiere + "]";
+  }
+}

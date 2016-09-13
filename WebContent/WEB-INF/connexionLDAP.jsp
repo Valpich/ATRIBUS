@@ -1,0 +1,99 @@
+<%@ page pageEncoding="UTF-8"%>
+<%@taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
+
+<!DOCTYPE html>
+<html>
+<head>
+	
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Authentification</title>
+
+  <link href="<c:url value="/resources/css/bootstrap.min.css"/>" rel="stylesheet">
+  <link href="<c:url value="/resources/css/custom.css"/>" rel="stylesheet">
+<link rel="apple-touch-icon" sizes="57x57"
+	href="<c:url value="/resources/images/apple-icon-57x57.png"/>">
+<link rel="apple-touch-icon" sizes="60x60"
+	href="<c:url value="/resources/images/apple-icon-60x60.png"/>">
+<link rel="apple-touch-icon" sizes="72x72"
+	href="<c:url value="/resources/images/apple-icon-72x72.png"/>">
+<link rel="apple-touch-icon" sizes="76x76"
+	href="<c:url value="/resources/images/apple-icon-76x76.png"/>">
+<link rel="apple-touch-icon" sizes="114x114"
+	href="<c:url value="/resources/images/apple-icon-114x114.png"/>">
+<link rel="apple-touch-icon" sizes="120x120"
+	href="<c:url value="/resources/images/apple-icon-120x120.png"/>">
+<link rel="apple-touch-icon" sizes="144x144"
+	href="<c:url value="/resources/images/apple-icon-144x144.png"/>">
+<link rel="apple-touch-icon" sizes="152x152"
+	href="<c:url value="/resources/images/apple-icon-152x152.png"/>">
+<link rel="apple-touch-icon" sizes="180x180"
+	href="<c:url value="/resources/images/apple-icon-180x180.png"/>">
+<link rel="icon" type="image/png" sizes="192x192"
+	href="<c:url value="/resources/images/android-icon-192x192.png"/>">
+<link rel="icon" type="image/png" sizes="32x32"
+	href="<c:url value="/resources/images/favicon-32x32.png"/>">
+<link rel="icon" type="image/png" sizes="96x96"
+	href="<c:url value="/resources/images/favicon-96x96.png"/>">
+<link rel="icon" type="image/png" sizes="16x16"
+	href="<c:url value="/resources/images/favicon-16x16.png"/>">
+<link rel="manifest"
+	href="<c:url value="/resources/images/manifest.json"/>">
+<meta name="msapplication-TileColor" content="#ffffff">
+<meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
+<meta name="theme-color" content="#ffffff">
+  <script src="<c:url value="/resources/js/jquery.min.js"/>"></script>
+  <script src="<c:url value="/resources/js/nprogress.js"/>"></script>
+</head>
+<body style="background:#e2e5e7;">
+		<div id="wrapper">
+    		<div id="login" class="animate form">
+        		<section class="login_content">
+	        			<img src="<c:url value="/resources/images/logo-eseo.png"/>" >
+						<form method="post" action="AuthentificationLDAP">
+							<h1>Authentification</h1>
+							
+							<c:if test="${erreur != null}">
+	   							<div class="alert alert-danger alert-dismissible fade in" style="text-shadow: 0 0px 0 #fff;" role="alert">
+	                  				<button type="button" class="close" data-dismiss="alert" aria-label="Close">
+	                  					<span aria-hidden="true">×</span>
+	                  				</button>
+	                  				<c:out value="Votre identifiant ou votre mot de passe est incorrect."/>
+	                			</div>
+							</c:if>
+							
+							<div>
+								<input type="text" class="form-control" name="login" placeholder="Nom d'utilisateur" required/>
+							</div>
+							<div>
+								<input type="password" class="form-control" name="password" placeholder="Mot de passe" required/>
+							</div>
+							<div>
+								<button type="submit" class="btn btn-primary btn-block">Se connecter</button>
+							</div>
+							
+							<div class="clearfix"></div>
+
+							<div class="separator">
+								<p class="change_link">
+									<span class="glyphicon glyphicon-triangle-right"></span>
+									<a style="margin-left: auto; margin-right: auto;">ATRIBUS - 2016</a>
+									<span class="glyphicon glyphicon-triangle-left"></span>
+								</p>
+								<div class="clearfix"></div>
+							</div>
+						</form>
+        		</section>
+        	</div>
+		</div>
+		
+	<script src="<c:url value="/resources/js/bootstrap.min.js"/>"></script>
+	<script src="<c:url value="/resources/js/progressbar/bootstrap-progressbar.min.js"/>"></script>
+	<script src="<c:url value="/resources/js/icheck/icheck.min.js"/>"></script>
+	<script src="<c:url value="/resources/js/custom.js"/>"></script>
+</body>
+
+</html>

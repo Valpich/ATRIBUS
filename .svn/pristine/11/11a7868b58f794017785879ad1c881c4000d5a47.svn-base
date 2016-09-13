@@ -1,0 +1,46 @@
+package fr.eseo.atribus.entities;
+
+import java.io.Serializable;
+import java.util.UUID;
+
+public class CompetenceValidable extends Competence implements Serializable {
+
+  private static final long serialVersionUID = 2235338214847913313L;
+
+  private boolean valide;
+  private UUID uniqueId;
+  
+  public CompetenceValidable(Competence competence) {
+    this.setId(competence.getId());
+    this.setIdParent(competence.getIdParent());
+    this.setNiveau(competence.getNiveau());
+    this.setNom(competence.getNom());
+    this.setProfondeur(competence.getProfondeur());
+    this.setUe(competence.getUe());
+    this.setUniqueId(UUID.randomUUID());
+  }
+
+  public boolean getValide() {
+    return valide;
+  }
+
+  public void setValide(boolean valide) {
+    this.valide = valide;
+  }
+
+  public UUID getUniqueId() {
+    return uniqueId;
+  }
+
+  public void setUniqueId(UUID uniqueId) {
+    this.uniqueId = uniqueId;
+  }
+
+  @Override
+  public String toString() {
+    return "CompetenceValidable [valide=" + valide + ", getId()=" + getId() + ", getNom()="
+        + getNom() + ", getProfondeur()=" + getProfondeur() + ", getIdParent()=" + getIdParent()
+        + ", getNiveau()=" + getNiveau() + ", getUe()=" + getUe() + "]";
+  }
+
+}

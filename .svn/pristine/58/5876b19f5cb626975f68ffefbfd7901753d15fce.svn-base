@@ -1,0 +1,230 @@
+package fr.eseo.atribus.forms;
+
+import fr.eseo.atribus.dao.DaoException;
+import fr.eseo.atribus.dao.EnseignantDao;
+import fr.eseo.atribus.dao.EnseignantRefUeDao;
+import fr.eseo.atribus.dao.SemestreDao;
+import fr.eseo.atribus.dao.UeDao;
+import fr.eseo.atribus.entities.EnseignantRefUe;
+import fr.eseo.atribus.entities.UniteEnseignement;
+
+import org.springframework.beans.factory.access.BeanFactoryReference;
+import org.springframework.beans.factory.access.SingletonBeanFactoryLocator;
+
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.servlet.http.HttpServletRequest;
+
+public class AddUeForm extends UeFormMethods {
+
+  private static final Logger LOGGER = Logger.getLogger(AddUeForm.class.getName());
+
+  private static final String EXCEPTION = "Exception";
+  private static final String CHAMP_NOMUE = "nomUe";
+  private static final String CHAMP_ECTS = "nbCreditsEcts";
+  private static final String CHAMP_NBHEURES = "nbHeures";
+
+  private final UeDao ueDao;
+  private final EnseignantDao enseignantDao;
+  private final EnseignantRefUeDao enseignantRefUeDao;
+  private final SemestreDao semestreDao;
+
+  /**
+   * Instatiation de AddUeForm.
+   */
+  public AddUeForm() {
+    final BeanFactoryReference bf =
+        SingletonBeanFactoryLocator.getInstance().useBeanFactory("beansDao");
+    this.ueDao = (UeDao) bf.getFactory().getBean("ueDao");
+    this.enseignantDao = (EnseignantDao) bf.getFactory().getBean("enseignantDao");
+    this.enseignantRefUeDao = (EnseignantRefUeDao) bf.getFactory().getBean("enseignantRefUeDao");
+    this.semestreDao = (SemestreDao) bf.getFactory().getBean("semestreDao");
+  }
+
+  /**
+   * Méthode pour l'ajout d'un UE.
+   * 
+   * @param request requête HTML
+   * @return retourne un UE
+   */
+  public UniteEnseignement addUe(HttpServletRequest request) {
+
+    final String nom = UeFormMethods.getValeurChamp(request, AddUeForm.CHAMP_NOMUE);
+    final String ects = UeFormMethods.getValeurChamp(request, AddUeForm.CHAMP_ECTS);
+    final String nbHeures = UeFormMethods.getValeurChamp(request, AddUeForm.CHAMP_NBHEURES);
+
+    final UniteEnseignement ue = new UniteEnseignement();
+
+    try {
+
+      //this.traiterRequete(nom, ects, nbHeures);
+
+      if (this.data.getErreurs().isEmpty()) {
+        ue.setNom(nom);
+        ue.setNbCreditsEcts(Integer.parseInt(ects));
+        ue.setNbHeures(Integer.parseInt(nbHeures));
+
+        this.ueDao.ajouterUe(ue);
+
+        this.data.setResultat("Succes de l'ajout d'une ue");
+
+      } else {
+        
+        this.data.setResultat("Echec de l'ajout d'une ue.");
+      }
+
+    } catch (final DaoException bdde) {
+      this.data.setResultat("Echec de l'ajout d'une ue : une erreur imprevue est survenue,"
+          + " merci de réessayer dans quelques instants.");
+      AddUeForm.LOGGER.log(Level.INFO, EXCEPTION, bdde);
+    }
+    return ue;
+  }
+
+  /**
+   * Méthode qui permet la modification d'une unité d'enseignement.
+   */
+  public void modifierUe(HttpServletRequest request) {
+    
+    final String nomAncienneUe = UeFormMethods.getValeurChamp(request, "nomAncienneUe");
+    final String nomNouvelleUe = UeFormMethods.getValeurChamp(request, "nomNouvelleUe");
+    final String ectsNouvelleUe = UeFormMethods.getValeurChamp(request, "ectsNouvelleUe");
+    final String nbHeuresNouvelleUe = UeFormMethods.getValeurChamp(request, "nbHeuresNouvelleUe");
+    final String semestreNouvelleUe = UeFormMethods.getValeurChamp(request, "semestreNouvelleUe");
+    final String enseignantNouvelleUe =
+        UeFormMethods.getValeurChamp(request, "enseignantNouvelleUe");
+    
+    try {
+       
+      this.traiterRequete(nomNouvelleUe, ectsNouvelleUe, nbHeuresNouvelleUe, semestreNouvelleUe,
+          enseignantNouvelleUe);
+      
+      if (this.getErreurs().isEmpty()) {
+        
+        final UniteEnseignement ancienneUe = this.ueDao.trouverUeParNom(nomAncienneUe);
+        
+        UniteEnseignement nouvelleUe = new UniteEnseignement();
+        final EnseignantRefUe nouveauEnseignantRefUe =
+            (EnseignantRefUe) this.enseignantDao.trouverParNom(enseignantNouvelleUe);
+        
+        nouvelleUe.setNom(nomNouvelleUe);
+        nouvelleUe.setNbCreditsEcts(Integer.parseInt(ectsNouvelleUe));
+        nouvelleUe.setNbHeures(Integer.parseInt(nbHeuresNouvelleUe));
+        nouvelleUe
+            .setSemestre(this.semestreDao.trouverParNumero(Integer.parseInt(semestreNouvelleUe)));
+        
+        // On supprime l'ancienne Ue
+        this.ueDao.supprimerUe(ancienneUe);
+        
+        // On supprime l'enseignantRefUe et on ajoute le nouveau référant
+        this.enseignantRefUeDao.supprimerEnseignantRefUeParId(ancienneUe.getEnseignantRefUe());
+        this.enseignantRefUeDao.ajouter(nouveauEnseignantRefUe);
+        
+        nouvelleUe.setEnseignantRefUe(nouveauEnseignantRefUe);
+        
+        // On ajoute le nouvelle Ue
+        this.ueDao.ajouterUe(nouvelleUe);
+        
+        this.data.setResultat("success");
+        
+      } else {
+        this.data.setResultat("erreur");
+      }
+      
+    } catch (final DaoException daoException) {
+      AddUeForm.LOGGER.log(Level.INFO, EXCEPTION, daoException);
+    }
+    
+  }
+
+  private void traiterRequete(String nom, String ects, String nbHeures, String semestre,
+      String nomEnseignant) {
+
+    try {
+      this.validationNom(nom);
+    } catch (final FormValidationException fve) {
+      AddUeForm.LOGGER.log(Level.INFO, EXCEPTION, fve);
+      this.setErreur("nom", fve.getMessage());
+    }
+
+    try {
+      this.validationEcts(ects);
+    } catch (final FormValidationException fve) {
+      AddUeForm.LOGGER.log(Level.INFO, EXCEPTION, fve);
+      this.setErreur("ects", fve.getMessage());
+    }
+
+    try {
+      this.validationNbHeures(nbHeures);
+    } catch (final FormValidationException fve) {
+      AddUeForm.LOGGER.log(Level.INFO, EXCEPTION, fve);
+      this.setErreur("nbHeures", fve.getMessage());
+    }
+    
+    try {
+      this.validationSemestre(semestre);
+    } catch (final FormValidationException fve) {
+      AddUeForm.LOGGER.log(Level.INFO, EXCEPTION, fve);
+      this.setErreur("semestre", fve.getMessage());
+    }
+    
+    try {
+      this.validationEnseignantNom(nomEnseignant);
+    } catch (final FormValidationException fve) {
+      AddUeForm.LOGGER.log(Level.INFO, EXCEPTION, fve);
+      this.setErreur("enseignant", fve.getMessage());
+    }
+
+  }
+  
+  private void validationSemestre(String semestre) throws FormValidationException {
+    try {
+      if (Integer.parseInt(semestre) < 0) {
+        throw new FormValidationException("Merci d'inscrire un semestre supérieurs à 0.");
+      } else if (this.semestreDao.trouverParNumero(Integer.parseInt(semestre)) == null) {
+        throw new FormValidationException("Le semestre inscrit n'existe pas.");
+      }
+    } catch (final NumberFormatException nfe) {
+      this.setErreur("semestre", nfe.getMessage());
+      throw new FormValidationException("Le semestre inscrit est invalide.");
+    }
+  }
+  
+  private void validationEnseignantNom(String nomEnseignant) throws FormValidationException {
+    if (this.enseignantDao.trouverParNom(nomEnseignant) == null) {
+      throw new FormValidationException("L'enseignant sélectionné n'existe pas.");
+    }
+  }
+
+  private void validationNom(String nom) throws FormValidationException {
+    if (nom == null || nom.length() < 3) {
+      throw new FormValidationException("Veuillez remplir un UE avec plus de 3 caractères.");
+    } else if (this.ueDao.trouverUeParNom(nom) != null) {
+      throw new FormValidationException("Cette UE existe déjà dans la base donnée.");
+    }
+  }
+
+  private void validationEcts(String ects) throws FormValidationException {
+    try {
+      if (Integer.parseInt(ects) < 0) {
+        throw new FormValidationException("Merci d'inscrire un nombre de point ECTS supérieur à 0");
+      }
+    } catch (final NumberFormatException nfe) {
+      this.setErreur(AddUeForm.CHAMP_ECTS, nfe.getMessage());
+      throw new FormValidationException("Le chiffre inscrit est invalide.");
+    }
+  }
+
+  private void validationNbHeures(String nbHeures) throws FormValidationException {
+    try {
+      if (Integer.parseInt(nbHeures) < 0) {
+        throw new FormValidationException("Merci d'inscrire un nombre d'heures supérieur à 0");
+      }
+    } catch (final NumberFormatException nfe) {
+      this.setErreur(AddUeForm.CHAMP_NBHEURES, nfe.getMessage());
+      throw new FormValidationException("Le chiffre inscrit est invalide.");
+    }
+  }
+
+}

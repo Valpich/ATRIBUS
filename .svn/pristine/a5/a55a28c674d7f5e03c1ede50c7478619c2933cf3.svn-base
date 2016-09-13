@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>NotificationController.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Atribus</a> &gt; <a href="index.source.html" class="el_package">fr.eseo.atribus.controller</a> &gt; <span class="el_source">NotificationController.java</span></div><h1>NotificationController.java</h1><pre class="source lang-java linenums">package fr.eseo.atribus.controller;
+
+import fr.eseo.atribus.entities.Utilisateur;
+import fr.eseo.atribus.forms.SupprimerNotificationForm;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.ModelAndView;
+
+import java.util.HashMap;
+import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+
+@Controller
+<span class="nc" id="L18">public class NotificationController {</span>
+
+  @RequestMapping(value = &quot;/Notifications&quot;, method = RequestMethod.GET)
+  protected ModelAndView afficherNotifications() {
+<span class="nc" id="L22">    return new ModelAndView(&quot;gererNotification&quot;);</span>
+  }
+
+  @SuppressWarnings(&quot;unchecked&quot;)
+  @RequestMapping(value = &quot;/Notifications&quot;, method = RequestMethod.POST)
+  protected ModelAndView supprimerNotifications(HttpServletRequest request,
+      @RequestParam(value = &quot;table_records&quot;, required = false) List&lt;String&gt; coches) {
+<span class="nc" id="L29">    final HashMap&lt;String, Object&gt; attributsRequete = new HashMap&lt;&gt;();</span>
+<span class="nc bnc" id="L30" title="All 2 branches missed.">    if (coches != null) {</span>
+<span class="nc" id="L31">      SupprimerNotificationForm form = new SupprimerNotificationForm();</span>
+<span class="nc" id="L32">      form.supprimerNotification(coches,</span>
+<span class="nc" id="L33">          ((List&lt;Utilisateur&gt;) request.getSession().getAttribute(&quot;sessionUtilisateur&quot;)).get(0));</span>
+<span class="nc bnc" id="L34" title="All 2 branches missed.">      if (!form.getErreurs().isEmpty()) {</span>
+        // On charge la liste des erreurs
+<span class="nc" id="L36">        attributsRequete.put(&quot;erreurs&quot;, form.getErreurs());</span>
+      } else {
+<span class="nc" id="L38">        attributsRequete.put(&quot;succes&quot;, &quot;true&quot;);</span>
+      }
+<span class="nc" id="L40">    } else {</span>
+<span class="nc" id="L41">      attributsRequete.put(&quot;vide&quot;, &quot;true&quot;);</span>
+    }
+<span class="nc" id="L43">    return new ModelAndView(&quot;gererNotification&quot;, attributsRequete);</span>
+  }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.6.201602180812</span></div></body></html>

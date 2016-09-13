@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testng-results skipped="0" failed="0" total="10" passed="10">
+  <reporter-output>
+  </reporter-output>
+  <suite name="Default suite" duration-ms="3276" started-at="2016-05-28T21:06:29Z" finished-at="2016-05-28T21:06:32Z">
+    <groups>
+    </groups>
+    <test name="Default test" duration-ms="3276" started-at="2016-05-28T21:06:29Z" finished-at="2016-05-28T21:06:32Z">
+      <class name="fr.eseo.atribus.dao.RessourceDaoImplTest">
+        <test-method status="PASS" signature="beforeTest()[pri:0, instance:fr.eseo.atribus.dao.RessourceDaoImplTest@71b6d77f]" name="beforeTest" is-config="true" duration-ms="2079" started-at="2016-05-28T23:06:29Z" finished-at="2016-05-28T23:06:31Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- beforeTest -->
+        <test-method status="PASS" signature="trouverParNomEtMatiere()[pri:1, instance:fr.eseo.atribus.dao.RessourceDaoImplTest@71b6d77f]" name="trouverParNomEtMatiere" duration-ms="861" started-at="2016-05-28T23:06:31Z" finished-at="2016-05-28T23:06:31Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- trouverParNomEtMatiere -->
+        <test-method status="PASS" signature="trouverParNomEtType()[pri:2, instance:fr.eseo.atribus.dao.RessourceDaoImplTest@71b6d77f]" name="trouverParNomEtType" duration-ms="29" started-at="2016-05-28T23:06:31Z" finished-at="2016-05-28T23:06:32Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- trouverParNomEtType -->
+        <test-method status="PASS" signature="trouverTouteLesRessources()[pri:3, instance:fr.eseo.atribus.dao.RessourceDaoImplTest@71b6d77f]" name="trouverTouteLesRessources" duration-ms="59" started-at="2016-05-28T23:06:32Z" finished-at="2016-05-28T23:06:32Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- trouverTouteLesRessources -->
+        <test-method status="PASS" signature="trouverParPath()[pri:4, instance:fr.eseo.atribus.dao.RessourceDaoImplTest@71b6d77f]" name="trouverParPath" duration-ms="3" started-at="2016-05-28T23:06:32Z" finished-at="2016-05-28T23:06:32Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- trouverParPath -->
+        <test-method status="PASS" signature="modifierRessource()[pri:5, instance:fr.eseo.atribus.dao.RessourceDaoImplTest@71b6d77f]" name="modifierRessource" duration-ms="33" started-at="2016-05-28T23:06:32Z" finished-at="2016-05-28T23:06:32Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- modifierRessource -->
+        <test-method status="PASS" signature="ajouterRessource()[pri:6, instance:fr.eseo.atribus.dao.RessourceDaoImplTest@71b6d77f]" name="ajouterRessource" duration-ms="30" started-at="2016-05-28T23:06:32Z" finished-at="2016-05-28T23:06:32Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- ajouterRessource -->
+        <test-method status="PASS" signature="trouverToutesLesRessourcesCompetences()[pri:7, instance:fr.eseo.atribus.dao.RessourceDaoImplTest@71b6d77f]" name="trouverToutesLesRessourcesCompetences" duration-ms="45" started-at="2016-05-28T23:06:32Z" finished-at="2016-05-28T23:06:32Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- trouverToutesLesRessourcesCompetences -->
+        <test-method status="PASS" signature="supprimerRessource()[pri:8, instance:fr.eseo.atribus.dao.RessourceDaoImplTest@71b6d77f]" name="supprimerRessource" duration-ms="11" started-at="2016-05-28T23:06:32Z" finished-at="2016-05-28T23:06:32Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- supprimerRessource -->
+        <test-method status="PASS" signature="consulter()[pri:9, instance:fr.eseo.atribus.dao.RessourceDaoImplTest@71b6d77f]" name="consulter" duration-ms="37" started-at="2016-05-28T23:06:32Z" finished-at="2016-05-28T23:06:32Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- consulter -->
+        <test-method status="PASS" signature="listerConsultations()[pri:10, instance:fr.eseo.atribus.dao.RessourceDaoImplTest@71b6d77f]" name="listerConsultations" duration-ms="32" started-at="2016-05-28T23:06:32Z" finished-at="2016-05-28T23:06:32Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- listerConsultations -->
+      </class> <!-- fr.eseo.atribus.dao.RessourceDaoImplTest -->
+    </test> <!-- Default test -->
+  </suite> <!-- Default suite -->
+</testng-results>

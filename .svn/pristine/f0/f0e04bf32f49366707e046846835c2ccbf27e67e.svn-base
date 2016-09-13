@@ -1,0 +1,181 @@
+package fr.eseo.atribus.forms;
+
+import fr.eseo.atribus.dao.CompetenceDao;
+import fr.eseo.atribus.dao.DirecteurProgrammesDao;
+import fr.eseo.atribus.dao.NotificationDao;
+import fr.eseo.atribus.entities.DirecteurProgrammes;
+import fr.eseo.atribus.entities.Enseignant;
+import fr.eseo.atribus.entities.EnseignantRefMatiere;
+import fr.eseo.atribus.entities.Notification;
+
+import org.springframework.beans.factory.access.BeanFactoryReference;
+import org.springframework.beans.factory.access.SingletonBeanFactoryLocator;
+
+import java.util.List;
+import java.util.logging.Level;
+
+/**
+ * La classe SuggererAjouterCompetenceForm.
+ */
+public class SuggererAjouterCompetenceForm extends MailForm {
+
+  /** La variable directeur programmes dao. */
+  private final DirecteurProgrammesDao directeurProgrammesDao;
+
+  /** La variable notification dao. */
+  private final NotificationDao notificationDao;
+
+  /** La variable competence dao. */
+  private final CompetenceDao competenceDao;
+
+  /** La constante BR. */
+  private static final String BR = "<br/>";
+
+  /**
+   * Méthode d'instantiation.
+   */
+  public SuggererAjouterCompetenceForm() {
+    final BeanFactoryReference bf =
+        SingletonBeanFactoryLocator.getInstance().useBeanFactory("beansDao");
+    /* Récupération d'une instance de notre DAO Directeur programmes */
+    this.directeurProgrammesDao =
+        (DirecteurProgrammesDao) bf.getFactory().getBean("directeurProgrammesDao");
+    /* Récupération d'une instance de notre DAO Notification */
+    this.notificationDao = (NotificationDao) bf.getFactory().getBean("notificationDao");
+    /* Récupération d'une instance de notre DAO Competence */
+    this.competenceDao = (CompetenceDao) bf.getFactory().getBean("competenceDao");
+  }
+
+  /**
+   * Suggestion de compétence d'un enseignant.
+   * 
+   * @param enseignant L'enseignant.
+   * @param competence La compétence.
+   * @param commentaire Le commentaire de l'enseignant.
+   */
+  public void suggererCompetence(Enseignant enseignant, String competence, String commentaire) {
+    final String objet = "Suggestion de lien de compétence de la part d'un enseignant.";
+    final String contenu = this.genererContenu(enseignant, competence, commentaire);
+    final String destinataire = "";
+    this.traiterDonnees(competence, commentaire);
+    final List<DirecteurProgrammes> dps = this.directeurProgrammesDao.recupererListe();
+    for (final DirecteurProgrammes dp : dps) {
+      if (dp.isNotificationActive()) {
+        final Notification notification = new Notification();
+        notification.setDestinataire(dp.getId());
+        notification.setEmetteur(enseignant.getId());
+        notification.setMessage(contenu);
+        try {
+          this.notificationDao.ajouter(notification);
+        } catch (final Exception exc) {
+          MailForm.LOGGER.log(Level.INFO, EXCEPTION, exc);
+          this.setErreur("erreurNotif", ERROR);
+        }
+      }
+      if (dp.isNotificationMail()) {
+        this.envoyerMail(objet, contenu, destinataire);
+      }
+    }
+  }
+
+  /**
+   * Suggestion de compétence d'un enseignant ref matiere.
+   * 
+   * @param erm L'enseignant ref matiere.
+   * @param competence La compétence.
+   * @param commentaire Le commentaire de l'enseignant ref matiere.
+   */
+  public void suggererCompetence(EnseignantRefMatiere erm, String competence, String commentaire) {
+    final String objet = "Suggestion de compétence de la part d'un Enseignant Référent Matiere.";
+    final String contenu = this.genererContenu(erm, competence, commentaire);
+    final String destinataire = "";
+    final List<DirecteurProgrammes> dps = this.directeurProgrammesDao.recupererListe();
+    for (final DirecteurProgrammes dp : dps) {
+      if (dp.isNotificationActive()) {
+        final Notification notification = new Notification();
+        notification.setDestinataire(dp.getId());
+        notification.setEmetteur(erm.getId());
+        notification.setMessage(contenu);
+        try {
+          this.notificationDao.ajouter(notification);
+        } catch (final Exception exc) {
+          MailForm.LOGGER.log(Level.INFO, EXCEPTION, exc);
+          this.setErreur("erreurNotif", ERROR);
+        }
+      }
+      if (dp.isNotificationMail()) {
+        this.envoyerMail(objet, contenu, destinataire);
+      }
+    }
+  }
+
+  /**
+   * Générer contenu convocation.
+   *
+   * @param erm L'enseignant ref matiere.
+   * @param competence la compétence
+   * @param commentaire le commentaire
+   * @return Le paramètre string
+   */
+  private String genererContenu(EnseignantRefMatiere erm, String competence, String commentaire) {
+    final StringBuilder convocation = new StringBuilder();
+    convocation.append(this.messages.getErmSuggereCompetenceUn().replaceAll(BR, ""));
+    convocation.append(erm.getNom() + " " + erm.getPrenom() + " ");
+    convocation.append(this.messages.getErmSuggereCompetenceDeux().replaceAll(BR, ""));
+    try {
+      convocation.append(
+          " " + this.competenceDao.trouverParId(Integer.parseInt(competence)).getNom() + ".");
+    } catch (final NumberFormatException nfe) {
+      MailForm.LOGGER.log(Level.INFO, EXCEPTION, nfe);
+    }
+    if (!(".").equals(convocation.substring(convocation.length() - 1))) {
+      convocation.append(".");
+    }
+    convocation.append(this.messages.getErmSuggereCompetenceTrois().replaceAll(BR, ""));
+    convocation.append(commentaire);
+    if (!(".").equals(convocation.substring(convocation.length() - 1))) {
+      convocation.append(".");
+    }
+    convocation.append(this.messages.getErmSuggereCompetenceQuatre().replaceAll(BR, ""));
+    if (!(".").equals(convocation.substring(convocation.length() - 1))) {
+      convocation.append(".");
+    }
+    return convocation.toString();
+  }
+
+  /**
+   * Generer contenu.
+   *
+   * @param enseignant l'enseignant
+   * @param competence la compétence
+   * @param commentaire le commentaire
+   * @return Le paramètre string
+   */
+  private String genererContenu(Enseignant enseignant, String competence, String commentaire) {
+    final StringBuilder convocation = new StringBuilder();
+    convocation.append(this.messages.getEnseignantSuggereCompetenceUn().replaceAll(BR, ""));
+    convocation.append(enseignant.getNom() + " " + enseignant.getPrenom() + " ");
+    convocation.append(this.messages.getEnseignantSuggereCompetenceDeux().replaceAll(BR, ""));
+    try {
+      convocation.append(
+          " " + this.competenceDao.trouverParId(Integer.parseInt(competence)).getNom() + ".");
+    } catch (final NumberFormatException nfe) {
+      MailForm.LOGGER.log(Level.INFO, EXCEPTION, nfe);
+    }
+    if (!(".").equals(convocation.substring(convocation.length() - 1))) {
+      convocation.append(".");
+    }
+    convocation.append(this.messages.getEnseignantSuggereCompetenceTrois().replaceAll(BR, ""));
+    convocation.append(commentaire);
+    if (!(".").equals(convocation.substring(convocation.length() - 1))) {
+      convocation.append(".");
+    }
+    convocation.append(this.messages.getEnseignantSuggereCompetenceQuatre().replaceAll(BR, ""));
+    if (!(".").equals(convocation.substring(convocation.length() - 1))) {
+      convocation.append(".");
+    }
+    return convocation.toString();
+  }
+
+}
+

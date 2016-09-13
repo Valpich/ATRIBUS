@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>AddUeForm.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Atribus</a> &gt; <a href="index.source.html" class="el_package">fr.eseo.atribus.forms</a> &gt; <span class="el_source">AddUeForm.java</span></div><h1>AddUeForm.java</h1><pre class="source lang-java linenums">package fr.eseo.atribus.forms;
+
+import fr.eseo.atribus.dao.DaoException;
+import fr.eseo.atribus.dao.UeDao;
+import fr.eseo.atribus.entities.UniteEnseignement;
+
+import org.springframework.beans.factory.access.BeanFactoryReference;
+import org.springframework.beans.factory.access.SingletonBeanFactoryLocator;
+
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.servlet.http.HttpServletRequest;
+
+public class AddUeForm extends UeFormMethods {
+
+<span class="nc" id="L17">  private static final Logger LOGGER = Logger.getLogger(AddUeForm.class.getName());</span>
+
+  private static final String EXCEPTION = &quot;Exception&quot;;
+  private static final String CHAMP_NOMUE = &quot;nomUe&quot;;
+  private static final String CHAMP_ECTS = &quot;nbCreditsEcts&quot;;
+  private static final String CHAMP_NBHEURES = &quot;nbHeures&quot;;
+
+  private final UeDao ueDao;
+
+  /**
+   * Instatiation de AddUeForm.
+   */
+<span class="nc" id="L29">  public AddUeForm() {</span>
+    final BeanFactoryReference bf =
+<span class="nc" id="L31">        SingletonBeanFactoryLocator.getInstance().useBeanFactory(&quot;beansDao&quot;);</span>
+<span class="nc" id="L32">    this.ueDao = (UeDao) bf.getFactory().getBean(&quot;ueDao&quot;);</span>
+<span class="nc" id="L33">  }</span>
+
+  /**
+   * Méthode pour l'ajout d'un UE.
+   * 
+   * @param request requête HTML
+   * @return retourne un UE
+   */
+  public UniteEnseignement addUe(HttpServletRequest request) {
+
+<span class="nc" id="L43">    final String nom = UeFormMethods.getValeurChamp(request, AddUeForm.CHAMP_NOMUE);</span>
+<span class="nc" id="L44">    final String ects = UeFormMethods.getValeurChamp(request, AddUeForm.CHAMP_ECTS);</span>
+<span class="nc" id="L45">    final String nbHeures = UeFormMethods.getValeurChamp(request, AddUeForm.CHAMP_NBHEURES);</span>
+
+<span class="nc" id="L47">    final UniteEnseignement ue = new UniteEnseignement();</span>
+
+    try {
+      
+<span class="nc" id="L51">      this.traiterRequete(nom, ects, nbHeures);</span>
+
+<span class="nc bnc" id="L53" title="All 2 branches missed.">      if (this.data.getErreurs().isEmpty()) {</span>
+<span class="nc" id="L54">        ue.setNom(nom);</span>
+<span class="nc" id="L55">        ue.setNbCreditsEcts(Integer.parseInt(ects));</span>
+<span class="nc" id="L56">        ue.setNbHeures(Integer.parseInt(nbHeures));</span>
+
+<span class="nc" id="L58">        this.ueDao.ajouterUe(ue);</span>
+
+<span class="nc" id="L60">        this.data.setResultat(&quot;Succes de l'ajout d'une ue&quot;);</span>
+
+      } else {
+
+<span class="nc" id="L64">        this.data.setResultat(&quot;Echec de l'ajout d'une ue.&quot;);</span>
+      }
+
+<span class="nc" id="L67">    } catch (final DaoException bdde) {</span>
+<span class="nc" id="L68">      this.data.setResultat(&quot;Echec de l'ajout d'une ue : une erreur imprevue est survenue,&quot;</span>
+          + &quot; merci de réessayer dans quelques instants.&quot;);
+<span class="nc" id="L70">      AddUeForm.LOGGER.log(Level.INFO, EXCEPTION, bdde);</span>
+<span class="nc" id="L71">    }</span>
+<span class="nc" id="L72">    return ue;</span>
+  }
+
+  private void traiterRequete(String nom, String ects, String nbHeures) {
+
+    try {
+<span class="nc" id="L78">      this.validationNom(nom);</span>
+<span class="nc" id="L79">    } catch (final FormValidationException fve) {</span>
+<span class="nc" id="L80">      AddUeForm.LOGGER.log(Level.INFO, EXCEPTION, fve);</span>
+<span class="nc" id="L81">      this.setErreur(&quot;nom&quot;, fve.getMessage());</span>
+<span class="nc" id="L82">    }</span>
+
+    try {
+<span class="nc" id="L85">      this.validationEcts(ects);</span>
+<span class="nc" id="L86">    } catch (final FormValidationException fve) {</span>
+<span class="nc" id="L87">      AddUeForm.LOGGER.log(Level.INFO, EXCEPTION, fve);</span>
+<span class="nc" id="L88">      this.setErreur(&quot;ects&quot;, fve.getMessage());</span>
+<span class="nc" id="L89">    }</span>
+
+    try {
+<span class="nc" id="L92">      this.validationNbHeures(nbHeures);</span>
+<span class="nc" id="L93">    } catch (final FormValidationException fve) {</span>
+<span class="nc" id="L94">      AddUeForm.LOGGER.log(Level.INFO, EXCEPTION, fve);</span>
+<span class="nc" id="L95">      this.setErreur(&quot;nbHeures&quot;, fve.getMessage());</span>
+<span class="nc" id="L96">    }</span>
+
+<span class="nc" id="L98">  }</span>
+
+  private void validationNom(String nom) throws FormValidationException {
+<span class="nc bnc" id="L101" title="All 4 branches missed.">    if (nom == null || nom.length() &lt; 3) {</span>
+<span class="nc" id="L102">      throw new FormValidationException(&quot;Veuillez remplir un UE avec plus de 3 caractères.&quot;);</span>
+    }
+<span class="nc" id="L104">  }</span>
+
+  private void validationEcts(String ects) throws FormValidationException {
+    try {
+<span class="nc bnc" id="L108" title="All 2 branches missed.">      if (Integer.parseInt(ects) &lt; 0) {</span>
+<span class="nc" id="L109">        throw new FormValidationException(&quot;Merci d'inscrire un nombre de point ECTS supérieur à 0&quot;);</span>
+      }
+<span class="nc" id="L111">    } catch (final NumberFormatException nfe) {</span>
+<span class="nc" id="L112">      this.setErreur(AddUeForm.CHAMP_ECTS, nfe.getMessage());</span>
+<span class="nc" id="L113">      throw new FormValidationException(&quot;Le chiffre inscrit est invalide.&quot;);</span>
+<span class="nc" id="L114">    }</span>
+<span class="nc" id="L115">  }</span>
+
+  private void validationNbHeures(String nbHeures) throws FormValidationException {
+    try {
+<span class="nc bnc" id="L119" title="All 2 branches missed.">      if (Integer.parseInt(nbHeures) &lt; 0) {</span>
+<span class="nc" id="L120">        throw new FormValidationException(&quot;Merci d'inscrire un nombre d'heures supérieur à 0&quot;);</span>
+      }
+<span class="nc" id="L122">    } catch (final NumberFormatException nfe) {</span>
+<span class="nc" id="L123">      this.setErreur(AddUeForm.CHAMP_NBHEURES, nfe.getMessage());</span>
+<span class="nc" id="L124">      throw new FormValidationException(&quot;Le chiffre inscrit est invalide.&quot;);</span>
+<span class="nc" id="L125">    }</span>
+<span class="nc" id="L126">  }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.6.201602180812</span></div></body></html>

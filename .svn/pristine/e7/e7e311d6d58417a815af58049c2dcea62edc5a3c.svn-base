@@ -1,0 +1,26 @@
+<h2>Methods run, sorted chronologically</h2><h3>&gt;&gt; means before, &lt;&lt; means after</h3><p/><br/><em>Default suite</em><p/><small><i>(Hover the method name to see the test class name)</i></small><p/>
+<table border="1">
+<tr><th>Time</th><th>Delta (ms)</th><th>Suite<br>configuration</th><th>Test<br>configuration</th><th>Class<br>configuration</th><th>Groups<br>configuration</th><th>Method<br>configuration</th><th>Test<br>method</th><th>Thread</th><th>Instances</th></tr>
+<tr bgcolor="bfbc86">  <td>16/05/20 12:45:07</td>   <td>0</td> <td>&nbsp;</td><td>&nbsp;</td><td title="&gt;&gt;MailControllerTest.setup()[pri:0, instance:fr.eseo.atribus.controller.MailControllerTest@6737fd8f]">&gt;&gt;setup</td> 
+<td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>  <td>main@1684890795</td>   <td></td> </tr>
+<tr bgcolor="bfbc86">  <td>16/05/20 12:45:09</td>   <td>1617</td> <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td title="MailControllerTest.afficherConvoquerEtudiant()[pri:0, instance:fr.eseo.atribus.controller.MailControllerTest@6737fd8f]">afficherConvoquerEtudiant</td> 
+  <td>main@1684890795</td>   <td></td> </tr>
+<tr bgcolor="bfbc86">  <td>16/05/20 12:45:09</td>   <td>2251</td> <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td title="MailControllerTest.afficherSuggererAjouterCompetenceEnseignantRefMatiere()[pri:0, instance:fr.eseo.atribus.controller.MailControllerTest@6737fd8f]">afficherSuggererAjouterCompetenceEnseignantRefMatiere</td> 
+  <td>main@1684890795</td>   <td></td> </tr>
+<tr bgcolor="bfbc86">  <td>16/05/20 12:45:09</td>   <td>2261</td> <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td title="MailControllerTest.afficherSuggererCompetenceNouvelle()[pri:0, instance:fr.eseo.atribus.controller.MailControllerTest@6737fd8f]">afficherSuggererCompetenceNouvelle</td> 
+  <td>main@1684890795</td>   <td></td> </tr>
+<tr bgcolor="bfbc86">  <td>16/05/20 12:45:09</td>   <td>2266</td> <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td title="MailControllerTest.afficherSuggererCompetenceNouvelleEnseignant()[pri:0, instance:fr.eseo.atribus.controller.MailControllerTest@6737fd8f]">afficherSuggererCompetenceNouvelleEnseignant</td> 
+  <td>main@1684890795</td>   <td></td> </tr>
+<tr bgcolor="bfbc86">  <td>16/05/20 12:45:09</td>   <td>2274</td> <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td title="MailControllerTest.afficherSuggererCompetenceNouvelleRefUe()[pri:0, instance:fr.eseo.atribus.controller.MailControllerTest@6737fd8f]">afficherSuggererCompetenceNouvelleRefUe</td> 
+  <td>main@1684890795</td>   <td></td> </tr>
+<tr bgcolor="bfbc86">  <td>16/05/20 12:45:09</td>   <td>2281</td> <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td title="MailControllerTest.convoquerEtudiant()[pri:0, instance:fr.eseo.atribus.controller.MailControllerTest@6737fd8f]">convoquerEtudiant</td> 
+  <td>main@1684890795</td>   <td></td> </tr>
+<tr bgcolor="bfbc86">  <td>16/05/20 12:45:13</td>   <td>5480</td> <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td title="MailControllerTest.suggererAjouterCompetenceEnseignantRefMatiere()[pri:0, instance:fr.eseo.atribus.controller.MailControllerTest@6737fd8f]">suggererAjouterCompetenceEnseignantRefMatiere</td> 
+  <td>main@1684890795</td>   <td></td> </tr>
+<tr bgcolor="bfbc86">  <td>16/05/20 12:45:13</td>   <td>5534</td> <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td title="MailControllerTest.suggererNouvelleCompetence()[pri:0, instance:fr.eseo.atribus.controller.MailControllerTest@6737fd8f]">suggererNouvelleCompetence</td> 
+  <td>main@1684890795</td>   <td></td> </tr>
+<tr bgcolor="bfbc86">  <td>16/05/20 12:45:13</td>   <td>5551</td> <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td title="MailControllerTest.suggererNouvelleCompetenceEnseignant()[pri:0, instance:fr.eseo.atribus.controller.MailControllerTest@6737fd8f]">suggererNouvelleCompetenceEnseignant</td> 
+  <td>main@1684890795</td>   <td></td> </tr>
+<tr bgcolor="bfbc86">  <td>16/05/20 12:45:13</td>   <td>5606</td> <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td title="MailControllerTest.suggererNouvelleCompetenceRefUe()[pri:0, instance:fr.eseo.atribus.controller.MailControllerTest@6737fd8f]">suggererNouvelleCompetenceRefUe</td> 
+  <td>main@1684890795</td>   <td></td> </tr>
+</table>

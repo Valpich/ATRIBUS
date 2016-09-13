@@ -1,0 +1,280 @@
+package fr.eseo.atribus.beans;
+
+import fr.eseo.atribus.entities.Eleve;
+import fr.eseo.atribus.entities.Evaluation;
+import fr.eseo.atribus.entities.Examen;
+import fr.eseo.atribus.entities.Exercice;
+import fr.eseo.atribus.entities.Promotion;
+
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+
+/**
+ * La classe ExporteurCsv.
+ */
+public class ExporteurCsv {
+
+  /** La constante LOGGER. */
+  private static final Logger LOGGER = Logger.getLogger(ExporteurCsv.class.getName());
+
+  /**
+   * Instancie un nouvel exporteur csv.
+   */
+  private ExporteurCsv() {}
+
+  /**
+   * Genere le fichier csv.
+   *
+   * @param nomFichier le nom du fichier
+   * @param eleves les eleves
+   * @param evaluations les evaluations
+   * @param examens les examens
+   * @param promotion la promotion
+   * @param debut la date de debut
+   * @param fin la date de fin
+   */
+  public static void generateCsvFile(String nomFichier, List<Eleve> eleves,
+      List<Evaluation> evaluations, List<Examen> examens, Promotion promotion, Date debut,
+      Date fin) {
+    try (BufferedWriter writer = Files.newBufferedWriter(Paths.get(nomFichier),
+        StandardCharsets.UTF_8, StandardOpenOption.CREATE)) {
+      final Map<Eleve, Map<Examen, Float>> notesEleveExamens = new HashMap<>();
+      parcourirMapping(eleves, evaluations, examens, notesEleveExamens, promotion, debut, fin);
+      mapVersCsv(writer, notesEleveExamens);
+      writer.flush();
+      writer.close();
+    } catch (final IOException ioe) {
+      ExporteurCsv.LOGGER.log(Level.INFO, "Exception", ioe);
+    }
+  }
+
+  /**
+   * Genere le fichier csv.
+   *
+   * @param nomFichier le nom fichier
+   * @param eleves le eleves
+   * @param evaluations le evaluations
+   * @param examens le examens
+   */
+  public static void generateCsvFile(String nomFichier, List<Eleve> eleves,
+      List<Evaluation> evaluations, List<Examen> examens) {
+    try (BufferedWriter writer = Files.newBufferedWriter(Paths.get(nomFichier),
+        StandardCharsets.UTF_8, StandardOpenOption.WRITE)) {
+      final Map<Eleve, Map<Examen, Float>> notesEleveExamens = new HashMap<>();
+      parcourirMapping(eleves, evaluations, examens, notesEleveExamens);
+      mapVersCsv(writer, notesEleveExamens);
+      writer.flush();
+      writer.close();
+    } catch (final IOException ioe) {
+      ExporteurCsv.LOGGER.log(Level.INFO, "Exception", ioe);
+    }
+  }
+
+  /**
+   * Parcourir mapping.
+   *
+   * @param eleves les eleves
+   * @param evaluations les evaluations
+   * @param examens les examens
+   * @param notesEleveExamens les notes des eleves aux examens
+   */
+  private static void parcourirMapping(List<Eleve> eleves, List<Evaluation> evaluations,
+      List<Examen> examens, Map<Eleve, Map<Examen, Float>> notesEleveExamens) {
+    for (final Eleve eleve : eleves) {
+      for (final Examen examen : examens) {
+        if (!examen.getAutoEvaluation()) {
+          mapping(evaluations, notesEleveExamens, eleve, examen);
+        }
+      }
+    }
+  }
+
+  /**
+   * Parcourir mapping.
+   *
+   * @param eleves les eleves
+   * @param evaluations les evaluations
+   * @param examens les examens
+   * @param notesEleveExamens les notes des eleves aux examens
+   * @param promotion la promotion
+   * @param debut la date de debut
+   * @param fin la date de fin
+   */
+  private static void parcourirMapping(List<Eleve> eleves, List<Evaluation> evaluations,
+      List<Examen> examens, Map<Eleve, Map<Examen, Float>> notesEleveExamens, Promotion promotion,
+      Date debut, Date fin) {
+    for (final Eleve eleve : eleves) {
+      if (eleve.getPromotion() != null && eleve.getPromotion().getId() == promotion.getId()) {
+        for (final Examen examen : examens) {
+          recupererAutoEvaluation(evaluations, notesEleveExamens, debut, fin, eleve, examen);
+        }
+      }
+    }
+  }
+
+  /**
+   * Recuperer auto evaluation.
+   *
+   * @param evaluations les evaluations
+   * @param notesEleveExamens les notes des eleves aux examens
+   * @param debut la date de debut
+   * @param fin la date de fin
+   * @param eleve l'eleve
+   * @param examen l'examen
+   */
+  private static void recupererAutoEvaluation(List<Evaluation> evaluations,
+      Map<Eleve, Map<Examen, Float>> notesEleveExamens, Date debut, Date fin, final Eleve eleve,
+      final Examen examen) {
+    if (!examen.getAutoEvaluation() && !examen.getExercices().isEmpty()) {
+      mapping(evaluations, notesEleveExamens, eleve, examen, debut, fin);
+    }
+  }
+
+  /**
+   * Map vers csv.
+   *
+   * @param writer le writer
+   * @param notesEleveExamens les notes des eleves aux examens
+   * @throws IOException Indique qu'une I/O exception est arrivée.
+   */
+  @SuppressWarnings("rawtypes")
+  private static void mapVersCsv(BufferedWriter writer,
+      Map<Eleve, Map<Examen, Float>> notesEleveExamens) throws IOException {
+    final Iterator it = notesEleveExamens.entrySet().iterator();
+    while (it.hasNext()) {
+      final Map.Entry pair = (Map.Entry) it.next();
+      writer.write("ID ELEVE : ");
+      writer.write(Integer.toString(((Eleve) pair.getKey()).getIdEleve()));
+      writer.write('/');
+      writer.write("NOM ELEVE : ");
+      writer.write(((Eleve) pair.getKey()).getNom() + " " + ((Eleve) pair.getKey()).getPrenom());
+      writer.write('/');
+      final Iterator itDeux = notesEleveExamens.get(pair.getKey()).entrySet().iterator();
+      while (itDeux.hasNext()) {
+        final Map.Entry pairDeux = (Map.Entry) itDeux.next();
+        writer.write(((Examen) pairDeux.getKey()).getNom());
+        writer.write(',');
+        writer.write(Float.toString(notesEleveExamens.get(pair.getKey()).get(pairDeux.getKey())));
+        itDeux.remove();
+        if (itDeux.hasNext()) {
+          writer.write(',');
+        }
+      }
+      writer.write('\n');
+      it.remove();
+    }
+  }
+
+  /**
+   * Mapping.
+   *
+   * @param evaluations les evaluations
+   * @param notesEleveExamens les notes des eleves aux examens
+   * @param eleve l'eleve
+   * @param examen l'examen
+   */
+  public static void mapping(List<Evaluation> evaluations,
+      Map<Eleve, Map<Examen, Float>> notesEleveExamens, Eleve eleve, Examen examen) {
+    mapping(evaluations, notesEleveExamens, eleve, examen, null, null);
+  }
+
+  /**
+   * Mapping.
+   *
+   * @param evaluations les evaluations
+   * @param notesEleveExamens le notes eleve examens
+   * @param eleve l'eleve
+   * @param examen l'examen
+   * @param debut la date de debut
+   * @param fin la date de fin
+   */
+  public static void mapping(List<Evaluation> evaluations,
+      Map<Eleve, Map<Examen, Float>> notesEleveExamens, Eleve eleve, Examen examen, Date debut,
+      Date fin) {
+    Boolean trouve = false;
+    Float note = new Float(0);
+    Float sommePoints = new Float(0);
+    for (final Evaluation evaluation : evaluations) {
+      if (evaluation.getEleve().getIdEleve() == eleve.getIdEleve()) {
+        if (debut == null) {
+          for (final Exercice exercice : examen.getExercices()) {
+            trouve = true;
+            note += recupererNote(evaluation, exercice);
+            sommePoints += recupererNombrePoints(evaluation, exercice);
+          }
+        } else {
+          if (evaluation.getDateExamen().after(debut) && evaluation.getDateExamen().before(fin)) {
+            for (final Exercice exercice : examen.getExercices()) {
+              trouve = true;
+              note += recupererNote(evaluation, exercice);
+              sommePoints += recupererNombrePoints(evaluation, exercice);
+            }
+          }
+        }
+      }
+    }
+    note = (note / sommePoints) * 20;
+    majMap(notesEleveExamens, eleve, examen, trouve, note);
+  }
+
+  /**
+   * Recuperer le nombre points.
+   *
+   * @param evaluation l'evaluation
+   * @param exercice l'exercice
+   * @return Le nombre de points
+   */
+  private static Float recupererNombrePoints(final Evaluation evaluation, final Exercice exercice) {
+    Float points = new Float(0);
+    if (evaluation.getExercice().getId() == exercice.getId()) {
+      points += exercice.getNbPoints();
+    }
+    return points;
+  }
+
+  /**
+   * Recuperer la note.
+   *
+   * @param evaluation l'evaluation
+   * @param exercice l'exercice
+   * @return La note
+   */
+  private static Float recupererNote(final Evaluation evaluation, final Exercice exercice) {
+    Float note = new Float(0);
+    if (evaluation.getExercice().getId() == exercice.getId()) {
+      note += evaluation.getNote();
+    }
+    return note;
+  }
+
+  /**
+   * Maj map.
+   *
+   * @param notesEleveExamens le notes des eleves aux examens
+   * @param eleve l'eleve
+   * @param examen l'examen
+   * @param trouve si trouvé
+   * @param note la note
+   */
+  public static void majMap(Map<Eleve, Map<Examen, Float>> notesEleveExamens, Eleve eleve,
+      Examen examen, boolean trouve, float note) {
+    if (trouve) {
+      if (notesEleveExamens.get(eleve) == null) {
+        notesEleveExamens.put(eleve, new HashMap<>());
+      }
+      notesEleveExamens.get(eleve).put(examen, note);
+    }
+  }
+}

@@ -1,0 +1,149 @@
+package fr.eseo.atribus.forms;
+
+import fr.eseo.atribus.dao.AdminSystDao;
+import fr.eseo.atribus.dao.NotificationDao;
+import fr.eseo.atribus.entities.AdminSyst;
+import fr.eseo.atribus.entities.Notification;
+import fr.eseo.atribus.entities.Utilisateur;
+
+import org.springframework.beans.factory.access.BeanFactoryReference;
+import org.springframework.beans.factory.access.SingletonBeanFactoryLocator;
+
+/**
+ * La classe ContacterAdministrateursForm.
+ */
+public class ContacterAdministrateursForm extends MailForm {
+
+  /** La variable admin syst dao. */
+  private final AdminSystDao adminSystDao;
+
+  /** La variable notification dao. */
+  private final NotificationDao notificationDao;
+
+  /**
+   * Méthode d'instantiation.
+   */
+  public ContacterAdministrateursForm() {
+    final BeanFactoryReference bf =
+        SingletonBeanFactoryLocator.getInstance().useBeanFactory("beansDao");
+    /* Récupération d'une instance de notre DAO Eleve */
+    this.adminSystDao = (AdminSystDao) bf.getFactory().getBean("adminSystDao");
+    /* Récupération d'une instance de notre DAO Notification */
+    this.notificationDao = (NotificationDao) bf.getFactory().getBean("notificationDao");
+  }
+
+  /**
+   * Méthode pour contacter un administrateur.
+   * 
+   * @param utilisateur l'utilisateur
+   * @param message message
+   */
+  public void contacterAdministrateurs(Utilisateur utilisateur, String message) {
+    final String objet = "Bonjour chez administrateur.";
+    for (final AdminSyst admin : this.adminSystDao.recupererListe()) {
+      if (admin.isNotificationActive()) {
+        final Notification notification = new Notification();
+        notification.setDestinataire(admin.getId());
+        notification.setEmetteur(utilisateur.getId());
+        notification.setMessage(objet + " " + this.genererContenu(utilisateur, message));
+        this.notificationDao.ajouter(notification);
+      }
+      if (admin.isNotificationMail()) {
+        this.envoyerMail(objet, this.genererContenuMail(utilisateur, message), admin.getEmail());
+      }
+    }
+  }
+
+  /**
+   * Contacter administrateurs.
+   *
+   * @param message le message
+   */
+  public void contacterAdministrateurs(String message) {
+    final String objet = "Bonjour chez administrateur.";
+    for (final AdminSyst admin : this.adminSystDao.recupererListe()) {
+      if (admin.isNotificationActive()) {
+        final Notification notification = new Notification();
+        notification.setDestinataire(admin.getId());
+        notification.setEmetteur(1);
+        notification.setMessage(objet + " " + this.genererContenu(message));
+        this.notificationDao.ajouter(notification);
+      }
+      if (admin.isNotificationMail()) {
+        this.envoyerMail(objet, this.genererContenuMail(message), admin.getEmail());
+      }
+    }
+  }
+
+  /**
+   * Generer contenu.
+   *
+   * @param utilisateur l'utilisateur
+   * @param message le message
+   * @return Le paramètre string
+   */
+  protected String genererContenu(Utilisateur utilisateur, String message) {
+    final StringBuilder convocation = new StringBuilder();
+    convocation.append("L'utilisateur ");
+    convocation.append(utilisateur.getNom() + " " + utilisateur.getPrenom());
+    convocation.append(" à souhaiter vous donner le message suivant : ");
+    convocation.append(message);
+    if (!(".").equals(convocation.substring(convocation.length() - 1))) {
+      convocation.append(". Cordialement.");
+    } else {
+      convocation.append(" Cordialement.");
+    }
+    return convocation.toString();
+  }
+
+  /**
+   * Generer contenu.
+   *
+   * @param message le message
+   * @return Le paramètre string
+   */
+  protected String genererContenu(String message) {
+    final StringBuilder convocation = new StringBuilder();
+    convocation.append("Un utilisateur anonyme à souhaiter vous donner le message suivant : ");
+    convocation.append(message);
+    if (!(".").equals(convocation.substring(convocation.length() - 1))) {
+      convocation.append(". Cordialement.");
+    } else {
+      convocation.append(" Cordialement.");
+    }
+    return convocation.toString();
+  }
+
+  /**
+   * Generer contenu mail.
+   *
+   * @param utilisateur l'utilisateur
+   * @param message le message
+   * @return Le paramètre string
+   */
+  protected String genererContenuMail(Utilisateur utilisateur, String message) {
+    final StringBuilder convocation = new StringBuilder();
+    convocation.append("L'utilisateur ");
+    convocation.append(utilisateur.getNom() + " " + utilisateur.getPrenom());
+    convocation.append(" à souhaiter vous donner le message suivant :<br/>");
+    convocation.append(message);
+    convocation.append("<br/>Cordialement.");
+    return convocation.toString();
+  }
+
+  /**
+   * Generer contenu mail.
+   *
+   * @param message le message
+   * @return Le paramètre string
+   */
+  protected String genererContenuMail(String message) {
+    final StringBuilder convocation = new StringBuilder();
+    convocation.append("Un utilisateur anonyme à souhaiter vous donner le message suivant :<br/>");
+    convocation.append(message);
+    convocation.append("<br/>Cordialement.");
+    return convocation.toString();
+  }
+
+}
+

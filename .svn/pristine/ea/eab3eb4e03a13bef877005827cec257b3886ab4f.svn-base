@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>ExporteurCsv.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Atribus</a> &gt; <a href="index.source.html" class="el_package">fr.eseo.atribus.beans</a> &gt; <span class="el_source">ExporteurCsv.java</span></div><h1>ExporteurCsv.java</h1><pre class="source lang-java linenums">package fr.eseo.atribus.beans;
+
+import fr.eseo.atribus.entities.Eleve;
+import fr.eseo.atribus.entities.Evaluation;
+import fr.eseo.atribus.entities.Examen;
+import fr.eseo.atribus.entities.Exercice;
+import fr.eseo.atribus.entities.Promotion;
+
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+
+public class ExporteurCsv {
+<span class="nc" id="L25">  private static final Logger LOGGER = Logger.getLogger(ExporteurCsv.class.getName());</span>
+
+<span class="nc" id="L27">  private ExporteurCsv() {}</span>
+
+  public static void generateCsvFile(String nomFichier, List&lt;Eleve&gt; eleves,
+      List&lt;Evaluation&gt; evaluations, List&lt;Examen&gt; examens, Promotion promotion, Date debut,
+      Date fin) {
+<span class="nc" id="L32">    try (BufferedWriter writer = Files.newBufferedWriter(Paths.get(nomFichier),</span>
+        StandardCharsets.UTF_8, StandardOpenOption.CREATE)) {
+<span class="nc" id="L34">      final Map&lt;Eleve, Map&lt;Examen, Float&gt;&gt; notesEleveExamens = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L35">      parcourirMapping(eleves, evaluations, examens, notesEleveExamens, promotion, debut, fin);</span>
+<span class="nc" id="L36">      mapVersCsv(writer, notesEleveExamens);</span>
+<span class="nc" id="L37">      writer.flush();</span>
+<span class="nc" id="L38">      writer.close();</span>
+<span class="nc bnc" id="L39" title="All 8 branches missed.">    } catch (final IOException ioe) {</span>
+<span class="nc" id="L40">      ExporteurCsv.LOGGER.log(Level.INFO, &quot;Exception&quot;, ioe);</span>
+<span class="nc" id="L41">    }</span>
+<span class="nc" id="L42">  }</span>
+
+  public static void generateCsvFile(String nomFichier, List&lt;Eleve&gt; eleves,
+      List&lt;Evaluation&gt; evaluations, List&lt;Examen&gt; examens) {
+<span class="nc" id="L46">    try (BufferedWriter writer = Files.newBufferedWriter(Paths.get(nomFichier),</span>
+        StandardCharsets.UTF_8, StandardOpenOption.WRITE)) {
+<span class="nc" id="L48">      final Map&lt;Eleve, Map&lt;Examen, Float&gt;&gt; notesEleveExamens = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L49">      parcourirMapping(eleves, evaluations, examens, notesEleveExamens);</span>
+<span class="nc" id="L50">      mapVersCsv(writer, notesEleveExamens);</span>
+<span class="nc" id="L51">      writer.flush();</span>
+<span class="nc" id="L52">      writer.close();</span>
+<span class="nc bnc" id="L53" title="All 8 branches missed.">    } catch (final IOException ioe) {</span>
+<span class="nc" id="L54">      ExporteurCsv.LOGGER.log(Level.INFO, &quot;Exception&quot;, ioe);</span>
+<span class="nc" id="L55">    }</span>
+<span class="nc" id="L56">  }</span>
+
+  private static void parcourirMapping(List&lt;Eleve&gt; eleves, List&lt;Evaluation&gt; evaluations,
+      List&lt;Examen&gt; examens, Map&lt;Eleve, Map&lt;Examen, Float&gt;&gt; notesEleveExamens) {
+<span class="nc bnc" id="L60" title="All 2 branches missed.">    for (final Eleve eleve : eleves) {</span>
+<span class="nc bnc" id="L61" title="All 2 branches missed.">      for (final Examen examen : examens) {</span>
+<span class="nc bnc" id="L62" title="All 2 branches missed.">        if (!examen.getAutoEvaluation()) {</span>
+<span class="nc" id="L63">          mapping(evaluations, notesEleveExamens, eleve, examen);</span>
+        }
+<span class="nc" id="L65">      }</span>
+<span class="nc" id="L66">    }</span>
+<span class="nc" id="L67">  }</span>
+
+  private static void parcourirMapping(List&lt;Eleve&gt; eleves, List&lt;Evaluation&gt; evaluations,
+      List&lt;Examen&gt; examens, Map&lt;Eleve, Map&lt;Examen, Float&gt;&gt; notesEleveExamens, Promotion promotion,
+      Date debut, Date fin) {
+<span class="nc bnc" id="L72" title="All 2 branches missed.">    for (final Eleve eleve : eleves) {</span>
+<span class="nc bnc" id="L73" title="All 4 branches missed.">      if (eleve.getPromotion() != null &amp;&amp; eleve.getPromotion().getId() == promotion.getId()) {</span>
+<span class="nc bnc" id="L74" title="All 2 branches missed.">        for (final Examen examen : examens) {</span>
+<span class="nc" id="L75">          recupererAutoEvaluation(evaluations, notesEleveExamens, debut, fin, eleve, examen);</span>
+<span class="nc" id="L76">        }</span>
+      }
+<span class="nc" id="L78">    }</span>
+<span class="nc" id="L79">  }</span>
+
+  private static void recupererAutoEvaluation(List&lt;Evaluation&gt; evaluations,
+      Map&lt;Eleve, Map&lt;Examen, Float&gt;&gt; notesEleveExamens, Date debut, Date fin, final Eleve eleve,
+      final Examen examen) {
+<span class="nc bnc" id="L84" title="All 4 branches missed.">    if (!examen.getAutoEvaluation() &amp;&amp; !examen.getExercices().isEmpty()) {</span>
+<span class="nc" id="L85">      mapping(evaluations, notesEleveExamens, eleve, examen, debut, fin);</span>
+    }
+<span class="nc" id="L87">  }</span>
+
+  @SuppressWarnings(&quot;rawtypes&quot;)
+  private static void mapVersCsv(BufferedWriter writer,
+      Map&lt;Eleve, Map&lt;Examen, Float&gt;&gt; notesEleveExamens) throws IOException {
+<span class="nc" id="L92">    final Iterator it = notesEleveExamens.entrySet().iterator();</span>
+<span class="nc bnc" id="L93" title="All 2 branches missed.">    while (it.hasNext()) {</span>
+<span class="nc" id="L94">      final Map.Entry pair = (Map.Entry) it.next();</span>
+<span class="nc" id="L95">      writer.write(&quot;ID ELEVE : &quot;);</span>
+<span class="nc" id="L96">      writer.write(Integer.toString(((Eleve) pair.getKey()).getIdEleve()));</span>
+<span class="nc" id="L97">      writer.write('/');</span>
+<span class="nc" id="L98">      writer.write(&quot;NOM ELEVE : &quot;);</span>
+<span class="nc" id="L99">      writer.write(((Eleve) pair.getKey()).getNom() + &quot; &quot; + ((Eleve) pair.getKey()).getPrenom());</span>
+<span class="nc" id="L100">      writer.write('/');</span>
+<span class="nc" id="L101">      final Iterator itDeux = notesEleveExamens.get(pair.getKey()).entrySet().iterator();</span>
+<span class="nc bnc" id="L102" title="All 2 branches missed.">      while (itDeux.hasNext()) {</span>
+<span class="nc" id="L103">        final Map.Entry pairDeux = (Map.Entry) itDeux.next();</span>
+<span class="nc" id="L104">        writer.write(((Examen) pairDeux.getKey()).getNom());</span>
+<span class="nc" id="L105">        writer.write(',');</span>
+<span class="nc" id="L106">        writer.write(Float.toString(notesEleveExamens.get(pair.getKey()).get(pairDeux.getKey())));</span>
+<span class="nc" id="L107">        itDeux.remove();</span>
+<span class="nc bnc" id="L108" title="All 2 branches missed.">        if (itDeux.hasNext()) {</span>
+<span class="nc" id="L109">          writer.write(',');</span>
+        }
+<span class="nc" id="L111">      }</span>
+<span class="nc" id="L112">      writer.write('\n');</span>
+<span class="nc" id="L113">      it.remove();</span>
+<span class="nc" id="L114">    }</span>
+<span class="nc" id="L115">  }</span>
+
+  public static void mapping(List&lt;Evaluation&gt; evaluations,
+      Map&lt;Eleve, Map&lt;Examen, Float&gt;&gt; notesEleveExamens, Eleve eleve, Examen examen) {
+<span class="nc" id="L119">    mapping(evaluations, notesEleveExamens, eleve, examen, null, null);</span>
+<span class="nc" id="L120">  }</span>
+
+  public static void mapping(List&lt;Evaluation&gt; evaluations,
+      Map&lt;Eleve, Map&lt;Examen, Float&gt;&gt; notesEleveExamens, Eleve eleve, Examen examen, Date debut,
+      Date fin) {
+<span class="nc" id="L125">    Boolean trouve = false;</span>
+<span class="nc" id="L126">    Float note = new Float(0);</span>
+<span class="nc" id="L127">    Float sommePoints = new Float(0);</span>
+<span class="nc bnc" id="L128" title="All 2 branches missed.">    for (final Evaluation evaluation : evaluations) {</span>
+<span class="nc bnc" id="L129" title="All 2 branches missed.">      if (evaluation.getEleve().getIdEleve() == eleve.getIdEleve()) {</span>
+<span class="nc bnc" id="L130" title="All 2 branches missed.">        if (debut == null) {</span>
+<span class="nc bnc" id="L131" title="All 2 branches missed.">          for (final Exercice exercice : examen.getExercices()) {</span>
+<span class="nc" id="L132">            trouve = true;</span>
+<span class="nc" id="L133">            note += recupererNote(evaluation, exercice);</span>
+<span class="nc" id="L134">            sommePoints += recupererNombrePoints(evaluation, exercice);</span>
+<span class="nc" id="L135">          }</span>
+        } else {
+<span class="nc bnc" id="L137" title="All 4 branches missed.">          if (evaluation.getDateExamen().after(debut) &amp;&amp; evaluation.getDateExamen().before(fin)) {</span>
+<span class="nc bnc" id="L138" title="All 2 branches missed.">            for (final Exercice exercice : examen.getExercices()) {</span>
+<span class="nc" id="L139">              trouve = true;</span>
+<span class="nc" id="L140">              note += recupererNote(evaluation, exercice);</span>
+<span class="nc" id="L141">              sommePoints += recupererNombrePoints(evaluation, exercice);</span>
+<span class="nc" id="L142">            }</span>
+          }
+        }
+      }
+<span class="nc" id="L146">    }</span>
+<span class="nc" id="L147">    note = (note / sommePoints) * 20;</span>
+<span class="nc" id="L148">    majMap(notesEleveExamens, eleve, examen, trouve, note);</span>
+<span class="nc" id="L149">  }</span>
+
+  private static Float recupererNombrePoints(final Evaluation evaluation, final Exercice exercice) {
+<span class="nc" id="L152">    Float points = new Float(0);</span>
+<span class="nc bnc" id="L153" title="All 2 branches missed.">    if (evaluation.getExercice().getId() == exercice.getId()) {</span>
+<span class="nc" id="L154">      points += exercice.getNbPoints();</span>
+    }
+<span class="nc" id="L156">    return points;</span>
+  }
+
+  private static Float recupererNote(final Evaluation evaluation, final Exercice exercice) {
+<span class="nc" id="L160">    Float note = new Float(0);</span>
+<span class="nc bnc" id="L161" title="All 2 branches missed.">    if (evaluation.getExercice().getId() == exercice.getId()) {</span>
+<span class="nc" id="L162">      note += evaluation.getNote();</span>
+    }
+<span class="nc" id="L164">    return note;</span>
+  }
+
+  public static void majMap(Map&lt;Eleve, Map&lt;Examen, Float&gt;&gt; notesEleveExamens, Eleve eleve,
+      Examen examen, boolean trouve, float note) {
+<span class="nc bnc" id="L169" title="All 2 branches missed.">    if (trouve) {</span>
+<span class="nc bnc" id="L170" title="All 2 branches missed.">      if (notesEleveExamens.get(eleve) == null) {</span>
+<span class="nc" id="L171">        notesEleveExamens.put(eleve, new HashMap&lt;&gt;());</span>
+      }
+<span class="nc" id="L173">      notesEleveExamens.get(eleve).put(examen, note);</span>
+    }
+<span class="nc" id="L175">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.6.201602180812</span></div></body></html>

@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>SuggererAjouterCompetenceForm.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Atribus</a> &gt; <a href="index.source.html" class="el_package">fr.eseo.atribus.forms</a> &gt; <span class="el_source">SuggererAjouterCompetenceForm.java</span></div><h1>SuggererAjouterCompetenceForm.java</h1><pre class="source lang-java linenums">package fr.eseo.atribus.forms;
+
+import fr.eseo.atribus.dao.CompetenceDao;
+import fr.eseo.atribus.dao.DirecteurProgrammesDao;
+import fr.eseo.atribus.dao.NotificationDao;
+import fr.eseo.atribus.entities.DirecteurProgrammes;
+import fr.eseo.atribus.entities.Enseignant;
+import fr.eseo.atribus.entities.EnseignantRefMatiere;
+import fr.eseo.atribus.entities.Notification;
+
+import org.springframework.beans.factory.access.BeanFactoryReference;
+import org.springframework.beans.factory.access.SingletonBeanFactoryLocator;
+
+import java.util.List;
+import java.util.logging.Level;
+
+public class SuggererAjouterCompetenceForm extends MailForm {
+
+  private final DirecteurProgrammesDao directeurProgrammesDao;
+  private final NotificationDao notificationDao;
+  private final CompetenceDao competenceDao;
+  private static final String BR = &quot;&lt;br/&gt;&quot;;
+
+  /**
+   * Méthode d'instantiation.
+   */
+<span class="nc" id="L27">  public SuggererAjouterCompetenceForm() {</span>
+    final BeanFactoryReference bf =
+<span class="nc" id="L29">        SingletonBeanFactoryLocator.getInstance().useBeanFactory(&quot;beansDao&quot;);</span>
+    /* Récupération d'une instance de notre DAO Directeur programmes */
+<span class="nc" id="L31">    this.directeurProgrammesDao =</span>
+<span class="nc" id="L32">        (DirecteurProgrammesDao) bf.getFactory().getBean(&quot;directeurProgrammesDao&quot;);</span>
+    /* Récupération d'une instance de notre DAO Notification */
+<span class="nc" id="L34">    this.notificationDao = (NotificationDao) bf.getFactory().getBean(&quot;notificationDao&quot;);</span>
+    /* Récupération d'une instance de notre DAO Competence */
+<span class="nc" id="L36">    this.competenceDao = (CompetenceDao) bf.getFactory().getBean(&quot;competenceDao&quot;);</span>
+<span class="nc" id="L37">  }</span>
+
+  /**
+   * Suggestion de compétence d'un enseignant.
+   * 
+   * @param enseignant L'enseignant.
+   * @param competence La compétence.
+   * @param commentaire Le commentaire de l'enseignant.
+   */
+  public void suggererCompetence(Enseignant enseignant, String competence, String commentaire) {
+<span class="nc" id="L47">    final String objet = &quot;Suggestion de lien de compétence de la part d'un enseignant.&quot;;</span>
+<span class="nc" id="L48">    final String contenu = this.genererContenu(enseignant, competence, commentaire);</span>
+<span class="nc" id="L49">    final String destinataire = &quot;&quot;;</span>
+<span class="nc" id="L50">    this.traiterDonnees(competence, commentaire);</span>
+<span class="nc" id="L51">    List&lt;DirecteurProgrammes&gt; dps = this.directeurProgrammesDao.recupererListe();</span>
+<span class="nc bnc" id="L52" title="All 2 branches missed.">    for (DirecteurProgrammes dp : dps) {</span>
+<span class="nc bnc" id="L53" title="All 2 branches missed.">      if (dp.isNotificationActive()) {</span>
+<span class="nc" id="L54">        Notification notification = new Notification();</span>
+<span class="nc" id="L55">        notification.setDestinataire(dp.getId());</span>
+<span class="nc" id="L56">        notification.setEmetteur(enseignant.getId());</span>
+<span class="nc" id="L57">        notification.setMessage(contenu);</span>
+        try {
+<span class="nc" id="L59">          this.notificationDao.ajouter(notification);</span>
+<span class="nc" id="L60">        } catch (Exception exc) {</span>
+<span class="nc" id="L61">          MailForm.LOGGER.log(Level.INFO, EXCEPTION, exc);</span>
+<span class="nc" id="L62">          this.setErreur(&quot;erreurNotif&quot;, ERROR);</span>
+<span class="nc" id="L63">        }</span>
+      }
+<span class="nc bnc" id="L65" title="All 2 branches missed.">      if (dp.isNotificationMail()) {</span>
+<span class="nc" id="L66">        this.envoyerMail(objet, contenu, destinataire);</span>
+      }
+<span class="nc" id="L68">    }</span>
+<span class="nc" id="L69">  }</span>
+
+  /**
+   * Suggestion de compétence d'un enseignant ref matiere.
+   * 
+   * @param erm L'enseignant ref matiere.
+   * @param competence La compétence.
+   * @param commentaire Le commentaire de l'enseignant ref matiere.
+   */
+  public void suggererCompetence(EnseignantRefMatiere erm, String competence, String commentaire) {
+<span class="nc" id="L79">    final String objet = &quot;Suggestion de compétence de la part d'un Enseignant Référent Matiere.&quot;;</span>
+<span class="nc" id="L80">    final String contenu = this.genererContenu(erm, competence, commentaire);</span>
+<span class="nc" id="L81">    final String destinataire = &quot;&quot;;</span>
+<span class="nc" id="L82">    List&lt;DirecteurProgrammes&gt; dps = this.directeurProgrammesDao.recupererListe();</span>
+<span class="nc bnc" id="L83" title="All 2 branches missed.">    for (DirecteurProgrammes dp : dps) {</span>
+<span class="nc bnc" id="L84" title="All 2 branches missed.">      if (dp.isNotificationActive()) {</span>
+<span class="nc" id="L85">        Notification notification = new Notification();</span>
+<span class="nc" id="L86">        notification.setDestinataire(dp.getId());</span>
+<span class="nc" id="L87">        notification.setEmetteur(erm.getId());</span>
+<span class="nc" id="L88">        notification.setMessage(contenu);</span>
+        try {
+<span class="nc" id="L90">          this.notificationDao.ajouter(notification);</span>
+<span class="nc" id="L91">        } catch (Exception exc) {</span>
+<span class="nc" id="L92">          MailForm.LOGGER.log(Level.INFO, EXCEPTION, exc);</span>
+<span class="nc" id="L93">          this.setErreur(&quot;erreurNotif&quot;, ERROR);</span>
+<span class="nc" id="L94">        }</span>
+      }
+<span class="nc bnc" id="L96" title="All 2 branches missed.">      if (dp.isNotificationMail()) {</span>
+<span class="nc" id="L97">        this.envoyerMail(objet, contenu, destinataire);</span>
+      }
+<span class="nc" id="L99">    }</span>
+<span class="nc" id="L100">  }</span>
+
+  private String genererContenu(EnseignantRefMatiere erm, String competence, String commentaire) {
+<span class="nc" id="L103">    final StringBuilder convocation = new StringBuilder();</span>
+<span class="nc" id="L104">    convocation.append(this.messages.getErmSuggereCompetenceUn().replaceAll(BR, &quot;&quot;));</span>
+<span class="nc" id="L105">    convocation.append(erm.getNom() + &quot; &quot; + erm.getPrenom() + &quot; &quot;);</span>
+<span class="nc" id="L106">    convocation.append(this.messages.getErmSuggereCompetenceDeux().replaceAll(BR, &quot;&quot;));</span>
+    try {
+<span class="nc" id="L108">      convocation.append(</span>
+<span class="nc" id="L109">          &quot; &quot; + this.competenceDao.trouverParId(Integer.parseInt(competence)).getNom() + &quot;.&quot;);</span>
+<span class="nc" id="L110">    } catch (NumberFormatException nfe) {</span>
+<span class="nc" id="L111">      MailForm.LOGGER.log(Level.INFO, EXCEPTION, nfe);</span>
+<span class="nc" id="L112">    }</span>
+<span class="nc bnc" id="L113" title="All 2 branches missed.">    if (!(&quot;.&quot;).equals(convocation.substring(convocation.length() - 1))) {</span>
+<span class="nc" id="L114">      convocation.append(&quot;.&quot;);</span>
+    }
+<span class="nc" id="L116">    convocation.append(this.messages.getErmSuggereCompetenceTrois().replaceAll(BR, &quot;&quot;));</span>
+<span class="nc" id="L117">    convocation.append(commentaire);</span>
+<span class="nc bnc" id="L118" title="All 2 branches missed.">    if (!(&quot;.&quot;).equals(convocation.substring(convocation.length() - 1))) {</span>
+<span class="nc" id="L119">      convocation.append(&quot;.&quot;);</span>
+    }
+<span class="nc" id="L121">    convocation.append(this.messages.getErmSuggereCompetenceQuatre().replaceAll(BR, &quot;&quot;));</span>
+<span class="nc bnc" id="L122" title="All 2 branches missed.">    if (!(&quot;.&quot;).equals(convocation.substring(convocation.length() - 1))) {</span>
+<span class="nc" id="L123">      convocation.append(&quot;.&quot;);</span>
+    }
+<span class="nc" id="L125">    return convocation.toString();</span>
+  }
+
+  private String genererContenu(Enseignant enseignant, String competence, String commentaire) {
+<span class="nc" id="L129">    final StringBuilder convocation = new StringBuilder();</span>
+<span class="nc" id="L130">    convocation.append(this.messages.getEnseignantSuggereCompetenceUn().replaceAll(BR, &quot;&quot;));</span>
+<span class="nc" id="L131">    convocation.append(enseignant.getNom() + &quot; &quot; + enseignant.getPrenom() + &quot; &quot;);</span>
+<span class="nc" id="L132">    convocation.append(this.messages.getEnseignantSuggereCompetenceDeux().replaceAll(BR, &quot;&quot;));</span>
+    try {
+<span class="nc" id="L134">      convocation.append(</span>
+<span class="nc" id="L135">          &quot; &quot; + this.competenceDao.trouverParId(Integer.parseInt(competence)).getNom() + &quot;.&quot;);</span>
+<span class="nc" id="L136">    } catch (NumberFormatException nfe) {</span>
+<span class="nc" id="L137">      MailForm.LOGGER.log(Level.INFO, EXCEPTION, nfe);</span>
+<span class="nc" id="L138">    }</span>
+<span class="nc bnc" id="L139" title="All 2 branches missed.">    if (!(&quot;.&quot;).equals(convocation.substring(convocation.length() - 1))) {</span>
+<span class="nc" id="L140">      convocation.append(&quot;.&quot;);</span>
+    }
+<span class="nc" id="L142">    convocation.append(this.messages.getEnseignantSuggereCompetenceTrois().replaceAll(BR, &quot;&quot;));</span>
+<span class="nc" id="L143">    convocation.append(commentaire);</span>
+<span class="nc bnc" id="L144" title="All 2 branches missed.">    if (!(&quot;.&quot;).equals(convocation.substring(convocation.length() - 1))) {</span>
+<span class="nc" id="L145">      convocation.append(&quot;.&quot;);</span>
+    }
+<span class="nc" id="L147">    convocation.append(this.messages.getEnseignantSuggereCompetenceQuatre().replaceAll(BR, &quot;&quot;));</span>
+<span class="nc bnc" id="L148" title="All 2 branches missed.">    if (!(&quot;.&quot;).equals(convocation.substring(convocation.length() - 1))) {</span>
+<span class="nc" id="L149">      convocation.append(&quot;.&quot;);</span>
+    }
+<span class="nc" id="L151">    return convocation.toString();</span>
+  }
+
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.6.201602180812</span></div></body></html>

@@ -1,0 +1,205 @@
+package fr.eseo.atribus.timers;
+
+import fr.eseo.atribus.beans.Mail;
+import fr.eseo.atribus.dao.NotificationDao;
+import fr.eseo.atribus.dao.UtilisateurDao;
+import fr.eseo.atribus.entities.Notification;
+import fr.eseo.atribus.entities.Utilisateur;
+
+import org.springframework.beans.factory.access.BeanFactoryReference;
+import org.springframework.beans.factory.access.SingletonBeanFactoryLocator;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
+
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.mail.MessagingException;
+import javax.servlet.ServletContext;
+
+// TODO: Auto-generated Javadoc
+/**
+ * The Class TimerConversionNotificationEnMail.
+ */
+@Service
+public class TimerConversionNotificationEnMail {
+
+  /** La constante LOGGER. */
+  private static final Logger LOGGER =
+      Logger.getLogger(TimerConversionNotificationEnMail.class.getName());
+
+  /** La variable servlet context. */
+  @Autowired(required = true)
+  ServletContext servletContext;
+
+  /** La variable mail. */
+  @Autowired(required = true)
+  Mail mail;
+
+  /** La variable notification dao. */
+  NotificationDao notificationDao;
+
+  /** La variable utilisateur dao. */
+  UtilisateurDao utilisateurDao;
+
+  /**
+   * Instancie un nouveau timer conversion notification en mail.
+   */
+  public TimerConversionNotificationEnMail() {
+    TimerConversionNotificationEnMail.LOGGER
+        .info("Instantiation du convertisseur de notifications vers des mails");
+    final BeanFactoryReference bf =
+        SingletonBeanFactoryLocator.getInstance().useBeanFactory("beansDao");
+    /* Récupération d'une instance de notre DAO Notification */
+    this.notificationDao = (NotificationDao) bf.getFactory().getBean("notificationDao");
+    /* Récupération d'une instance de notre DAO Competence */
+    this.utilisateurDao = (UtilisateurDao) bf.getFactory().getBean("utilisateurDao");
+  }
+
+  /**
+   * Accesseur en lecture sur le paramètre servlet context.
+   *
+   * @return le paramètre servlet context
+   */
+  public ServletContext getServletContext() {
+    return this.servletContext;
+  }
+
+  /**
+   * Accesseur en écriture sur le paramètre servlet context.
+   *
+   * @param servletContext le nouveau paramètre servlet context
+   */
+  public void setServletContext(ServletContext servletContext) {
+    this.servletContext = servletContext;
+  }
+
+  /**
+   * Accesseur en lecture sur le paramètre mail.
+   *
+   * @return le paramètre mail
+   */
+  public Mail getMail() {
+    return this.mail;
+  }
+
+  /**
+   * Accesseur en écriture sur le paramètre mail.
+   *
+   * @param mail le nouveau paramètre mail
+   */
+  public void setMail(Mail mail) {
+    this.mail = mail;
+  }
+
+  /**
+   * Conversion automatique des notifications en mail toutes les heures.
+   */
+  @Scheduled(fixedDelay = 60 * 60 * 1000)
+  public void executer() {
+    final List<Utilisateur> utilisateurs = this.utilisateurDao.recupererListe();
+    for (final Utilisateur utilisateur : utilisateurs) {
+      if (utilisateur.getFrequenceNotificationMail() != 0 && !utilisateur.isNotificationMail()) {
+        for (final Notification notification : utilisateur.getNotifications()) {
+          this.envoyerSiRequis(utilisateur, notification);
+        }
+      }
+    }
+  }
+
+  /**
+   * Envoyer si requis.
+   *
+   * @param utilisateur le utilisateur
+   * @param notification le notification
+   */
+  private void envoyerSiRequis(Utilisateur utilisateur, Notification notification) {
+    switch (utilisateur.getFrequenceNotificationMail()) {
+      case 1:
+        this.miseAJourHeure(utilisateur, notification);
+        break;
+      case 2:
+        this.miseAJourJournaliere(utilisateur, notification);
+        break;
+      case 3:
+        this.miseAJourHebdomadaire(utilisateur, notification);
+        break;
+      default:
+        break;
+    }
+  }
+
+  /**
+   * Mise a jour hebdomadaire.
+   *
+   * @param utilisateur le utilisateur
+   * @param notification le notification
+   */
+  private void miseAJourHebdomadaire(Utilisateur utilisateur, Notification notification) {
+    final Calendar cal = Calendar.getInstance();
+    cal.setTime(notification.getDateCreation());
+    final int jourNotification = cal.get(Calendar.DAY_OF_YEAR);
+    final Calendar calActuel = Calendar.getInstance();
+    calActuel.setTime(new Date());
+    final int jourActuel = calActuel.get(Calendar.DAY_OF_YEAR);
+    if (jourNotification - jourActuel <= -7) {
+      this.conversion(notification, utilisateur);
+    }
+  }
+
+  /**
+   * Mise a jour journaliere.
+   *
+   * @param utilisateur le utilisateur
+   * @param notification le notification
+   */
+  private void miseAJourJournaliere(Utilisateur utilisateur, Notification notification) {
+    final Calendar cal = Calendar.getInstance();
+    cal.setTime(notification.getDateCreation());
+    final int jourNotification = cal.get(Calendar.DAY_OF_YEAR);
+    final Calendar calActuel = Calendar.getInstance();
+    calActuel.setTime(new Date());
+    final int jourActuel = calActuel.get(Calendar.DAY_OF_YEAR);
+    if (jourNotification - jourActuel < -1) {
+      this.conversion(notification, utilisateur);
+    }
+  }
+
+  /**
+   * Mise a jour heure.
+   *
+   * @param utilisateur le utilisateur
+   * @param notification le notification
+   */
+  private void miseAJourHeure(Utilisateur utilisateur, Notification notification) {
+    final Calendar cal = Calendar.getInstance();
+    cal.setTime(notification.getDateCreation());
+    final int heureNotification = cal.get(Calendar.HOUR_OF_DAY);
+    final Calendar calActuel = Calendar.getInstance();
+    calActuel.setTime(new Date());
+    final int heureActuelle = calActuel.get(Calendar.HOUR_OF_DAY);
+    if (heureNotification - heureActuelle <= -1) {
+      this.conversion(notification, utilisateur);
+    }
+  }
+
+  /**
+   * Conversion.
+   *
+   * @param notification le notification
+   * @param utilisateur le utilisateur
+   */
+  private void conversion(Notification notification, Utilisateur utilisateur) {
+    try {
+      this.mail.mailAutomatique(utilisateur.getEmail(),
+          "Notification de " + notification.getNomEmetteur() + ".", notification.getMessage());
+      this.notificationDao.supprimer(notification);
+    } catch (final MessagingException mesesx) {
+      TimerConversionNotificationEnMail.LOGGER.log(Level.INFO, "Exception", mesesx);
+    }
+  }
+}

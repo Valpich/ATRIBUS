@@ -1,0 +1,36 @@
+Documentation concernant les Librairies et les API utilisés
+
+++ joda-dime:
+API très utile dès lors que le projet fait intervenir la manipulation de dates.
+Vous avez très certainement déjà remarqué le problème en : la manipulation de
+dates en Java est horriblement peu intuitive ! 
+Que ce soit via l'objet Date ou via l'objet Calendar, c'est très décevant
+et très loin de ce que l'on est en droit d'attendre d'une plate-forme évoluée comme Java !
+
+ 
+
+++ JSTL :
+Bibliothèque de balises préconçues qui permettent, à la manière des balises JSP, 
+de mettre en place les fonctionnalités dont nous avons besoin couramment dans une vue,
+mais qui ne sont pas accessibles nativement au sein de la technologie JSP.
+
+++ BoneCP
+Pour la gestion de pool de connexions
+++ SLF4J 
+Dépendance de la lib BoneCP
+++ Google Guava
+Dépendance de la lib BoneCP
+
+
+++ mysql-connector :
+Driver de BDD pour MySQL
+
+
+++ TestNG
+
+++ Mockito
+
+Scrummaster
+Déninition UE: Regroupe des matières
+Logs : vaut mieux un fichier .log 
+Roles : Scroll se mettre en tant que "Role"

@@ -1,0 +1,83 @@
+package fr.eseo.atribus.entities;
+
+import org.joda.time.DateTime;
+
+import java.io.Serializable;
+import java.util.List;
+
+public class Ressource implements Serializable {
+
+  private static final long serialVersionUID = 7507707833658831460L;
+
+  private int id;
+  private Matiere matiere;
+  private String nom;
+  private String type;
+  private String path;
+  private DateTime datePublication;
+  private List<Competence> competences;
+
+  public int getId() {
+    return this.id;
+  }
+
+  public void setId(int id) {
+    this.id = id;
+  }
+
+  public String getNom() {
+    return this.nom;
+  }
+
+  public String getType() {
+    return this.type;
+  }
+
+  public String getPath() {
+    return this.path;
+  }
+
+  public void setPath(String path) {
+    this.path = path;
+  }
+
+  public DateTime getDatePublication() {
+    return this.datePublication;
+  }
+
+  public void setNom(String nom) {
+    this.nom = nom;
+  }
+
+  public void setType(String type) {
+    this.type = type;
+  }
+
+  public void setDatePublication(DateTime datePublication) {
+    this.datePublication = datePublication;
+  }
+
+  public Matiere getMatiere() {
+    return this.matiere;
+  }
+
+  public void setMatiere(Matiere matiere) {
+    this.matiere = matiere;
+  }
+
+  public List<Competence> getCompetences() {
+    return this.competences;
+  }
+
+  public void setCompetences(List<Competence> competences) {
+    this.competences = competences;
+  }
+
+  @Override
+  public String toString() {
+    return "Ressource [id=" + this.id + ", matiere=" + this.matiere + ", nom=" + this.nom
+        + ", type=" + this.type + ", path=" + this.path + ", datePublication="
+        + this.datePublication + ", competences=" + this.competences + "]";
+  }
+
+}

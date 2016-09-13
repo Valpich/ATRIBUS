@@ -1,0 +1,76 @@
+package fr.eseo.atribus.controller;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
+
+import fr.eseo.atribus.dao.EnseignantRefMatiereDao;
+import fr.eseo.atribus.dao.EnseignantRefUeDao;
+import fr.eseo.atribus.entities.Utilisateur;
+
+import org.mockito.MockitoAnnotations;
+import org.springframework.beans.factory.access.BeanFactoryReference;
+import org.springframework.beans.factory.access.SingletonBeanFactoryLocator;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.servlet.view.InternalResourceViewResolver;
+import org.testng.annotations.BeforeTest;
+import org.testng.annotations.Test;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class MatiereControllerTest {
+
+  public static final String VUE = "EnseignantRefMatiere/addMatiere";
+
+  private MockMvc mockMvc;
+  private EnseignantRefUeDao erueDao;
+  private EnseignantRefMatiereDao ermDao;
+
+  /**
+   * Initialisation.
+   */
+  @BeforeTest
+  public void setup() {
+
+    final MatiereController matiereController = new MatiereController();
+    final InternalResourceViewResolver viewResolver = new InternalResourceViewResolver();
+
+    viewResolver.setPrefix("/WEB-INF/");
+    viewResolver.setSuffix(".jsp");
+    MockitoAnnotations.initMocks(this);
+
+    this.mockMvc =
+        MockMvcBuilders.standaloneSetup(matiereController).setViewResolvers(viewResolver).build();
+    final BeanFactoryReference bf =
+        SingletonBeanFactoryLocator.getInstance().useBeanFactory("beansDao");
+    /* Récupération d'une instance de notre DAO Enseignant Reférent UE */
+    this.erueDao = (EnseignantRefUeDao) bf.getFactory().getBean("enseignantRefUeDao");
+    this.ermDao = (EnseignantRefMatiereDao) bf.getFactory().getBean("enseignantRefMatiereDao");
+  }
+
+  @Test
+  public void ajouterMatiereGet() throws Exception {
+
+    this.mockMvc.perform(get("/EnseignantRefUE/AjouterMatiere").param("recherche", "NotNull"))
+        .andExpect(status().isOk()).andExpect(view().name(VUE));
+
+  }
+
+  @Test
+  public void ajouterMatierePost() throws Exception {
+
+    this.mockMvc.perform(post("/EnseignantRefUE/AjouterMatiere").with(request -> {
+      final List<Utilisateur> utilisateur = new ArrayList<>();
+      utilisateur.add(MatiereControllerTest.this.ermDao.recupererListe().get(0));
+      request.getSession().setAttribute("sessionUtilisateur", utilisateur);
+      return request;
+    }).param("nom", "NotNull").param("coefficient_matiere", "1").param("listeSemestre", "1")
+        .param("listeUe", "Mathématiques").param("coefficient_matiere", "1")
+        .param("listeEnseignant", "Alexis")).andExpect(view().name(VUE));
+
+  }
+
+}

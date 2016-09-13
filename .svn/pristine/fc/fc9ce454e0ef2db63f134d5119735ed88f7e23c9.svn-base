@@ -1,0 +1,60 @@
+package fr.eseo.atribus.entities;
+
+import java.io.Serializable;
+
+// TODO: Auto-generated Javadoc
+/**
+ * The Class AdminSyst.
+ */
+public class AdminSyst extends Utilisateur implements Serializable {
+
+  /** La constante serialVersionUID. */
+  private static final long serialVersionUID = -7588803623167940110L;
+
+  /** La variable id admin syst. */
+  private int idAdminSyst;
+
+  /**
+   * Instancie un nouveau admin syst.
+   */
+  public AdminSyst() {
+    super();
+  }
+
+  /**
+   * Instancie un nouveau admin syst.
+   *
+   * @param utilisateur le utilisateur
+   */
+  public AdminSyst(Utilisateur utilisateur) {
+    super(utilisateur);
+  }
+
+  /**
+   * Accesseur en lecture sur le paramètre id admin syst.
+   *
+   * @return le paramètre id admin syst
+   */
+  public int getIdAdminSyst() {
+    return this.idAdminSyst;
+  }
+
+  /**
+   * Accesseur en écriture sur le paramètre id admin syst.
+   *
+   * @param idAdminSyst le nouveau paramètre id admin syst
+   */
+  public void setIdAdminSyst(int idAdminSyst) {
+    this.idAdminSyst = idAdminSyst;
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see fr.eseo.atribus.entities.Utilisateur#toString()
+   */
+  @Override
+  public String toString() {
+    return "AdminSyst [idAdminSyst=" + this.idAdminSyst + "]";
+  }
+}

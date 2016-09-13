@@ -1,0 +1,21 @@
+package fr.eseo.atribus.dao;
+
+import fr.eseo.atribus.entities.EnseignantRefMatiere;
+import fr.eseo.atribus.entities.Matiere;
+
+import java.util.List;
+
+public interface MatiereDao {
+
+
+  Matiere trouverParNom(String nom);
+
+  List<Matiere> trouverToutesLesMatieres();
+  List<Matiere> trouverMatiereParUe();
+  public int trouverIdParNom(String nom);
+
+  Matiere trouverParId(int id);
+
+
+  void ajouter(Matiere matiere, EnseignantRefMatiere utilisateur);
+}

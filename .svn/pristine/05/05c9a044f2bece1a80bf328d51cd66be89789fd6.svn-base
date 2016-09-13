@@ -1,0 +1,108 @@
+package fr.eseo.atribus.controller;
+
+import fr.eseo.atribus.entities.AdminSyst;
+import fr.eseo.atribus.entities.DirecteurEtudes;
+import fr.eseo.atribus.entities.DirecteurProgrammes;
+import fr.eseo.atribus.entities.Eleve;
+import fr.eseo.atribus.entities.Enseignant;
+import fr.eseo.atribus.entities.EnseignantRefMatiere;
+import fr.eseo.atribus.entities.EnseignantRefUe;
+import fr.eseo.atribus.entities.Utilisateur;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.servlet.ModelAndView;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+
+// TODO: Auto-generated Javadoc
+/**
+ * Servlet implementation class SimulerController.
+ */
+@Controller
+public class SimulerController {
+
+  /** La constante VUE. */
+  public static final String VUE = "simulerDroits";
+
+  /**
+   * Simulation get.
+   *
+   * @return Le paramètre model and view
+   */
+  @RequestMapping(value = "/AdministrateurSysteme/Simuler", method = RequestMethod.GET)
+  protected ModelAndView simulationGet() {
+    final HashMap<String, Object> attributsRequete = new HashMap<>();
+    this.listerDroits(attributsRequete);
+    return new ModelAndView(VUE, attributsRequete);
+  }
+
+  /**
+   * Lister droits.
+   *
+   * @param attributsRequete le attributs requete
+   */
+  private void listerDroits(HashMap<String, Object> attributsRequete) {
+    final ArrayList<String> droits = new ArrayList<>();
+    droits.add("ERM");
+    droits.add("AS");
+    droits.add("DE");
+    droits.add("Eleve");
+    droits.add("Prof");
+    droits.add("DP");
+    droits.add("EURE");
+    attributsRequete.put("listeDesDroits", droits);
+  }
+
+  /**
+   * Simulation post.
+   *
+   * @param request le request
+   * @return Le paramètre model and view
+   */
+  @RequestMapping(value = "/AdministrateurSysteme/Simuler", method = RequestMethod.POST)
+  protected ModelAndView simulationPost(HttpServletRequest request) {
+    final String choix = request.getParameter("choixDroit");
+    final HttpSession session = request.getSession();
+    final List<Utilisateur> listeUtilisateur = new ArrayList<>();
+    listeUtilisateur.add(new Utilisateur());
+    switch (choix) {
+      case "AS":
+        listeUtilisateur.add(new AdminSyst());
+        break;
+      case "DE":
+        listeUtilisateur.add(new DirecteurEtudes());
+        break;
+      case "Eleve":
+        listeUtilisateur.add(new Eleve());
+        break;
+      case "Prof":
+        listeUtilisateur.add(new Enseignant());
+        break;
+      case "DP":
+        listeUtilisateur.add(new DirecteurProgrammes());
+        break;
+      case "EURE":
+        listeUtilisateur.add(new EnseignantRefUe());
+        break;
+      case "ERM":
+        listeUtilisateur.add(new EnseignantRefMatiere());
+        break;
+      default:
+        listeUtilisateur.add(new Utilisateur());
+        break;
+    }
+    session.setAttribute("sessionUtilisateur", listeUtilisateur);
+    final HashMap<String, Object> attributsRequete = new HashMap<>();
+    this.listerDroits(attributsRequete);
+    attributsRequete.put("etats", session.getAttribute("sessionUtilisateur"));
+    return new ModelAndView(VUE, attributsRequete);
+  }
+
+}

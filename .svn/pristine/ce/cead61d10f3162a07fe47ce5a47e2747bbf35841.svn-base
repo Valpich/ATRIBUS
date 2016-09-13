@@ -1,0 +1,44 @@
+package fr.eseo.atribus.entities;
+
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
+
+import org.testng.annotations.BeforeTest;
+import org.testng.annotations.Test;
+
+public class AdminSystTest {
+  
+  AdminSyst admin;
+  
+  @BeforeTest
+  public void beforeTest() {
+    admin = new AdminSyst();
+    assertNotNull(admin);
+  }
+
+  @Test
+  public void contructeurUtilisateur() {
+    
+    Utilisateur utilisateur = new Utilisateur();
+    
+    utilisateur.setId(3);
+    utilisateur.setNom("NomAdmin");
+    
+    admin = new AdminSyst(utilisateur);
+    
+    assertNotNull(admin);
+    
+  }
+  
+  @Test
+  public void getSetIdAdminSystem() {
+    admin.setIdAdminSyst(1);
+    assertEquals(admin.getIdAdminSyst(), 1);
+  }
+  
+  @Test
+  public void methodToString() {
+    assertEquals(admin.toString(), admin.toString());
+  }
+  
+}

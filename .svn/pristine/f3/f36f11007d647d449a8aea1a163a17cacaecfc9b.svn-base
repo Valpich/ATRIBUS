@@ -1,0 +1,97 @@
+package fr.eseo.atribus.forms;
+
+import static org.testng.Assert.assertNotNull;
+
+import fr.eseo.atribus.dao.CompetenceDaoImpl;
+
+import org.mockito.Mockito;
+import org.testng.annotations.BeforeTest;
+import org.testng.annotations.Test;
+
+import javax.servlet.http.HttpServletRequest;
+
+
+public class ModifierCompetenceFormTest {
+  
+  private ModifierCompetenceForm competence;
+  private CompetenceDaoImpl competenceDao;
+  
+  @BeforeTest
+  public void beforeTest() {
+    this.competence = new ModifierCompetenceForm();
+    this.competenceDao = new CompetenceDaoImpl();
+  }
+  
+  @Test
+  public void modifierCompetence() {
+    
+    final HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
+    String nomCompetence = "Physique";
+    
+    Mockito.when(request.getParameter("competenceId")).thenReturn("4");
+    Mockito.when(request.getParameter("NouveauNomCompetence")).thenReturn(nomCompetence);
+    Mockito.when(request.getParameter("nouveauNiveau")).thenReturn("1");
+    
+    competence.modifierCompetence(request);
+    
+    assertNotNull(this.competenceDao.trouverParNom("Physique"));
+    
+  }
+  
+  @Test
+  public void modifierCompetenceErreurNiveau() {
+    
+    final HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
+    String nomCompetence = "Physique";
+    
+    Mockito.when(request.getParameter("competenceId")).thenReturn("4");
+    Mockito.when(request.getParameter("NouveauNomCompetence")).thenReturn(nomCompetence);
+    Mockito.when(request.getParameter("nouveauNiveau")).thenReturn("A");
+    
+    competence.modifierCompetence(request);
+    
+    assertNotNull(this.competenceDao.trouverParNom("Physique"));
+    assertNotNull(this.competence.getErreurs());
+    
+  }
+  
+  @Test
+  public void modifierCompetenceErreurNom() {
+    
+    final HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
+    String nomCompetence = "Phy";
+    
+    Mockito.when(request.getParameter("competenceId")).thenReturn("4");
+    Mockito.when(request.getParameter("NouveauNomCompetence")).thenReturn(nomCompetence);
+    Mockito.when(request.getParameter("nouveauNiveau")).thenReturn("A");
+    
+    competence.modifierCompetence(request);
+    
+    assertNotNull(this.competenceDao.trouverParNom("Physique"));
+    assertNotNull(this.competence.getErreurs());
+    
+  }
+  
+  @Test
+  public void modifierCompetenceTrouverParNom() { 
+    assertNotNull(this.competence.trouverParNom("Physique"));  
+  }
+  
+  @Test
+  public void modifierCompetenceErreurValeurChamp() {
+    
+    final HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
+    String nomCompetence = "";
+    
+    Mockito.when(request.getParameter("competenceId")).thenReturn("4");
+    Mockito.when(request.getParameter("NouveauNomCompetence")).thenReturn(nomCompetence);
+    Mockito.when(request.getParameter("nouveauNiveau")).thenReturn("4");
+    
+    competence.modifierCompetence(request);
+    
+    assertNotNull(this.competenceDao.trouverParNom("Physique"));
+    assertNotNull(this.competence.getErreurs());
+    
+  }
+
+}

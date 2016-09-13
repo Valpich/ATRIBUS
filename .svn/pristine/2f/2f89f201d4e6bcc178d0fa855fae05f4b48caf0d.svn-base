@@ -1,0 +1,145 @@
+package fr.eseo.atribus.controller;
+
+
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
+
+import java.util.Random;
+
+import org.mockito.MockitoAnnotations;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.servlet.view.InternalResourceViewResolver;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
+public class UeControllerTest {
+
+  private MockMvc mockMvc;
+
+  /**
+   * Méthode d'initialisation.
+   */
+  @BeforeClass
+  public void setup() {
+
+    final UeController ueController = new UeController();
+    InternalResourceViewResolver viewResolver = new InternalResourceViewResolver();
+
+    viewResolver.setPrefix("/WEB-INF/");
+    viewResolver.setSuffix(".jsp");
+    MockitoAnnotations.initMocks(this);
+
+    ueController.init();
+
+    mockMvc = MockMvcBuilders.standaloneSetup(ueController).setViewResolvers(viewResolver).build();
+
+  }
+
+  @Test
+  public void ajouterUeGet() throws Exception {
+
+    mockMvc.perform(get("/DirecteurProgrammes/AjouterUE")).andExpect(status().isOk())
+        .andExpect(view().name("DirecteurProgrammes/ajoutUe"));
+
+  }
+
+  @Test
+  public void ajouterUePost() throws Exception {
+    
+    Random rand = new Random();
+    int nombreAleatoire = rand.nextInt(10000);
+
+    mockMvc
+        .perform(post("/DirecteurProgrammes/AjouterUE")
+            .param("nbCreditsEcts", "1")
+            .param("nbHeures", "3")
+            .param("nomUe", "UeTest " + nombreAleatoire)
+            .param("semestre", "7")
+            .param("choixIdEnseignant", "3"))
+            .andDo(print()).andExpect(status().isOk())
+            .andExpect(view().name("DirecteurProgrammes/ajoutUe"));
+    
+    // On test l'ajout d'un UE avec les mauvais paramètres
+    
+    mockMvc
+        .perform(post("/DirecteurProgrammes/AjouterUE").param("nbCreditsEcts", "a")
+            .param("nbHeures", "a").param("nomUe", "ue").param("semestre", "8")
+            .param("choixIdEnseignant", "1"))
+        .andDo(print()).andExpect(status().isOk())
+        .andExpect(view().name("DirecteurProgrammes/ajoutUe"));
+    
+  }
+
+  @Test
+  public void validerCompetencesUeGet() throws Exception {
+
+    mockMvc.perform(get("/DirecteurProgrammes/ValiderCompetences")).andExpect(status().isOk())
+        .andExpect(view().name("DirecteurProgrammes/validerCompetences"));
+
+  }
+
+  @Test
+  public void validerCompetencesUePost() throws Exception {
+
+    mockMvc.perform(post("/DirecteurProgrammes/ValiderCompetences")).andExpect(status().isOk())
+        .andExpect(view().name("DirecteurProgrammes/validerCompetences"));
+
+  }
+
+  @Test
+  public void afficherCompetenceUeGet() throws Exception {
+
+    mockMvc.perform(get("/EnseignantRefMatiere/AfficherCompetenceUE")).andExpect(status().isOk())
+        .andExpect(view().name("EnseignantRefMatiere/afficherCompetenceUe"));
+
+  }
+
+  @Test
+  public void afficherCompetenceUePost() throws Exception {
+
+    mockMvc
+        .perform(post("/EnseignantRefMatiere/AfficherCompetenceUE").param("nomUe", "Mathématiques"))
+        .andExpect(status().isOk())
+        .andExpect(view().name("EnseignantRefMatiere/afficherCompetenceUe"));
+
+  }
+
+  @Test
+  public void afficherCompetenceMatiereGet() throws Exception {
+
+    mockMvc.perform(get("/Enseignant/AfficherCompetenceMatiere")).andExpect(status().isOk())
+        .andExpect(view().name("Enseignant/afficherCompetenceMatiere"));
+
+  }
+
+  @Test
+  public void afficherCompetenceMatierePost() throws Exception {
+
+    mockMvc
+        .perform(post("/Enseignant/AfficherCompetenceMatiere").param("nomMatiere", "Probabilités"))
+        .andExpect(status().isOk()).andExpect(view().name("Enseignant/afficherCompetenceMatiere"));
+
+  }
+  
+  @Test
+  public void afficherModifierUeSelectionUe() throws Exception {
+
+    mockMvc.perform(get("/DirecteurProgrammes/ModifierUE")).andExpect(status().isOk())
+        .andExpect(view().name("DirecteurProgrammes/modifierUe"));
+
+  }
+/**
+  @Test
+  public void modifierUeSelectionUe() throws Exception {
+
+    mockMvc
+        .perform(post("/DirecteurProgrammes/ModifierUE").param("nomUe", "Anglais"))
+        .andExpect(status().isOk()).andExpect(view().name("DirecteurProgrammes/modifierUe"));
+
+  }*/
+}

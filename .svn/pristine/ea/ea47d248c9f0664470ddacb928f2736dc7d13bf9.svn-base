@@ -1,0 +1,754 @@
+package fr.eseo.atribus.controller;
+
+
+import fr.eseo.atribus.beans.ExporteurCsv;
+import fr.eseo.atribus.dao.CompetenceDao;
+import fr.eseo.atribus.dao.EleveDao;
+import fr.eseo.atribus.dao.EvaluationDao;
+import fr.eseo.atribus.dao.ExamenDao;
+import fr.eseo.atribus.dao.MatiereDao;
+import fr.eseo.atribus.dao.PromotionDao;
+import fr.eseo.atribus.dao.RessourceDao;
+import fr.eseo.atribus.entities.EnseignantRefMatiere;
+import fr.eseo.atribus.entities.Promotion;
+import fr.eseo.atribus.entities.Ressource;
+import fr.eseo.atribus.entities.Utilisateur;
+import fr.eseo.atribus.forms.AddRessourceForm;
+import fr.eseo.atribus.forms.ModifierRessourceForm;
+
+import org.springframework.beans.factory.access.BeanFactoryReference;
+import org.springframework.beans.factory.access.SingletonBeanFactoryLocator;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.stereotype.Controller;
+import org.springframework.util.FileCopyUtils;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.ModelAndView;
+
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URLConnection;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.annotation.PostConstruct;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+// TODO: Auto-generated Javadoc
+/**
+ * Servlet implementation class RessourceController.
+ */
+@Controller
+public class RessourceController {
+
+  /** La constante VUE_MODIFIER. */
+  public static final String VUE_MODIFIER = "EnseignantRefMatiere/modifierRessource";
+
+  /** La constante VUE_TELECHARGER. */
+  public static final String VUE_TELECHARGER = "download";
+
+  /** La constante VUE_ELEVE_CONSULTER. */
+  public static final String VUE_ELEVE_CONSULTER = "Eleve/consulterRessource";
+
+  /** La constante VUE_UPLOAD. */
+  public static final String VUE_UPLOAD = "upload";
+
+  /** La constante DOWNLOAD_RESSOURCE. */
+  public static final String DOWNLOAD_RESSOURCE = "/downloadRessource";
+
+  /** La constante CONF_BDD_FACTORY. */
+  public static final String CONF_BDD_FACTORY = "DaoFactory";
+
+  /** La constante ATT_RESSOURCES. */
+  public static final String ATT_RESSOURCES = "ressources";
+
+  /** La constante ATT_FORM. */
+  public static final String ATT_FORM = "form";
+
+  /** La constante ATT_RESSOURCE. */
+  public static final String ATT_RESSOURCE = "ressource";
+
+  /** La constante ATT_COMPETENCES. */
+  public static final String ATT_COMPETENCES = "competences";
+
+  /** La constante ATT_MATIERES. */
+  public static final String ATT_MATIERES = "matieres";
+
+  /** La constante PROPERTY_BASE_PATH. */
+  private static final String PROPERTY_BASE_PATH = "basePath";
+
+  /** La constante PROPERTY_SERVEUR_PATH. */
+  private static final String PROPERTY_SERVEUR_PATH = "serveurPath";
+
+  /** La constante PROPERTY_TEMP_FOLDER. */
+  private static final String PROPERTY_TEMP_FOLDER = "tempFolder";
+
+  /** La constante CHAMP_RESSOURCE. */
+  private static final String CHAMP_RESSOURCE = "choixRessource";
+
+  /** La constante BASE_PATH_STRING. */
+  private static final String BASE_PATH_STRING = "Le parametre 'basePath' de valeur '";
+
+  /** La constante ATT_SESSION_USER. */
+  public static final String ATT_SESSION_USER = "sessionUtilisateur";
+
+  /** La constante CONTENT. */
+  private static final String CONTENT = "Content-Disposition";
+
+  /** La constante EXCEPTION. */
+  private static final String EXCEPTION = "exception";
+
+  /** La constante VUE_HISTORIQUE. */
+  private static final String VUE_HISTORIQUE = "EnseignantRefUE/historiqueRessources";
+
+  /** La variable matiere dao. */
+  private MatiereDao matiereDao;
+
+  /** La variable ressource dao. */
+  private RessourceDao ressourceDao;
+
+  /** La variable competence dao. */
+  private CompetenceDao competenceDao;
+
+  /** La variable eleve dao. */
+  private EleveDao eleveDao;
+
+  /** La variable evaluation dao. */
+  private EvaluationDao evaluationDao;
+
+  /** La variable examen dao. */
+  private ExamenDao examenDao;
+
+  /** La variable promotion dao. */
+  private PromotionDao promotionDao;
+
+  /** La variable base path. */
+  private String basePath;
+
+  /** La variable serveur path. */
+  private String serveurPath;
+
+  /** La variable temp folder. */
+  private String tempFolder;
+
+  /** La constante LOGGER. */
+  private static final Logger LOGGER = Logger.getLogger(RessourceController.class.getName());
+
+  /** La constante FICHIER_PROPERTIES. */
+  private static final String FICHIER_PROPERTIES = "/fr/eseo/atribus/controller/upload.properties";
+
+  /**
+   * Accesseur en lecture sur le paramètre base path.
+   *
+   * @return le paramètre base path
+   */
+  public String getBasePath() {
+    return this.basePath;
+  }
+
+  /**
+   * Accesseur en écriture sur le paramètre base path.
+   *
+   * @param basePath le nouveau paramètre base path
+   */
+  public void setBasePath(String basePath) {
+    this.basePath = basePath;
+  }
+
+  /**
+   * Accesseur en lecture sur le paramètre serveur path.
+   *
+   * @return le paramètre serveur path
+   */
+  public String getServeurPath() {
+    return this.serveurPath;
+  }
+
+  /**
+   * Accesseur en écriture sur le paramètre serveur path.
+   *
+   * @param serveurPath le nouveau paramètre serveur path
+   */
+  public void setServeurPath(String serveurPath) {
+    this.serveurPath = serveurPath;
+  }
+
+  /**
+   * Accesseur en lecture sur le paramètre temp folder.
+   *
+   * @return le paramètre temp folder
+   */
+  public String getTempFolder() {
+    return this.tempFolder;
+  }
+
+  /**
+   * Accesseur en écriture sur le paramètre temp folder.
+   *
+   * @param tempFolder le nouveau paramètre temp folder
+   */
+  public void setTempFolder(String tempFolder) {
+    this.tempFolder = tempFolder;
+  }
+
+  /**
+   * Inits the.
+   *
+   * @throws ServletException de type servlet exception
+   */
+  @PostConstruct
+  public void init() throws ServletException {
+    final BeanFactoryReference bf =
+        SingletonBeanFactoryLocator.getInstance().useBeanFactory("beansDao");
+    /* Récupération d'une instance de notre DAO Matiere */
+    this.matiereDao = (MatiereDao) bf.getFactory().getBean("matiereDao");
+    /* Récupération d'une instance de notre DAO Competence */
+    this.competenceDao = (CompetenceDao) bf.getFactory().getBean("competenceDao");
+    /* Récupération d'une instance de notre DAO Ressource */
+    this.ressourceDao = (RessourceDao) bf.getFactory().getBean("ressourceDao");
+    /* Récupération d'une instance de notre DAO Eleve */
+    this.eleveDao = (EleveDao) bf.getFactory().getBean("eleveDao");
+    /* Récupération d'une instance de notre DAO Examen */
+    this.examenDao = (ExamenDao) bf.getFactory().getBean("examenDao");
+    /* Récupération d'une instance de notre DAO Evaluation */
+    this.evaluationDao = (EvaluationDao) bf.getFactory().getBean("evaluationDao");
+    /* Récupération d'une instance de notre DAO Evaluation */
+    this.promotionDao = (PromotionDao) bf.getFactory().getBean("promotionDao");
+    // On récupére le chemin du fichier où sauvegarder les ressources depuis le fichier de
+    // propriétés
+    final Properties properties = new Properties();
+    final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+    final InputStream fichierProperties =
+        classLoader.getResourceAsStream(RessourceController.FICHIER_PROPERTIES);
+    if (fichierProperties == null) {
+      throw new ServletException(
+          "Le fichier properties " + RessourceController.FICHIER_PROPERTIES + " est introuvable.");
+    }
+    try {
+      properties.load(fichierProperties);
+      this.basePath = properties.getProperty(RessourceController.PROPERTY_BASE_PATH);
+      this.serveurPath = properties.getProperty(RessourceController.PROPERTY_SERVEUR_PATH);
+      this.tempFolder = properties.getProperty(RessourceController.PROPERTY_TEMP_FOLDER);
+    } catch (final IOException ioe) {
+      RessourceController.LOGGER.log(Level.INFO, RessourceController.EXCEPTION, ioe);
+      throw new ServletException(
+          "Impossible de charger le fichier properties " + RessourceController.FICHIER_PROPERTIES,
+          ioe);
+    }
+    // On valider les chemins
+    this.validerFichier();
+  }
+
+  /**
+   * Valider fichier.
+   *
+   * @throws ServletException de type servlet exception
+   */
+  public void validerFichier() throws ServletException {
+    if (this.basePath == null) {
+      throw new ServletException(
+          "Le paramètre 'basePath' doit être dans le fichier de configuration.");
+    } else {
+      final File path = new File(this.basePath);
+      if (!path.exists()) {
+        throw new ServletException(BASE_PATH_STRING + this.basePath + "' n'existe pas.");
+      } else if (!path.isDirectory()) {
+        throw new ServletException(BASE_PATH_STRING + this.basePath + "' n'est pas un dossier.");
+      } else if (!path.canRead()) {
+        throw new ServletException(BASE_PATH_STRING + this.basePath + "'n'est pas lisible.");
+      }
+    }
+    this.validerFichierServeur();
+  }
+
+  /**
+   * Valider fichier serveur.
+   *
+   * @throws ServletException de type servlet exception
+   */
+  private void validerFichierServeur() throws ServletException {
+    if (this.serveurPath == null || this.tempFolder == null) {
+      throw new ServletException("Les paramètres 'serveurPath' et 'tempFolder' doivent "
+          + "être dans le fichier de configuration.");
+    } else {
+      File path = new File(this.serveurPath + File.separator + this.tempFolder);
+      path.mkdir();
+      if (!path.exists()) {
+        path.mkdir();
+        path = new File(this.serveurPath + File.separator + this.tempFolder);
+        if (!path.exists()) {
+          throw new ServletException("Le dossier" + this.serveurPath + File.separator
+              + this.tempFolder + "' n'existe pas.");
+        }
+      }
+    }
+  }
+
+  /**
+   * Afficher telecharger ressource.
+   *
+   * @return Le paramètre model and view
+   */
+  @RequestMapping(value = "/RecupererRessource", method = RequestMethod.GET)
+  protected ModelAndView afficherTelechargerRessource() {
+    final HashMap<String, Object> attributsRequete = new HashMap<>();
+    // On charge la liste des ressources
+    attributsRequete.put(RessourceController.ATT_RESSOURCES,
+        this.ressourceDao.trouverToutesLesRessources());
+    return new ModelAndView(VUE_TELECHARGER, attributsRequete);
+  }
+
+  /**
+   * Accesseur en lecture sur le paramètre file.
+   *
+   * @param request le request
+   * @param response le response
+   * @return le paramètre file
+   */
+  @SuppressWarnings("unchecked")
+  @RequestMapping(value = "/RecupererRessource", method = RequestMethod.POST)
+  protected void getFile(HttpServletRequest request, HttpServletResponse response) {
+    final HashMap<String, Object> attributsRequete = new HashMap<>();
+    attributsRequete.put(RessourceController.ATT_RESSOURCES,
+        this.ressourceDao.trouverToutesLesRessources());
+    try {
+      final String fileInfo =
+          RessourceController.getValeurChamp(request, RessourceController.CHAMP_RESSOURCE);
+      final String nom = fileInfo.substring(0, fileInfo.lastIndexOf('.'));
+      final String type = fileInfo.substring(fileInfo.lastIndexOf('.') + 1);
+      final Ressource ressource = this.ressourceDao.trouverParNomEtType(nom, type);
+      final String path = this.ressourceDao.trouverPath(ressource);
+      final File file = new File(this.serveurPath, path);
+      Utilisateur utilisateur = new Utilisateur();
+      for (final Utilisateur user : (List<Utilisateur>) request.getSession()
+          .getAttribute("sessionUtilisateur")) {
+        if (user.getClass().equals(Utilisateur.class)) {
+          utilisateur = user;
+        }
+      }
+      this.ressourceDao.consulter(ressource, utilisateur);
+      this.envoyerFichier(response, nom, file);
+    } catch (final IOException ioe) {
+      LOGGER.log(Level.INFO, RessourceController.EXCEPTION, ioe);
+    }
+  }
+
+  /**
+   * Afficher uploader ressource.
+   *
+   * @return Le paramètre model and view
+   */
+  @RequestMapping(value = "/EnseignantRefMatiere/EnvoyerRessource", method = RequestMethod.GET)
+  protected ModelAndView afficherUploaderRessource() {
+    final HashMap<String, Object> attributsRequete = new HashMap<>();
+    // On charge la liste des matieres
+    attributsRequete.put(RessourceController.ATT_MATIERES,
+        this.matiereDao.trouverToutesLesMatieres());
+    // On charge la liste des competences
+    attributsRequete.put(RessourceController.ATT_COMPETENCES,
+        this.competenceDao.trouverToutesLesCompetences());
+    return new ModelAndView(VUE_UPLOAD, attributsRequete);
+  }
+
+  /**
+   * Upload d'un fichier.
+   *
+   * @param file le file
+   * @param matiere le matiere
+   * @param competences le competences
+   * @return Le paramètre model and view
+   */
+  @RequestMapping(value = "/EnseignantRefMatiere/EnvoyerRessource", method = RequestMethod.POST)
+  @ResponseBody
+  protected ModelAndView uploadFileHandler(@RequestParam("file") MultipartFile file,
+      @RequestParam("choixMatiere") String matiere,
+      @RequestParam("choixCompetence") List<String> competences) {
+    final HashMap<String, Object> attributsRequete = new HashMap<>();
+    // On charge la liste des matieres
+    attributsRequete.put(RessourceController.ATT_MATIERES,
+        this.matiereDao.trouverToutesLesMatieres());
+    // On charge la liste des competences
+    attributsRequete.put(RessourceController.ATT_COMPETENCES,
+        this.competenceDao.trouverToutesLesCompetences());
+    final String name = file.getOriginalFilename();
+    if (!file.isEmpty()) {
+      try {
+        final byte[] bytes = file.getBytes();
+        // Creation du dossier pour stocker les fichiers temporaires
+        final File dir = new File(this.serveurPath + File.separator + this.tempFolder);
+        if (!dir.exists()) {
+          dir.mkdirs();
+        }
+        // Creation du fichier sur le serveur
+        final File serverFile = new File(this.serveurPath + File.separator + name);
+        final BufferedOutputStream stream =
+            new BufferedOutputStream(new FileOutputStream(serverFile));
+        stream.write(bytes);
+        stream.close();
+        final AddRessourceForm form = new AddRessourceForm();
+        form.addRessource(name, matiere, competences);
+        LOGGER.info(
+            "Fichier téléchargé sur le serveur dans le dossier : " + serverFile.getAbsolutePath());
+        attributsRequete.put("fileName", serverFile.getName());
+        return new ModelAndView(VUE_UPLOAD, attributsRequete);
+      } catch (final Exception exc) {
+        LOGGER.info("Exception lors du téléchargement : " + exc);
+        return new ModelAndView(VUE_UPLOAD, attributsRequete);
+      }
+    } else {
+      return new ModelAndView(VUE_UPLOAD, attributsRequete);
+    }
+  }
+
+  /**
+   * Afficher consulter ressources avec competences.
+   *
+   * @return Le paramètre model and view
+   */
+  @RequestMapping(value = "/Eleve/ConsulterRessource", method = RequestMethod.GET)
+  protected ModelAndView afficherConsulterRessourcesAvecCompetences() {
+    final HashMap<String, Object> attributsRequete = new HashMap<>();
+    // On charge la liste des ressources
+    attributsRequete.put(RessourceController.ATT_RESSOURCES,
+        this.ressourceDao.trouverToutesLesRessources());
+    // On charge la liste des competences
+    attributsRequete.put(ExerciceController.ATT_COMPETENCES,
+        this.competenceDao.trouverToutesLesCompetences());
+    return new ModelAndView(VUE_ELEVE_CONSULTER, attributsRequete);
+  }
+
+  /**
+   * Consulter ressources avec competences.
+   *
+   * @param request le request
+   * @param response le response
+   */
+  @RequestMapping(value = "/Eleve/ConsulterRessource", method = RequestMethod.POST)
+  protected void consulterRessourcesAvecCompetences(HttpServletRequest request,
+      HttpServletResponse response) {
+    final HashMap<String, Object> attributsRequete = new HashMap<>();
+    // On charge la liste des ressources
+    attributsRequete.put(RessourceController.ATT_RESSOURCES,
+        this.ressourceDao.trouverToutesLesRessources());
+    // On charge la liste des competences
+    attributsRequete.put(ExerciceController.ATT_COMPETENCES,
+        this.competenceDao.trouverToutesLesCompetences());
+    try {
+      final String fileInfo =
+          RessourceController.getValeurChamp(request, RessourceController.CHAMP_RESSOURCE);
+      final String nom = fileInfo.substring(0, fileInfo.lastIndexOf('.'));
+      final String type = fileInfo.substring(fileInfo.lastIndexOf('.') + 1);
+      final Ressource ressource = this.ressourceDao.trouverParNomEtType(nom, type);
+      final String path = this.ressourceDao.trouverPath(ressource);
+      final File file = new File(this.serveurPath, path);
+      Utilisateur utilisateur = new Utilisateur();
+      for (final Utilisateur user : (List<Utilisateur>) request.getSession()
+          .getAttribute("sessionUtilisateur")) {
+        if (user.getClass().equals(Utilisateur.class)) {
+          utilisateur = user;
+        }
+      }
+      this.ressourceDao.consulter(ressource, utilisateur);
+      this.envoyerFichier(response, nom, file);
+    } catch (final IOException ioe) {
+      LOGGER.log(Level.INFO, RessourceController.EXCEPTION, ioe);
+    }
+  }
+
+  /**
+   * Afficher modifer ressource.
+   *
+   * @param request le request
+   * @return Le paramètre model and view
+   */
+  @SuppressWarnings("unchecked")
+  @RequestMapping(value = { "/EnseignantRefMatiere/ModifierRessource",
+      "/EnseignantRefMatiere/SupprimerRessource" }, method = RequestMethod.GET)
+  protected ModelAndView afficherModiferRessource(HttpServletRequest request) {
+    final HashMap<String, Object> attributsRequete = new HashMap<>();
+    final List<Utilisateur> listeUtilisateur =
+        (List<Utilisateur>) request.getSession().getAttribute(ATT_SESSION_USER);
+    EnseignantRefMatiere erm = null;
+    for (final Utilisateur utilisateur : listeUtilisateur) {
+      if (utilisateur.getClass().equals(EnseignantRefMatiere.class)) {
+        erm = (EnseignantRefMatiere) utilisateur;
+      }
+    }
+    if (erm != null) {
+      final List<Ressource> listeRessourcesErm = this.recupererRessourceErm(erm);
+      // On charge la liste des ressources
+      attributsRequete.put(RessourceController.ATT_RESSOURCES, listeRessourcesErm);
+    }
+    return new ModelAndView(VUE_MODIFIER, attributsRequete);
+  }
+
+  /**
+   * Modifer ressource.
+   *
+   * @param request le request
+   * @param nomRessource le nom ressource
+   * @param choixRessource le choix ressource
+   * @return Le paramètre model and view
+   */
+  @SuppressWarnings("unchecked")
+  @RequestMapping(value = "/EnseignantRefMatiere/ModifierRessource", method = RequestMethod.POST)
+  protected ModelAndView modiferRessource(HttpServletRequest request,
+      @RequestParam("nomRessource") String nomRessource,
+      @RequestParam("choixRessource") String choixRessource) {
+    final HashMap<String, Object> attributsRequete = new HashMap<>();
+    final List<Utilisateur> listeUtilisateur =
+        (List<Utilisateur>) request.getSession().getAttribute(ATT_SESSION_USER);
+    EnseignantRefMatiere erm = null;
+    for (final Utilisateur utilisateur : listeUtilisateur) {
+      if (utilisateur.getClass().equals(EnseignantRefMatiere.class)) {
+        erm = (EnseignantRefMatiere) utilisateur;
+      }
+    }
+    this.recupererRessources(nomRessource, choixRessource, attributsRequete, erm);
+    return new ModelAndView(VUE_MODIFIER, attributsRequete);
+  }
+
+  /**
+   * Extraire toutes les notes.
+   *
+   * @param response le response
+   */
+  @RequestMapping(value = "/DirecteurEtudes/ExtraireToutesLesNotes", method = RequestMethod.GET)
+  protected void extraireToutesLesNotes(HttpServletResponse response) {
+    try {
+      final String nom = "notes";
+      final String type = "csv";
+      final String path = nom + '.' + type;
+      ExporteurCsv.generateCsvFile(
+          this.serveurPath + File.separator + this.tempFolder + File.separator + path,
+          this.eleveDao.recupererListe(), this.evaluationDao.trouverToutesLesEvaluations(),
+          this.examenDao.trouverTousLesExamens());
+      final File file = new File(this.serveurPath + File.separator + this.tempFolder, path);
+      this.envoyerFichier(response, path, file);
+    } catch (final IOException ioe) {
+      LOGGER.log(Level.INFO, RessourceController.EXCEPTION, ioe);
+    }
+  }
+
+  /**
+   * Afficher extraire notes.
+   *
+   * @return Le paramètre model and view
+   */
+  @RequestMapping(value = "/DirecteurEtudes/ExtraireNotes", method = RequestMethod.GET)
+  protected ModelAndView afficherExtraireNotes() {
+    final HashMap<String, Object> attributsRequete = new HashMap<>();
+    final List<Promotion> promotions = this.promotionDao.trouverToutesLesPromotions();
+    attributsRequete.put("promotions", promotions);
+    return new ModelAndView("DirecteurEtudes/extraireNotes", attributsRequete);
+  }
+
+  /**
+   * Extraire notes.
+   *
+   * @param response le response
+   * @param choixPromotion le choix promotion
+   * @param dateDebut le date debut
+   * @param dateFin le date fin
+   */
+  @RequestMapping(value = "/DirecteurEtudes/ExtraireNotes", method = RequestMethod.POST)
+  protected void extraireNotes(HttpServletResponse response,
+      @RequestParam("choixPromotion") String choixPromotion,
+      @RequestParam("dateDebut") @DateTimeFormat(pattern = "yyyy-MM-dd") Date dateDebut,
+      @RequestParam("dateFin") @DateTimeFormat(pattern = "yyyy-MM-dd") Date dateFin) {
+
+    final String nom = "notes";
+    final String type = "csv";
+    final String path = nom + '.' + type;
+    final List<Promotion> promotions = this.promotionDao.trouverToutesLesPromotions();
+    Promotion promotion = null;
+    int idPromotion = -1;
+
+    try {
+      idPromotion = Integer.parseInt(choixPromotion);
+    } catch (final NumberFormatException nfe) {
+      LOGGER.log(Level.INFO, RessourceController.EXCEPTION, nfe);
+    }
+
+    try {
+      for (final Promotion promo : promotions) {
+        if (promo.getId() == idPromotion) {
+          promotion = promo;
+        }
+      }
+      ExporteurCsv.generateCsvFile(
+          this.serveurPath + File.separator + this.tempFolder + File.separator + path,
+          this.eleveDao.recupererListe(), this.evaluationDao.trouverToutesLesEvaluations(),
+          this.examenDao.trouverTousLesExamens(), promotion, dateDebut, dateFin);
+      final File file = new File(this.serveurPath + File.separator + this.tempFolder, path);
+      this.envoyerFichier(response, path, file);
+    } catch (final IOException ioe) {
+      LOGGER.log(Level.INFO, RessourceController.EXCEPTION, ioe);
+    }
+  }
+
+
+  /**
+   * Envoyer fichier.
+   *
+   * @param response le response
+   * @param nom le nom
+   * @param file le file
+   * @throws IOException Indique qu'une I/O exception est arrivée.
+   */
+  private void envoyerFichier(HttpServletResponse response, final String nom, final File file)
+      throws IOException {
+    String mimeType = URLConnection.guessContentTypeFromName(file.getName());
+    if (mimeType == null) {
+      mimeType = "application/octet-stream";
+    }
+    response.setContentType(mimeType);
+    final String tmp = new String("inline; filename=\"" + nom + "\"");
+    response.setHeader(RessourceController.CONTENT, String.format(tmp));
+    response.setContentLength((int) file.length());
+    final InputStream inputStream = new BufferedInputStream(new FileInputStream(file));
+    FileCopyUtils.copy(inputStream, response.getOutputStream());
+    response.flushBuffer();
+    inputStream.close();
+  }
+
+  /**
+   * Recuperer ressources.
+   *
+   * @param nomRessource le nom ressource
+   * @param choixRessource le choix ressource
+   * @param attributsRequete le attributs requete
+   * @param erm le erm
+   */
+  private void recupererRessources(String nomRessource, String choixRessource,
+      final HashMap<String, Object> attributsRequete, EnseignantRefMatiere erm) {
+    if (erm != null) {
+      final ModifierRessourceForm form = new ModifierRessourceForm();
+      form.modifierRessource(erm, nomRessource, choixRessource);
+      attributsRequete.put(RessourceController.ATT_FORM, form);
+      final List<Ressource> listeRessourcesErm = this.recupererRessourceErm(erm);
+      // On charge la liste des ressources
+      attributsRequete.put(RessourceController.ATT_RESSOURCES, listeRessourcesErm);
+    }
+  }
+
+  /**
+   * Afficher utilisation ressources.
+   *
+   * @return Le paramètre model and view
+   */
+  @RequestMapping(value = "/EnseignantRefUE/UtilisationRessources", method = RequestMethod.GET)
+  protected ModelAndView afficherUtilisationRessources() {
+    final HashMap<String, Object> attributsRequete = new HashMap<>();
+    attributsRequete.put(ATT_RESSOURCES, this.ressourceDao.listerConsultations());
+    return new ModelAndView(VUE_HISTORIQUE, attributsRequete);
+  }
+
+  /**
+   * Supprimerr ressource.
+   *
+   * @param request le request
+   * @param choixRessource le choix ressource
+   * @return Le paramètre model and view
+   */
+  @SuppressWarnings("unchecked")
+  @RequestMapping(value = "/EnseignantRefMatiere/SupprimerRessource", method = RequestMethod.POST)
+  protected ModelAndView supprimerrRessource(HttpServletRequest request,
+      @RequestParam("hiddenRessource") String choixRessource) {
+    final HashMap<String, Object> attributsRequete = new HashMap<>();
+    final List<Utilisateur> listeUtilisateur =
+        (List<Utilisateur>) request.getSession().getAttribute(ATT_SESSION_USER);
+    EnseignantRefMatiere erm = null;
+    for (final Utilisateur utilisateur : listeUtilisateur) {
+      if (utilisateur.getClass().equals(EnseignantRefMatiere.class)) {
+        erm = (EnseignantRefMatiere) utilisateur;
+      }
+    }
+    if (erm != null) {
+      final ModifierRessourceForm form = new ModifierRessourceForm();
+      try {
+        form.supprimerRessource(erm, choixRessource, this.serveurPath + File.separator);
+        attributsRequete.put(RessourceController.ATT_FORM, form);
+      } catch (final Exception exc) {
+        LOGGER.log(Level.INFO, RessourceController.EXCEPTION, exc);
+      }
+      final List<Ressource> listeRessourcesErm = this.recupererRessourceErm(erm);
+      // On charge la liste des ressources
+      attributsRequete.put(RessourceController.ATT_RESSOURCES, listeRessourcesErm);
+    }
+    return new ModelAndView(VUE_MODIFIER, attributsRequete);
+  }
+
+  /**
+   * Recuperer ressource erm.
+   *
+   * @param erm le erm
+   * @return Le paramètre list
+   */
+  private List<Ressource> recupererRessourceErm(EnseignantRefMatiere erm) {
+    final List<Ressource> listeRessources = this.ressourceDao.trouverToutesLesRessources();
+    final List<Ressource> listeRessourcesErm = new ArrayList<>();
+    for (final Ressource ressource : listeRessources) {
+      final int idMatiereRessource = ressource.getMatiere().getId();
+      final int idMatiereErm = erm.getMatiere().getId();
+      if (idMatiereErm == idMatiereRessource) {
+        this.eviterDoublons(listeRessourcesErm, ressource);
+      }
+      listeRessourcesErm.add(ressource);
+    }
+    return listeRessourcesErm;
+  }
+
+  /**
+   * Eviter doublons.
+   *
+   * @param listeRessourcesErm le liste ressources erm
+   * @param ressource le ressource
+   */
+  private void eviterDoublons(final List<Ressource> listeRessourcesErm, final Ressource ressource) {
+    boolean trouve = false;
+    for (final Ressource res : listeRessourcesErm) {
+      if (res.getId() == ressource.getId()) {
+        trouve = true;
+      }
+    }
+    if (!trouve) {
+      listeRessourcesErm.add(ressource);
+    }
+  }
+
+  /**
+   * Accesseur en lecture sur le paramètre valeur champ.
+   *
+   * @param request le request
+   * @param nomChamp le nom champ
+   * @return le paramètre valeur champ
+   */
+  /*
+   * Méthode utilitaire qui retourne null si un champ est vide, et son contenu sinon.
+   */
+  private static String getValeurChamp(HttpServletRequest request, String nomChamp) {
+    final String valeur = request.getParameter(nomChamp);
+    if (valeur == null || valeur.trim().length() == 0) {
+      return null;
+    } else {
+      return valeur.trim();
+    }
+  }
+
+}

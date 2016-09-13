@@ -1,0 +1,75 @@
+package fr.eseo.atribus.entities;
+
+import java.io.Serializable;
+import java.util.Date;
+
+public class Notification implements Serializable {
+
+  private static final long serialVersionUID = 6123285979153541101L;
+  private Integer id;
+  private Integer emetteur;
+  private Integer destinataire;
+  private String message;
+  private String nomEmetteur;
+  private Date dateCreation;
+
+  public Notification() {
+    super();
+  }
+
+  public Integer getId() {
+    return id;
+  }
+
+  public void setId(Integer id) {
+    this.id = id;
+  }
+
+  public Integer getEmetteur() {
+    return emetteur;
+  }
+
+  public void setEmetteur(Integer emetteur) {
+    this.emetteur = emetteur;
+  }
+
+  public Integer getDestinataire() {
+    return destinataire;
+  }
+
+  public void setDestinataire(Integer destinataire) {
+    this.destinataire = destinataire;
+  }
+
+  public String getMessage() {
+    return message;
+  }
+
+  public void setMessage(String message) {
+    this.message = message;
+  }
+
+  public String getNomEmetteur() {
+    return nomEmetteur;
+  }
+
+  public void setNomEmetteur(String nomEmetteur) {
+    this.nomEmetteur = nomEmetteur;
+  }
+
+  public Date getDateCreation() {
+    return dateCreation;
+  }
+
+  public void setDateCreation(Date dateCreation) {
+    this.dateCreation = dateCreation;
+  }
+
+  @Override
+  public String toString() {
+    return "Notification [id=" + id + ", emetteur=" + emetteur + ", destinataire=" + destinataire
+        + ", message=" + message + ", nomEmetteur=" + nomEmetteur + ", dateCreation=" + dateCreation
+        + "]";
+  }
+
+}

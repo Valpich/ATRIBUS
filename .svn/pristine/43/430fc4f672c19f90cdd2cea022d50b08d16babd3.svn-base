@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testng-results skipped="0" failed="0" total="16" passed="16">
+  <reporter-output>
+  </reporter-output>
+  <suite name="Default suite" duration-ms="2595" started-at="2016-05-24T19:56:24Z" finished-at="2016-05-24T19:56:27Z">
+    <groups>
+    </groups>
+    <test name="Default test" duration-ms="2595" started-at="2016-05-24T19:56:24Z" finished-at="2016-05-24T19:56:27Z">
+      <class name="fr.eseo.atribus.dao.CompetenceDaoImplTest">
+        <test-method status="PASS" signature="beforeClass()[pri:0, instance:fr.eseo.atribus.dao.CompetenceDaoImplTest@659a2455]" name="beforeClass" is-config="true" duration-ms="1743" started-at="2016-05-24T21:56:24Z" finished-at="2016-05-24T21:56:26Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- beforeClass -->
+        <test-method status="PASS" signature="trouverParId()[pri:1, instance:fr.eseo.atribus.dao.CompetenceDaoImplTest@659a2455]" name="trouverParId" duration-ms="583" started-at="2016-05-24T21:56:26Z" finished-at="2016-05-24T21:56:27Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- trouverParId -->
+        <test-method status="PASS" signature="trouverParNom()[pri:2, instance:fr.eseo.atribus.dao.CompetenceDaoImplTest@659a2455]" name="trouverParNom" duration-ms="3" started-at="2016-05-24T21:56:27Z" finished-at="2016-05-24T21:56:27Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- trouverParNom -->
+        <test-method status="PASS" signature="trouverUniqueParNom()[pri:3, instance:fr.eseo.atribus.dao.CompetenceDaoImplTest@659a2455]" name="trouverUniqueParNom" duration-ms="3" started-at="2016-05-24T21:56:27Z" finished-at="2016-05-24T21:56:27Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- trouverUniqueParNom -->
+        <test-method status="PASS" signature="trouverToutesLesCompetences()[pri:4, instance:fr.eseo.atribus.dao.CompetenceDaoImplTest@659a2455]" name="trouverToutesLesCompetences" duration-ms="5" started-at="2016-05-24T21:56:27Z" finished-at="2016-05-24T21:56:27Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- trouverToutesLesCompetences -->
+        <test-method status="PASS" signature="modifierCompetenceProfondeur()[pri:5, instance:fr.eseo.atribus.dao.CompetenceDaoImplTest@659a2455]" name="modifierCompetenceProfondeur" duration-ms="5" started-at="2016-05-24T21:56:27Z" finished-at="2016-05-24T21:56:27Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- modifierCompetenceProfondeur -->
+        <test-method status="PASS" signature="modifierCompetenceNom()[pri:6, instance:fr.eseo.atribus.dao.CompetenceDaoImplTest@659a2455]" name="modifierCompetenceNom" duration-ms="12" started-at="2016-05-24T21:56:27Z" finished-at="2016-05-24T21:56:27Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- modifierCompetenceNom -->
+        <test-method status="PASS" signature="trouverParProfondeur()[pri:7, instance:fr.eseo.atribus.dao.CompetenceDaoImplTest@659a2455]" name="trouverParProfondeur" duration-ms="3" started-at="2016-05-24T21:56:27Z" finished-at="2016-05-24T21:56:27Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- trouverParProfondeur -->
+        <test-method status="PASS" signature="ajouterCompetence()[pri:8, instance:fr.eseo.atribus.dao.CompetenceDaoImplTest@659a2455]" name="ajouterCompetence" duration-ms="6" started-at="2016-05-24T21:56:27Z" finished-at="2016-05-24T21:56:27Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- ajouterCompetence -->
+        <test-method status="PASS" signature="supprimerCompetence()[pri:9, instance:fr.eseo.atribus.dao.CompetenceDaoImplTest@659a2455]" name="supprimerCompetence" duration-ms="8" started-at="2016-05-24T21:56:27Z" finished-at="2016-05-24T21:56:27Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- supprimerCompetence -->
+        <test-method status="PASS" signature="recupererAssociationCompetenceUe()[pri:10, instance:fr.eseo.atribus.dao.CompetenceDaoImplTest@659a2455]" name="recupererAssociationCompetenceUe" duration-ms="2" started-at="2016-05-24T21:56:27Z" finished-at="2016-05-24T21:56:27Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- recupererAssociationCompetenceUe -->
+        <test-method status="PASS" signature="trouverIdParNomTest()[pri:11, instance:fr.eseo.atribus.dao.CompetenceDaoImplTest@659a2455]" name="trouverIdParNomTest" duration-ms="2" started-at="2016-05-24T21:56:27Z" finished-at="2016-05-24T21:56:27Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- trouverIdParNomTest -->
+        <test-method status="PASS" signature="modifierCompetenceDeux()[pri:12, instance:fr.eseo.atribus.dao.CompetenceDaoImplTest@659a2455]" name="modifierCompetenceDeux" duration-ms="3" started-at="2016-05-24T21:56:27Z" finished-at="2016-05-24T21:56:27Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- modifierCompetenceDeux -->
+        <test-method status="PASS" signature="associerCompetenceNiveauUe()[pri:13, instance:fr.eseo.atribus.dao.CompetenceDaoImplTest@659a2455]" name="associerCompetenceNiveauUe" duration-ms="6" started-at="2016-05-24T21:56:27Z" finished-at="2016-05-24T21:56:27Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- associerCompetenceNiveauUe -->
+        <test-method status="PASS" signature="recupererProfilEleve()[pri:14, instance:fr.eseo.atribus.dao.CompetenceDaoImplTest@659a2455]" name="recupererProfilEleve" duration-ms="150" started-at="2016-05-24T21:56:27Z" finished-at="2016-05-24T21:56:27Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- recupererProfilEleve -->
+        <test-method status="PASS" signature="recupererCompetenceMatiere()[pri:15, instance:fr.eseo.atribus.dao.CompetenceDaoImplTest@659a2455]" name="recupererCompetenceMatiere" duration-ms="6" started-at="2016-05-24T21:56:27Z" finished-at="2016-05-24T21:56:27Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- recupererCompetenceMatiere -->
+        <test-method status="PASS" signature="recupererCompetenceUe()[pri:15, instance:fr.eseo.atribus.dao.CompetenceDaoImplTest@659a2455]" name="recupererCompetenceUe" duration-ms="2" started-at="2016-05-24T21:56:27Z" finished-at="2016-05-24T21:56:27Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- recupererCompetenceUe -->
+      </class> <!-- fr.eseo.atribus.dao.CompetenceDaoImplTest -->
+    </test> <!-- Default test -->
+  </suite> <!-- Default suite -->
+</testng-results>

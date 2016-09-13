@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>AssocierCompetenceUeForm.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Atribus</a> &gt; <a href="index.source.html" class="el_package">fr.eseo.atribus.forms</a> &gt; <span class="el_source">AssocierCompetenceUeForm.java</span></div><h1>AssocierCompetenceUeForm.java</h1><pre class="source lang-java linenums">package fr.eseo.atribus.forms;
+
+import fr.eseo.atribus.dao.CompetenceDao;
+import fr.eseo.atribus.dao.DaoException;
+import fr.eseo.atribus.dao.UeDao;
+import fr.eseo.atribus.entities.Competence;
+import fr.eseo.atribus.entities.UniteEnseignement;
+
+import org.springframework.beans.factory.access.BeanFactoryReference;
+import org.springframework.beans.factory.access.SingletonBeanFactoryLocator;
+
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.servlet.http.HttpServletRequest;
+
+public class AssocierCompetenceUeForm extends UeFormMethods {
+
+<span class="nc" id="L20">  private static final Logger LOGGER = Logger.getLogger(AddExerciceForm.class.getName());</span>
+  private static final String EXCEPTION = &quot;Exception&quot;;
+  private static final String CHAMP_UE = &quot;listeUe&quot;;
+  private static final String CHAMP_COMPETENCE = &quot;listeCompetence&quot;;
+  private static final String CHAMP_NIVEAU = &quot;niveau&quot;;
+
+  private final UeDao ueDao;
+  private final CompetenceDao competenceDao;
+
+  /**
+   * Constructeur.
+   * 
+   */
+<span class="nc" id="L33">  public AssocierCompetenceUeForm() {</span>
+    final BeanFactoryReference bf =
+<span class="nc" id="L35">        SingletonBeanFactoryLocator.getInstance().useBeanFactory(&quot;beansDao&quot;);</span>
+<span class="nc" id="L36">    this.competenceDao = (CompetenceDao) bf.getFactory().getBean(&quot;competenceDao&quot;);</span>
+<span class="nc" id="L37">    this.ueDao = (UeDao) bf.getFactory().getBean(&quot;ueDao&quot;);</span>
+<span class="nc" id="L38">  }</span>
+
+  public List&lt;UniteEnseignement&gt; getListUe() {
+<span class="nc" id="L41">    return this.ueDao.listerUe();</span>
+  }
+
+  public List&lt;Competence&gt; getListCompetences() {
+<span class="nc" id="L45">    return this.competenceDao.trouverToutesLesCompetences();</span>
+  }
+
+  /**
+   * Permet d'associer à un UE une compétence et un niveau.
+   * 
+   * @param request récupération des formulaires
+   */
+  public Competence associerUeCompetence(HttpServletRequest request) {
+
+<span class="nc" id="L55">    final String ueChamp = UeFormMethods.getValeurChamp(request, AssocierCompetenceUeForm.CHAMP_UE);</span>
+<span class="nc" id="L56">    final String competenceChamp =</span>
+<span class="nc" id="L57">        UeFormMethods.getValeurChamp(request, AssocierCompetenceUeForm.CHAMP_COMPETENCE);</span>
+<span class="nc" id="L58">    final String niveauChamp =</span>
+<span class="nc" id="L59">        UeFormMethods.getValeurChamp(request, AssocierCompetenceUeForm.CHAMP_NIVEAU);</span>
+    
+<span class="nc" id="L61">    final Competence competence = new Competence();</span>
+<span class="nc" id="L62">    final UniteEnseignement ue = new UniteEnseignement();</span>
+
+    try {
+
+<span class="nc" id="L66">      this.traiterValeurs(competenceChamp, ueChamp, niveauChamp);</span>
+
+<span class="nc bnc" id="L68" title="All 2 branches missed.">      if (this.data.getErreurs().isEmpty()) {</span>
+
+<span class="nc" id="L70">        ue.setNom(ueChamp);</span>
+<span class="nc" id="L71">        competence.setNom(competenceChamp);</span>
+<span class="nc" id="L72">        competence.setNiveau(Integer.parseInt(niveauChamp));</span>
+
+<span class="nc" id="L74">        this.competenceDao.associerCompetenceNiveauUe(competence, ue);</span>
+<span class="nc" id="L75">        this.data.setResultat(&quot;success&quot;);</span>
+
+      }
+
+<span class="nc" id="L79">    } catch (final DaoException daoEx) {</span>
+<span class="nc" id="L80">      this.data.setResultat(&quot;erreurDao&quot;);</span>
+<span class="nc" id="L81">      AssocierCompetenceUeForm.LOGGER.log(Level.INFO, EXCEPTION, daoEx);</span>
+<span class="nc" id="L82">    }</span>
+
+<span class="nc" id="L84">    return competence;</span>
+
+  }
+
+  /**
+   * Permet de modifier le niveau et les compétence d'un UE.
+   * 
+   * @param request récupération des formulaires
+   */
+  public void modifierUeCompetence(HttpServletRequest request) {
+
+<span class="nc" id="L95">    final String competenceChamp =</span>
+<span class="nc" id="L96">        UeFormMethods.getValeurChamp(request, AssocierCompetenceUeForm.CHAMP_COMPETENCE);</span>
+<span class="nc" id="L97">    final String niveauChamp =</span>
+<span class="nc" id="L98">        UeFormMethods.getValeurChamp(request, AssocierCompetenceUeForm.CHAMP_NIVEAU);</span>
+
+    try {
+
+<span class="nc" id="L102">      this.traiterValeursDeux(competenceChamp, niveauChamp);</span>
+
+<span class="nc" id="L104">    } catch (final DaoException daoEx) {</span>
+<span class="nc" id="L105">      this.data.setResultat(&quot;Échec de l'association : une erreur imprévue est survenue,&quot;</span>
+          + &quot; merci de réessayer dans quelques instants.&quot;);
+<span class="nc" id="L107">      AssocierCompetenceUeForm.LOGGER.log(Level.INFO, EXCEPTION, daoEx);</span>
+<span class="nc" id="L108">    }</span>
+
+<span class="nc" id="L110">  }</span>
+
+  private void traiterValeursDeux(String competence, String niveau) {
+    try {
+<span class="nc" id="L114">      this.validationCompetence(competence);</span>
+<span class="nc" id="L115">    } catch (final FormValidationException fve) {</span>
+<span class="nc" id="L116">      AssocierCompetenceUeForm.LOGGER.log(Level.INFO, EXCEPTION, fve);</span>
+<span class="nc" id="L117">      this.setErreur(&quot;choixCompetence&quot;, &quot;Choix de compétence invalide ou inexistant.&quot;);</span>
+<span class="nc" id="L118">    }</span>
+    try {
+<span class="nc" id="L120">      this.validationNiveau(niveau);</span>
+<span class="nc" id="L121">    } catch (final FormValidationException fve) {</span>
+<span class="nc" id="L122">      AssocierCompetenceUeForm.LOGGER.log(Level.INFO, EXCEPTION, fve);</span>
+<span class="nc" id="L123">      this.setErreur(CHAMP_NIVEAU, fve.getMessage());</span>
+<span class="nc" id="L124">    }</span>
+<span class="nc" id="L125">  }</span>
+
+  /**
+   * Vérifie que les valeurs saisies soient correctes.
+   * @param competence champ competence
+   * @param ue champ ue
+   * @param niveau champ niveau
+   */
+  public void traiterValeurs(String competence, String ue, String niveau) {
+    try {
+<span class="nc" id="L135">      this.validationCompetence(competence);</span>
+<span class="nc" id="L136">    } catch (final FormValidationException fve) {</span>
+<span class="nc" id="L137">      AssocierCompetenceUeForm.LOGGER.log(Level.INFO, EXCEPTION, fve);</span>
+<span class="nc" id="L138">      this.setErreur(&quot;nomCompetence&quot;, fve.getMessage());</span>
+<span class="nc" id="L139">    }</span>
+    try {
+<span class="nc" id="L141">      this.validationUe(ue);</span>
+<span class="nc" id="L142">    } catch (final FormValidationException fve) {</span>
+<span class="nc" id="L143">      AssocierCompetenceUeForm.LOGGER.log(Level.INFO, EXCEPTION, fve);</span>
+<span class="nc" id="L144">      this.setErreur(&quot;nomUe&quot;, fve.getMessage());</span>
+<span class="nc" id="L145">    }</span>
+    try {
+<span class="nc" id="L147">      this.validationNiveau(niveau);</span>
+<span class="nc" id="L148">    } catch (final FormValidationException fve) {</span>
+<span class="nc" id="L149">      AssocierCompetenceUeForm.LOGGER.log(Level.INFO, EXCEPTION, fve);</span>
+<span class="nc" id="L150">      this.setErreur(&quot;niveau&quot;, fve.getMessage());</span>
+<span class="nc" id="L151">    }</span>
+<span class="nc" id="L152">  }</span>
+
+  @Override
+  protected void validationCompetence(String competence) throws FormValidationException {
+<span class="nc bnc" id="L156" title="All 2 branches missed.">    if (this.competenceDao.trouverUniqueParNom(competence) == null) {</span>
+<span class="nc" id="L157">      throw new FormValidationException(&quot;Cette compétence n'existe pas&quot;);</span>
+    }
+<span class="nc" id="L159">  }</span>
+
+  private void validationUe(String ue) throws FormValidationException {
+<span class="nc bnc" id="L162" title="All 2 branches missed.">    if (this.ueDao.trouverUeParNom(ue) == null) {</span>
+<span class="nc" id="L163">      throw new FormValidationException(&quot;Cette unité d'enseignement n'existe pas&quot;);</span>
+    }
+<span class="nc" id="L165">  }</span>
+
+  private void validationNiveau(String niveau) throws FormValidationException {
+    try {
+
+<span class="nc bnc" id="L170" title="All 4 branches missed.">      if (Integer.parseInt(niveau) &lt; 0 || Integer.parseInt(niveau) &gt; 5) {</span>
+<span class="nc" id="L171">        throw new FormValidationException(&quot;Merci d'inscrire un niveau entre 0 et 5.&quot;);</span>
+      }
+<span class="nc" id="L173">    } catch (final NumberFormatException nfe) {</span>
+<span class="nc" id="L174">      this.setErreur(AssocierCompetenceUeForm.CHAMP_NIVEAU, nfe.getMessage());</span>
+<span class="nc" id="L175">      throw new FormValidationException(&quot;Le chiffre inscrit est invalide.&quot;);</span>
+<span class="nc" id="L176">    }</span>
+<span class="nc" id="L177">  }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.6.201602180812</span></div></body></html>

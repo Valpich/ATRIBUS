@@ -1,0 +1,31 @@
+package fr.eseo.atribus.entities;
+
+import java.io.Serializable;
+
+public class DirecteurEtudes extends Utilisateur implements Serializable {
+
+  private static final long serialVersionUID = 490905206891334145L;
+
+  private int idDirecteurEtudes;
+
+  public DirecteurEtudes() {
+    super();
+  }
+
+  public DirecteurEtudes(Utilisateur utilisateur) {
+    super(utilisateur);
+  }
+
+  public int getIdDirecteurEtudes() {
+    return this.idDirecteurEtudes;
+  }
+
+  public void setIdDirecteurEtudes(int idDirecteurEtudes) {
+    this.idDirecteurEtudes = idDirecteurEtudes;
+  }
+
+  @Override
+  public String toString() {
+    return "DirecteurEtudes [idDirecteurEtudes=" + this.idDirecteurEtudes + "]";
+  }
+}

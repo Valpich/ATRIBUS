@@ -1,0 +1,131 @@
+package fr.eseo.atribus.entities;
+
+import java.io.Serializable;
+import java.util.List;
+
+// TODO: Auto-generated Javadoc
+/**
+ * The Class Examen.
+ */
+public class Examen implements Serializable {
+
+  /** La constante serialVersionUID. */
+  private static final long serialVersionUID = -6123285159144541101L;
+
+  /** La variable id. */
+  private int id;
+
+  /** La variable matiere. */
+  private Matiere matiere;
+
+  /** La variable exercices. */
+  private List<Exercice> exercices;
+
+  /** La variable nom. */
+  private String nom;
+
+  /** La variable auto evaluation. */
+  private Boolean autoEvaluation;
+
+  /**
+   * Accesseur en lecture sur le paramètre id.
+   *
+   * @return le paramètre id
+   */
+  public int getId() {
+    return this.id;
+  }
+
+  /**
+   * Accesseur en écriture sur le paramètre id.
+   *
+   * @param id le nouveau paramètre id
+   */
+  public void setId(int id) {
+    this.id = id;
+  }
+
+  /**
+   * Accesseur en lecture sur le paramètre matiere.
+   *
+   * @return le paramètre matiere
+   */
+  public Matiere getMatiere() {
+    return this.matiere;
+  }
+
+  /**
+   * Accesseur en écriture sur le paramètre matiere.
+   *
+   * @param matiere le nouveau paramètre matiere
+   */
+  public void setMatiere(Matiere matiere) {
+    this.matiere = matiere;
+  }
+
+  /**
+   * Accesseur en lecture sur le paramètre exercices.
+   *
+   * @return le paramètre exercices
+   */
+  public List<Exercice> getExercices() {
+    return this.exercices;
+  }
+
+  /**
+   * Accesseur en écriture sur le paramètre exercices.
+   *
+   * @param exercices le nouveau paramètre exercices
+   */
+  public void setExercices(List<Exercice> exercices) {
+    this.exercices = exercices;
+  }
+
+  /**
+   * Accesseur en lecture sur le paramètre nom.
+   *
+   * @return le paramètre nom
+   */
+  public String getNom() {
+    return this.nom;
+  }
+
+  /**
+   * Accesseur en écriture sur le paramètre nom.
+   *
+   * @param nom le nouveau paramètre nom
+   */
+  public void setNom(String nom) {
+    this.nom = nom;
+  }
+
+  /**
+   * Accesseur en lecture sur le paramètre auto evaluation.
+   *
+   * @return le paramètre auto evaluation
+   */
+  public Boolean getAutoEvaluation() {
+    return this.autoEvaluation;
+  }
+
+  /**
+   * Accesseur en écriture sur le paramètre auto evaluation.
+   *
+   * @param autoEvaluation le nouveau paramètre auto evaluation
+   */
+  public void setAutoEvaluation(Boolean autoEvaluation) {
+    this.autoEvaluation = autoEvaluation;
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.lang.Object#toString()
+   */
+  @Override
+  public String toString() {
+    return "Examen [id=" + this.id + ", matiere=" + this.matiere + ", exercices=" + this.exercices
+        + ", nom=" + this.nom + ", autoEvaluation=" + this.autoEvaluation + "]";
+  }
+
+}

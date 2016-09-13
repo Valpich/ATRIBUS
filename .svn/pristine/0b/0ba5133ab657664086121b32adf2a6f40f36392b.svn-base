@@ -1,0 +1,68 @@
+package fr.eseo.atribus.forms;
+
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
+
+import fr.eseo.atribus.entities.Examen;
+
+import org.mockito.Mockito;
+import org.testng.annotations.BeforeTest;
+import org.testng.annotations.Test;
+
+import javax.servlet.http.HttpServletRequest;
+
+public class AddExamenFormTest {
+  
+  private static final String CHAMP_MATIERE = "choixMatiere";
+  private static final String CHAMP_NOM = "nom";
+  private static final String CHAMP_AUTO = "autoEvaluation";
+  
+  AddExamenForm form;
+  Examen examen;
+  
+  @BeforeTest
+  public void beforeTest() {
+    form = new AddExamenForm();
+    examen = new Examen();
+  }
+  
+  @Test
+  public void ajouterBonExamen() {
+    
+    final HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
+    final String nomMatiere = "MP Microcontrôleur 1";
+    final String nomExamen = "Examen de test";
+    final String autoEvaluation = "on";
+    
+    Mockito.when(request.getParameter(AddExamenFormTest.CHAMP_MATIERE)).thenReturn(nomMatiere);
+    Mockito.when(request.getParameter(AddExamenFormTest.CHAMP_NOM)).thenReturn(nomExamen);
+    Mockito.when(request.getParameter(AddExamenFormTest.CHAMP_AUTO)).thenReturn(autoEvaluation);
+    
+    examen = form.addExamen(request);
+    
+    assertNotNull(examen);
+    assertEquals(examen.getNom(), nomExamen, "Le nom de l'examen est correcte.");
+    
+  }
+  
+  @Test
+  public void ajouterMauavisExamen() {
+    
+    final HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
+    final String nomMatiere = "MatiereInconnu";
+    final String nomExamen = "Ex";
+    final String autoEvaluation = "azd";
+    
+    Mockito.when(request.getParameter(AddExamenFormTest.CHAMP_MATIERE)).thenReturn(nomMatiere);
+    Mockito.when(request.getParameter(AddExamenFormTest.CHAMP_NOM)).thenReturn(nomExamen);
+    Mockito.when(request.getParameter(AddExamenFormTest.CHAMP_AUTO)).thenReturn(autoEvaluation);
+    
+    examen = form.addExamen(request);
+    
+    assertNotNull(examen); 
+    assertNotNull(form.getErreurs());
+    assertNotNull(form.getResultat());
+    
+  }
+  
+}

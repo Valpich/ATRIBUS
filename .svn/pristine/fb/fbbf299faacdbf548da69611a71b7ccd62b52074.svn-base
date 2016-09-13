@@ -1,0 +1,383 @@
+package fr.eseo.atribus.dao;
+
+import fr.eseo.atribus.entities.Enseignant;
+import fr.eseo.atribus.entities.Matiere;
+
+import org.springframework.beans.factory.access.BeanFactoryReference;
+import org.springframework.beans.factory.access.SingletonBeanFactoryLocator;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+// TODO: Auto-generated Javadoc
+/**
+ * The Class EnseignantDaoImpl.
+ */
+public class EnseignantDaoImpl implements EnseignantDao {
+
+  /** La constante LOGGER. */
+  private static final Logger LOGGER = Logger.getLogger(EnseignantDaoImpl.class.getName());
+
+  /** La constante EXCEPTION. */
+  private static final String EXCEPTION = "Exception";
+
+  /** La variable dao factory. */
+  private final DaoFactory daoFactory;
+
+  /** La constante SELECT_1. */
+  private static final String SELECT_1 = "SELECT enseignant.id AS id_enseignant, utilisateur.* ";
+
+  /** La constante SELECT_2. */
+  private static final String SELECT_2 = " FROM enseignant ";
+
+  /** La constante SELECT_3. */
+  private static final String SELECT_3 =
+      " LEFT JOIN utilisateur ON utilisateur.id = enseignant.id_utilisateur ";
+
+  /** La constante SQL_SELECT_PAR_LOGIN_HASH. */
+  private static final String SQL_SELECT_PAR_LOGIN_HASH = SELECT_1 + SELECT_2 + SELECT_3
+      + " WHERE utilisateur.login = ?" + " AND utilisateur.password = ?";
+
+  /** La constante SQL_INSERT. */
+  private static final String SQL_INSERT = "INSERT INTO enseignant (id_utilisateur) VALUES (?)";
+
+  /** La constante SQL_SELECT_PAR_LOGIN. */
+  private static final String SQL_SELECT_PAR_LOGIN =
+      "SELECT enseignant.id, utilisateur.login " + SELECT_2 + SELECT_3 + "WHERE login = ?";
+
+  /** La constante SQL_SELECT_ALL. */
+  private static final String SQL_SELECT_ALL = SELECT_1 + SELECT_2 + SELECT_3;
+
+  /** La constante SQL_TROUVER_ASS_MATIERES. */
+  private static final String SQL_TROUVER_ASS_MATIERES =
+      "SELECT id_matiere FROM enseignant_enseigne_matiere WHERE id_enseignant = ?";
+
+  /** La constante SQL_SELECT_PAR_NOM. */
+  private static final String SQL_SELECT_PAR_NOM = "SELECT * FROM enseignant WHERE nom = ?";
+
+
+  /** La constante SQL_SELECT_PAR_ID_UTILISATEUR. */
+  private static final String SQL_SELECT_PAR_ID_UTILISATEUR =
+      SELECT_1 + SELECT_2 + SELECT_3 + " WHERE id_utilisateur = ?";
+
+  /** La constante SQL_DELETE_PAR_ID_UTILISATEUR. */
+  private static final String SQL_DELETE_PAR_ID_UTILISATEUR =
+      "DELETE FROM enseignant WHERE id_utilisateur = ?";
+
+  /** La constante SELECT_PAR_ID. */
+  private static final String SELECT_PAR_ID = "SELECT * FROM enseignant WHERE id = ?";
+
+  /** La constante BEANS_DAO. */
+  private static final String BEANS_DAO = "beansDao";
+
+
+  /**
+   * Instancie un nouveau enseignant dao impl.
+   */
+  EnseignantDaoImpl() {
+    final BeanFactoryReference bf =
+        SingletonBeanFactoryLocator.getInstance().useBeanFactory("contextDao");
+    this.daoFactory = (DaoFactory) bf.getFactory().getBean("daoFactory");
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see fr.eseo.atribus.dao.EnseignantDao#recupererListe()
+   */
+  @Override
+  public List<Enseignant> recupererListe() {
+    final List<Enseignant> listeEnseignant = new ArrayList<>();
+    Connection connexion = null;
+    PreparedStatement preparedStatement = null;
+    ResultSet resultSet = null;
+
+    try {
+      /* Récupération d'une connexion depuis la Factory */
+      connexion = this.daoFactory.getConnection();
+      preparedStatement = DaoUtilitaire.initialisationRequetePreparee(connexion,
+          EnseignantDaoImpl.SQL_SELECT_ALL, false);
+      resultSet = preparedStatement.executeQuery();
+      /* Parcours de la ligne de données retournée dans le ResultSet */
+      while (resultSet.next()) {
+        listeEnseignant.add(this.map(resultSet));
+      }
+    } catch (final SQLException sqle) {
+      throw new DaoException(sqle);
+    } finally {
+      DaoUtilitaire.fermeturesSilencieuses(resultSet, preparedStatement, connexion);
+    }
+
+    return listeEnseignant;
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see fr.eseo.atribus.dao.EnseignantDao#trouverIdParLogin(java.lang.String)
+   */
+  @Override /* Trouve l'id de l'enseignant (ne pas confondre avec l'id de l'utilisateur */
+  public int trouverIdParLogin(String login) {
+    return DaoUtilitaire.trouverId(this.daoFactory, EnseignantDaoImpl.SQL_SELECT_PAR_LOGIN, login);
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see fr.eseo.atribus.dao.EnseignantDao#trouverParLoginHash(java.lang.String, java.lang.String)
+   */
+  /* Implémentation de la méthode trouverParLogin() définie dans l'interface UtilisateurBdd */
+  @Override
+  public Enseignant trouverParLoginHash(String login, String hash) {
+    return this.trouver(EnseignantDaoImpl.SQL_SELECT_PAR_LOGIN_HASH, login, hash);
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see fr.eseo.atribus.dao.EnseignantDao#trouverParIdUtilisateur(int)
+   */
+  @Override
+  public Enseignant trouverParIdUtilisateur(int idUtilisateur) {
+    return this.trouver(EnseignantDaoImpl.SQL_SELECT_PAR_ID_UTILISATEUR, idUtilisateur);
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see fr.eseo.atribus.dao.EnseignantDao#trouverParNom(java.lang.String)
+   */
+  @Override
+  public Enseignant trouverParNom(String nom) {
+    return this.trouver(EnseignantDaoImpl.SQL_SELECT_PAR_NOM, nom);
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see fr.eseo.atribus.dao.EnseignantDao#trouverIdUtilisateurParIdEnseignant(int)
+   */
+  @Override
+  public int trouverIdUtilisateurParIdEnseignant(int idEnseignant) {
+
+    Connection connexion = null;
+    PreparedStatement preparedStatement = null;
+    ResultSet resultSet = null;
+    int id = -1;
+
+    try {
+      /* Récupération d'une connexion depuis la Factory */
+      connexion = this.daoFactory.getConnection();
+      preparedStatement = DaoUtilitaire.initialisationRequetePreparee(connexion,
+          EnseignantDaoImpl.SELECT_PAR_ID, false, idEnseignant);
+      resultSet = preparedStatement.executeQuery();
+      /* Parcours de la ligne de données retournée dans le ResultSet */
+      if (resultSet.next()) {
+        id = resultSet.getInt("id_utilisateur");
+      }
+    } catch (final SQLException sqle) {
+      throw new DaoException(sqle);
+    } finally {
+      DaoUtilitaire.fermeturesSilencieuses(resultSet, preparedStatement, connexion);
+    }
+
+    return id;
+
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see fr.eseo.atribus.dao.EnseignantDao#trouverTousLesEnseignants()
+   */
+  @Override
+  public List<Enseignant> trouverTousLesEnseignants() {
+    return recupererListe();
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see fr.eseo.atribus.dao.EnseignantDao#ajouter(fr.eseo.atribus.entities.Enseignant)
+   */
+  @Override
+  public Enseignant ajouter(Enseignant enseignant) {
+    Connection connexion = null;
+    PreparedStatement preparedStatement = null;
+    final ResultSet valeursAutoGenerees = null;
+
+    try {
+      final BeanFactoryReference bf =
+          SingletonBeanFactoryLocator.getInstance().useBeanFactory(EnseignantDaoImpl.BEANS_DAO);
+      final int idUtilisateur = ((UtilisateurDao) bf.getFactory().getBean("utilisateurDao"))
+          .trouverIdParLogin(enseignant.getLogin());
+
+      // Si il n'y a pas déja l'utilisateur associé
+      if (this.trouverParIdUtilisateur(idUtilisateur) == null) {
+        connexion = this.daoFactory.getConnection();
+        preparedStatement = DaoUtilitaire.initialisationRequetePreparee(connexion,
+            EnseignantDaoImpl.SQL_INSERT, true, idUtilisateur);
+
+        final int statut = preparedStatement.executeUpdate();
+        /* Analyse du statut retourné par la requête d'insertion */
+        if (statut == 0) {
+          throw new DaoException(
+              "Échec de la création de l'enseignant, aucune ligne ajoutée dans la table.");
+        }
+      }
+
+    } catch (final SQLException sqle) {
+      EnseignantDaoImpl.LOGGER.log(Level.INFO, EnseignantDaoImpl.EXCEPTION, sqle);
+      throw new DaoException(sqle);
+    } finally {
+      DaoUtilitaire.fermeturesSilencieuses(valeursAutoGenerees, preparedStatement, connexion);
+    }
+    return enseignant;
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see fr.eseo.atribus.dao.EnseignantDao#supprimer(fr.eseo.atribus.entities.Enseignant)
+   */
+  @Override
+  public int supprimer(Enseignant enseignant) {
+
+    int statut;
+    Connection connexion = null;
+    PreparedStatement preparedStatement = null;
+
+
+    try {
+      /* Récupération de l'id_utilisateur */
+      final BeanFactoryReference bf =
+          SingletonBeanFactoryLocator.getInstance().useBeanFactory(EnseignantDaoImpl.BEANS_DAO);
+      final int idUtilisateur = ((UtilisateurDao) bf.getFactory().getBean("utilisateurDao"))
+          .trouverIdParLogin(enseignant.getLogin());
+
+      /* Récupération d'une connexion depuis la Factory */
+      connexion = this.daoFactory.getConnection();
+      preparedStatement = DaoUtilitaire.initialisationRequetePreparee(connexion,
+          EnseignantDaoImpl.SQL_DELETE_PAR_ID_UTILISATEUR, false, idUtilisateur);
+
+      statut = preparedStatement.executeUpdate();
+
+    } catch (final SQLException sqle) {
+      EnseignantDaoImpl.LOGGER.log(Level.INFO, EnseignantDaoImpl.EXCEPTION, sqle);
+      throw new DaoException(sqle);
+    } finally {
+      DaoUtilitaire.fermeturesSilencieuses(preparedStatement, connexion);
+    }
+
+    return statut;
+  }
+
+
+  /**
+   * Trouver.
+   *
+   * @param sql le sql
+   * @param objets le objets
+   * @return Le paramètre enseignant
+   */
+  /*
+   * Méthode générique utilisée pour retourner un adminsys depuis la base de données, correspondant
+   * à la requête SQL donnée prenant en paramètres les objets passés en argument.
+   */
+  private Enseignant trouver(String sql, Object... objets) {
+    Connection connexion = null;
+    PreparedStatement preparedStatement = null;
+    ResultSet resultSet = null;
+    Enseignant enseignant = null;
+
+    try {
+      /* Récupération d'une connexion depuis la Factory */
+      connexion = this.daoFactory.getConnection();
+      /*
+       * Préparation de la requête avec les objets passés en arguments (ici, uniquement un id) et
+       * exécution.
+       */
+      preparedStatement =
+          DaoUtilitaire.initialisationRequetePreparee(connexion, sql, false, objets);
+      resultSet = preparedStatement.executeQuery();
+      /* Parcours de la ligne de données retournée dans le ResultSet */
+      if (resultSet.next()) {
+        enseignant = this.map(resultSet);
+      }
+    } catch (final SQLException sqle) {
+      throw new DaoException(sqle);
+    } finally {
+      DaoUtilitaire.fermeturesSilencieuses(resultSet, preparedStatement, connexion);
+    }
+    return enseignant;
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see fr.eseo.atribus.dao.EnseignantDao#trouverMatieres(fr.eseo.atribus.entities.Enseignant)
+   */
+  @Override
+  public List<Matiere> trouverMatieres(Enseignant enseignant) {
+    Connection connexion = null;
+    PreparedStatement preparedStatement = null;
+    final ResultSet valeursAutoGenerees = null;
+    final List<Matiere> matieres = new ArrayList<>();
+    final BeanFactoryReference bf =
+        SingletonBeanFactoryLocator.getInstance().useBeanFactory(EnseignantDaoImpl.BEANS_DAO);
+    final MatiereDao matiereDao = (MatiereDao) bf.getFactory().getBean("matiereDao");
+    try {
+      connexion = this.daoFactory.getConnection();
+      preparedStatement = DaoUtilitaire.initialisationRequetePreparee(connexion,
+          EnseignantDaoImpl.SQL_TROUVER_ASS_MATIERES, true, enseignant.getIdEnseignant());
+      final ResultSet resultSet = preparedStatement.executeQuery();
+      /* Analyse du statut retourné par la requête d'insertion */
+      while (resultSet.next()) {
+        matieres.add(matiereDao.trouverParId(resultSet.getInt("id_matiere")));
+      }
+    } catch (final SQLException sqle) {
+      EnseignantDaoImpl.LOGGER.log(Level.INFO, EnseignantDaoImpl.EXCEPTION, sqle);
+      throw new DaoException(sqle);
+    } finally {
+      DaoUtilitaire.fermeturesSilencieuses(valeursAutoGenerees, preparedStatement, connexion);
+    }
+    return matieres;
+  }
+
+
+  /**
+   * Map.
+   *
+   * @param resultSet le result set
+   * @return Le paramètre enseignant
+   * @throws SQLException de type SQL exception
+   */
+  /*
+   * Simple méthode utilitaire permettant de faire la correspondance (le mapping) entre une ligne
+   * issue de la table des adminsyss (un ResultSet) et un bean Utilisateur.
+   */
+  private Enseignant map(ResultSet resultSet) throws SQLException {
+    final Enseignant enseignant = new Enseignant();
+    enseignant.setId(resultSet.getInt("id"));
+    enseignant.setIdEnseignant(resultSet.getInt("id_enseignant"));
+    enseignant.setLogin(resultSet.getString("login"));
+    enseignant.setPassword(resultSet.getString("password"));
+    enseignant.setNom(resultSet.getString("nom"));
+    enseignant.setPrenom(resultSet.getString("prenom"));
+    enseignant.setEmail(resultSet.getString("email"));
+    enseignant.setDateInscription(resultSet.getTimestamp("date_inscription"));
+    enseignant.setEnseigneMatiere(this.trouverMatieres(enseignant));
+    enseignant.setNotificationActive(resultSet.getBoolean("notification_active"));
+    enseignant.setNotificationMail(resultSet.getBoolean("notification_mail"));
+    enseignant.setFrequenceNotificationMail(resultSet.getInt("frequence_notification_mail"));
+    return enseignant;
+  }
+
+
+}

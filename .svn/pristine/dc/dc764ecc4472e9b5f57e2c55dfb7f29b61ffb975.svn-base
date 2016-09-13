@@ -1,0 +1,204 @@
+package fr.eseo.atribus.integration;
+
+import org.testng.TestListenerAdapter;
+import org.testng.TestNG;
+import org.testng.annotations.Test;
+
+import java.awt.BorderLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.DefaultListModel;
+import javax.swing.JButton;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
+import javax.swing.ListSelectionModel;
+import javax.swing.SwingConstants;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+
+
+
+public class PanelApplication extends JPanel implements ListSelectionListener {
+  private static final long serialVersionUID = 1L;
+  private JList<String> list;
+  private DefaultListModel<String> listModel;
+
+  private JButton testButton;
+
+  public PanelApplication() {
+    super(new BorderLayout());
+
+    listModel = new DefaultListModel<>();
+    listModel.addElement(
+        "[Must] En tant qu'utilisateur, je dois pouvoir me loguer sur la plate-forme de manière sécurisée afin d'accéder à mes ressources");
+    listModel.addElement(
+        "[Must] En tant que DE, je dois être capable de voir les progrès de tout étudiant de manière individuelle afin de pouvoir éventuellement convoquer ceux qui en ont besoin.");
+    listModel.addElement(
+        "[Must] En tant que DE, je dois extraire du système les notes de l'ensemble des étudiants afin d'éditer des bulletins individuels.");
+    listModel.addElement("[Must] En tant que DE, je dois être capable de convoquer des étudiants");
+    listModel.addElement(
+        "[Must] En tant que DE, je dois extraire du système les notes de l'ensemble des étudiants afin d'éditer des bulletins individuels.");
+    listModel.addElement(
+        "[Must] En tant que DP, je dois pouvoir accéder au référentiel de compétences afin de le consulter.");
+    listModel.addElement(
+        "[Must] En tant que DP, je dois pouvoir modifier le référentiel de compétences afin de le mettre à jour d'année en année.");
+    listModel.addElement(
+        "[Must] En tant DP, je dois pouvoir créer les UE relatives à chaque semestre afin de définir le programme du cursus.");
+    listModel.addElement(
+        "[Must] En tant DP, je dois pouvoir modifier les UE relatives à chaque semestre afin de mettre à jour le programme du cursus.");
+    listModel.addElement(
+        "[Must] En tant qu'ERUE,  je dois accéder au référentiel de compétences afin de pouvoir le consulter.");
+    listModel.addElement(
+        "[Must] En tant qu'ERUE, je dois associer des compétences à l'UE en déterminant le niveau attendu afin de définir l'UE.");
+    listModel.addElement(
+        "[Must] En tant qu'ERUE, je dois définir les matières de l'UE afin de préciser le contenu de l'UE.");
+    listModel.addElement(
+        "[Must] En tant qu'ERUE, je dois modifier les compétences relatives à l'UE ainsi que leur niveau afin de les mettre à jour.");
+    listModel.addElement(
+        "[Must] En tant qu'ERUE, je dois modifier les matières de l'UE afin de mettre à jour l'UE d'année en année");
+    listModel.addElement(
+        "[Must] En tant qu'ERM, je dois pouvoir accéder au référentiel de compétences afin de le consulter.");
+    listModel.addElement(
+        "[Must] En tant qu'ERM, je dois pouvoir accéder aux compétences attendues dans l'UE afin de référer les différentes ressources pédagogiques ainsi que les évaluations.");
+    listModel.addElement(
+        "[Must] En tant qu'ERM, je dois pouvoir ajouter une nouvelle ressource en précisant les différentes compétences mises en jeu dans la matière afin d'identifier quelles sont les compétences qui sont abordées par la ressource.");
+    listModel.addElement(
+        "[Must] En tant qu'ERM, je dois être capable d'ajouter des évaluations dont chaque question évalue une ou plusieurs compétences afin de pouvoir évaluer les différentes compétences attendues dans l'UE.");
+    listModel.addElement(
+        "[Must] En tant qu'ERM, je dois modifier les ressources afin de mettre à jour la matière.");
+    listModel.addElement(
+        "[Must] En tant qu'ERM, je dois modifier les évaluations afin de mettre à jour la matière.");
+    listModel.addElement(
+        "[Must] En tant qu'enseignant, je dois être capable d'accéder aux compétences de l'UE et de chaque matière afin que je puisse préparer mon cours.");
+    listModel.addElement(
+        "[Must] En tant qu'enseignant, je dois évaluer le travail des élèves afin de déterminer s'ils ont acquis le niveau requis.");
+    listModel.addElement(
+        "[Must] En tant qu'élève, je dois pouvoir accéder au référentiel de compétences afin de comprendre le but de la formation.");
+    listModel.addElement(
+        "[Must] En tant qu'élève, je dois être capable d'accéder à mes évaluations afin de savoir quelles UEs sont validées ou non.");
+    listModel.addElement(
+        "[Must] En tant qu'élève, je dois être capable de consulter les ressources de formation pour une ou plusieurs compétences données afin de pouvoir acquérir la ou les compétences manquantes.");
+    listModel.addElement(
+        "[Must] En tant qu'administrateur système, je dois être capable de déployer facilement le projet sur l'infrastructure réseau existante.");
+    listModel.addElement(
+        "[Must] En tant qu'administrateur système, je dois avoir accès aux logs de la plate-forme afin d'en assurer le bon fonctionnement.");
+    listModel.addElement(
+        "[Must] En tant qu'administrateur système, je dois pouvoir ajouter des comptes utilisateur afin que chaque utilisateur puisse accéder à la plate-forme.");
+    listModel.addElement(
+        "[Must] En tant qu'administrateur système, je dois pouvoir ajouter des rôles liés avec des comptes utilisateur afin que chaque utilisateur puisse accéder aux ressources de la plate-forme.");
+
+    listModel.addElement(
+        "[Should] En tant que DE, je devrais être capable d'extraire tous les résultats d'une promotion pour une année afin de pouvoir effectuer un jury.");
+    listModel.addElement(
+        "[Should] En tant que DP,  je devrais accéder aux compétences de chaque matière de chaque UE afin de pouvoir les valider.");
+    listModel.addElement(
+        "[Should] En tant qu'ERUE, je devrais pouvoir suggérer des compétences qui n'apparaissent pas dans le référentiel afin de les ajouter dans la définition de l'UE.");
+    listModel.addElement(
+        "[Should] En tant qu'ERM, je devrais être capable de mettre en avant des compétences qui ne seraient pas référencées dans l'UE afin que l'on puisse déterminer des référencements croisés de compétences entre UE.");
+    listModel.addElement(
+        "[Should] En tant qu'ERM,  je devrais définir et modifier l'ensemble des auto-évaluations des matières de l'UE afin d'établir une auto-évaluation des compétences pour l'UE pour les étudiants (notation non prise en compte pour la validation de l'UE).");
+    listModel.addElement(
+        "[Should] En tant qu'enseignant, je devrais être capable de proposer des compétences qui ne sont pas référencées dans l'UE, et que je voudrais voir être ajoutées afin de prévenir mes collègues (ERM et/ou ERUE) pour qu'ils puissent les prendre en compte dans la description de l'UE.");
+    listModel.addElement(
+        "[Should] En tant qu'élève, je devrais pouvoir voir les compétences attendues pour chaque ressource et chaque évaluation dans l'UE afin de mieux comprendre les objectifs attendus.");
+    listModel.addElement(
+        "[Should] En tant qu'Elève, je devrais être capable d'accéder à mes auto-évaluations afin de savoir quels points je devrais développer afin d'acquerir les compétences faisant défaut.");
+    listModel.addElement(
+        "[Should] En tant qu'élève, je devrais être capable de voir quelles sont les compétences que j'ai validées afin de savoir quels modules je pourrais prendre pour valider ces compétences.");
+    listModel.addElement(
+        "[Should] En tant qu'administrateur système, je devrais utiliser l'annuaire LDAP de mon entreprise pour l'identification des différents acteurs du système afin de sécuriser l'accès à mon réseau.");
+    listModel.addElement(
+        "[Could] En tant que DE,  je pourrais accéder au référentiel de compétences afin de le consulter.");
+    listModel.addElement(
+        "[Could] En tant que DE, il serait bien que en cliquant sur un nom d'étudiant, il sache qu'il est convoqué");
+    listModel.addElement(
+        "[Could] En tant DP, je devrais pouvoir modifier les différentes matières constituant les UEs, afin de modifier le cursus d'année en année.");
+    listModel.addElement(
+        "[Could] En tant que DP,  je pourrais accéder aux compétences d'une UE afin de pouvoir les modifier.");
+    listModel.addElement(
+        "[Could] En tant qu'ERUE, je pourrais avoir accès à l'historique de l'utilisation des ressources mises à disposition pour les matières afin de voir celles qui sont utilisées et celles qui le sont moins, et d'en informer les enseignants de l'année suivante.");
+    listModel.addElement(
+        "[Could] En tant qu'ERM, je pourrais construire des tests dont chaque question évalue une ou plusieurs compétences afin de pouvoir établir une auto-évaluation de chaque compétence.");
+    listModel.addElement(
+        "[Could] En tant qu'ERM, je pourrais avoir accès à l'historique des auto-évaluations afin d'améliorer les auto-évaluations pour l'année suivante.");
+    listModel.addElement(
+        "[Could] En tant qu'enseignant, je dois pouvoir accéder au référentiel de compétences afin de le consulter.");
+    listModel.addElement(
+        "[Could] En tant qu'élève, je pourrais proposer des compétences possibles que j'ai pu acquérir par ailleurs et qui seraient relatives à la formation afin de compléter mon bulletin.");
+    listModel.addElement("[Could] ");
+    listModel.addElement("[Could] ");
+    listModel.addElement("[Could] ");
+    listModel.addElement("[Could] ");
+
+    list = new JList<>(listModel);
+    list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+    list.setSelectedIndex(0);
+    list.addListSelectionListener(this);
+    list.setVisibleRowCount(5);
+    JScrollPane listScrollPane = new JScrollPane(list);
+
+    testButton = new JButton("Lancer le test");
+    testButton.setActionCommand("Lancer le test");
+    testButton.addActionListener(new TesterListener());
+
+    JPanel buttonPane = new JPanel();
+    buttonPane.setLayout(new BoxLayout(buttonPane, BoxLayout.LINE_AXIS));
+    buttonPane.add(testButton);
+    buttonPane.add(Box.createHorizontalStrut(5));
+    buttonPane.add(new JSeparator(SwingConstants.VERTICAL));
+    buttonPane.add(Box.createHorizontalStrut(5));
+    buttonPane.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+
+    add(listScrollPane, BorderLayout.CENTER);
+    add(buttonPane, BorderLayout.PAGE_END);
+  }
+
+  private class TesterListener implements ActionListener {
+    @Override
+    public void actionPerformed(ActionEvent e) {
+      int index = list.getSelectedIndex();
+      switch (index) {
+        case 1:
+          break;
+        default:
+          break;
+      }
+      lancerUnTest(TestUn.class);
+      int size = listModel.getSize();
+      if (size == 0) {
+        testButton.setEnabled(false);
+      } else {
+        if (index == listModel.getSize()) {
+          index--;
+        }
+        list.setSelectedIndex(index);
+        list.ensureIndexIsVisible(index);
+      }
+    }
+  }
+
+  public void valueChanged(ListSelectionEvent e) {
+    if (e.getValueIsAdjusting() == false) {
+      if (list.getSelectedIndex() == -1) {
+        testButton.setEnabled(false);
+      } else {
+        testButton.setEnabled(true);
+      }
+    }
+  }
+
+  @Test
+  private void lancerUnTest(Class<?> classe) {
+    TestListenerAdapter tla = new TestListenerAdapter();
+    TestNG testng = new TestNG();
+    testng.setTestClasses(new Class[] { classe });
+    testng.addListener(tla);
+    testng.run();
+  }
+}

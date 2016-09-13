@@ -1,0 +1,81 @@
+package fr.eseo.atribus.entities;
+
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
+
+import org.testng.annotations.Test;
+
+import java.util.HashMap;
+import java.util.Map;
+
+public class UETest {
+  
+  private UniteEnseignement ue = new UniteEnseignement();
+  private String nom = "nom";
+  private int credit = 12;
+  private int heure = 50;
+  private EnseignantRefUe erue = new EnseignantRefUe();
+  private Promotion promotion = new Promotion();
+  private Map<Long,CompetenceValidable> competences = new HashMap<>();
+  
+  @Test(priority = 1)
+  public void testAccesseurGetNom() {
+    ue.setNom(nom);
+    assertNotNull(ue);
+    assertEquals(ue.getNom(), nom);
+  }
+
+
+  @Test(priority = 2)
+  public void testAccesseurGetNbCreditsEcts() {
+    ue.setNbCreditsEcts(credit);
+    assertNotNull(ue);
+    assertEquals(ue.getNbCreditsEcts(), credit);
+  }
+
+
+  @Test(priority = 3)
+  public void testAccesseurGetNbHeures() {
+    ue.setNbHeures(heure);
+    assertNotNull(ue);
+    assertEquals(ue.getNbHeures(), heure);
+  }
+
+
+  @Test(priority = 4)
+  public void testAccesseurGetEnseignantRefUe() {
+    erue.setPrenom("Juan-Carlos");
+    ue.setEnseignantRefUe(erue);
+    assertNotNull(ue);
+    assertEquals(ue.getEnseignantRefUe(), erue);
+  }
+
+
+  @Test(priority = 5)
+  public void testAccesseurGetPromotion() {
+    ue.setPromotion(promotion);
+    assertNotNull(ue);
+    assertEquals(ue.getPromotion(), promotion);
+  }
+
+  @Test(priority = 6)
+  public void testMethodeToString() {
+    
+    final String stringUe = "UniteEnseignement [nom=null, nbCreditsEcts=0, nbHeures=0, "
+        + "enseignantRefUe=null, promotion=null, competence=null";
+   
+    ue = new UniteEnseignement();
+  
+    assertNotNull(ue);
+    assertEquals(ue.toString(), stringUe);
+    
+  }
+  
+  @Test(priority = 7)
+  public void testAccesseurGetCompetences() {
+    ue.setCompetences(competences);
+    assertNotNull(ue);
+    assertEquals(ue.getCompetences(), competences);
+  }
+
+}

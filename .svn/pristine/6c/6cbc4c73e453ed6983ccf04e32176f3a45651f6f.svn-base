@@ -1,0 +1,4 @@
+ldap.url=ldap://192.168.4.12:389
+ldap.userDn=cn=admin,dc=ldcr,dc=tp
+ldap.password=L4d3A2p1
+ldap.base=dc=ldcr,dc=tp

@@ -1,0 +1,56 @@
+package fr.eseo.atribus.forms;
+
+import static org.testng.Assert.assertNotNull;
+
+import org.mockito.Mockito;
+import org.testng.annotations.BeforeTest;
+import org.testng.annotations.Test;
+
+import javax.servlet.http.HttpServletRequest;
+
+public class AddUeFormTest {
+  
+  private static final String CHAMP_NOMUE = "nomUe";
+  private static final String CHAMP_ECTS = "nbCreditsEcts";
+  private static final String CHAMP_NBHEURES = "nbHeures";
+  
+  AddUeForm form;
+  
+  @BeforeTest
+  public void beforeTest() {
+    form = new AddUeForm();
+  }
+
+  @Test
+  public void addBonUe() {
+    
+    final HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
+    final String nomUe = "nomUeTest";
+    final String nbCreditEcts = "3";
+    final String nbHeures = "3";
+    
+    Mockito.when(request.getParameter(AddUeFormTest.CHAMP_NOMUE)).thenReturn(nomUe);
+    Mockito.when(request.getParameter(AddUeFormTest.CHAMP_ECTS)).thenReturn(nbCreditEcts);
+    Mockito.when(request.getParameter(AddUeFormTest.CHAMP_NBHEURES)).thenReturn(nbHeures);
+    
+    assertNotNull(form.addUe(request));
+    
+  }
+  
+  @Test
+  public void addMauvaisUe() {
+    
+    final HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
+    final String nomUe = "ue";
+    final String nbCreditEcts = "-1";
+    final String nbHeures = "-4";
+    
+    Mockito.when(request.getParameter(AddUeFormTest.CHAMP_NOMUE)).thenReturn(nomUe);
+    Mockito.when(request.getParameter(AddUeFormTest.CHAMP_ECTS)).thenReturn(nbCreditEcts);
+    Mockito.when(request.getParameter(AddUeFormTest.CHAMP_NBHEURES)).thenReturn(nbHeures);
+    
+    assertNotNull(form.addUe(request));
+    
+  }
+  
+}

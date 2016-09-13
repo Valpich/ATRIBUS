@@ -1,0 +1,105 @@
+package fr.eseo.atribus.integration;
+
+import org.testng.TestListenerAdapter;
+import org.testng.TestNG;
+import org.testng.annotations.Test;
+
+import java.awt.BorderLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.DefaultListModel;
+import javax.swing.JButton;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
+import javax.swing.ListSelectionModel;
+import javax.swing.SwingConstants;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+
+
+
+public class PanelApplication extends JPanel implements ListSelectionListener {
+  private static final long serialVersionUID = 1L;
+  private JList<String> list;
+  private DefaultListModel<String> listModel;
+
+  private JButton testButton;
+
+  public PanelApplication() {
+    super(new BorderLayout());
+
+    listModel = new DefaultListModel<>();
+    listModel.addElement(
+        "En tant que DE, je dois pouvoir me loguer sur la plate-forme de manière sécurisée afin d'accéder à mes ressources");
+    listModel.addElement(
+        "En tant que DE, je dois être capable de voir les progrès de tout étudiant de manière individuelle afin de pouvoir éventuellement convoquer ceux qui en ont besoin.");
+    listModel.addElement(
+        "En tant que DE, je dois extraire du système les notes de l'ensemble des étudiants afin d'éditer des bulletins individuels.");
+
+    list = new JList<>(listModel);
+    list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+    list.setSelectedIndex(0);
+    list.addListSelectionListener(this);
+    list.setVisibleRowCount(5);
+    JScrollPane listScrollPane = new JScrollPane(list);
+
+    testButton = new JButton("Lancer le test");
+    testButton.setActionCommand("Lancer le test");
+    testButton.addActionListener(new TesterListener());
+
+    JPanel buttonPane = new JPanel();
+    buttonPane.setLayout(new BoxLayout(buttonPane, BoxLayout.LINE_AXIS));
+    buttonPane.add(testButton);
+    buttonPane.add(Box.createHorizontalStrut(5));
+    buttonPane.add(new JSeparator(SwingConstants.VERTICAL));
+    buttonPane.add(Box.createHorizontalStrut(5));
+    buttonPane.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+
+    add(listScrollPane, BorderLayout.CENTER);
+    add(buttonPane, BorderLayout.PAGE_END);
+  }
+
+  private class TesterListener implements ActionListener {
+    @Override
+    public void actionPerformed(ActionEvent e) {
+      int index = list.getSelectedIndex();
+      // listModel.remove(index);
+      lancerUnTest(TestUn.class);
+      int size = listModel.getSize();
+      if (size == 0) {
+        testButton.setEnabled(false);
+      } else {
+        if (index == listModel.getSize()) {
+          index--;
+        }
+        list.setSelectedIndex(index);
+        list.ensureIndexIsVisible(index);
+      }
+    }
+  }
+
+  public void valueChanged(ListSelectionEvent e) {
+    if (e.getValueIsAdjusting() == false) {
+      if (list.getSelectedIndex() == -1) {
+        testButton.setEnabled(false);
+      } else {
+        testButton.setEnabled(true);
+      }
+    }
+  }
+
+  @Test
+  private void lancerUnTest(Class<?> classe) {
+    TestListenerAdapter tla = new TestListenerAdapter();
+    TestNG testng = new TestNG();
+    testng.setTestClasses(new Class[] { classe });
+    testng.addListener(tla);
+    testng.run();
+  }
+}

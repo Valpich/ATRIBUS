@@ -1,0 +1,75 @@
+package fr.eseo.atribus.entities;
+
+import java.io.Serializable;
+import java.util.Map;
+
+public class Exercice implements Serializable {
+
+  private static final long serialVersionUID = -227609127293122576L;
+
+  private Integer id;
+
+  private Map<Long, Competence> competences;
+
+  private Map<Long, Integer> pourcentages;
+
+  private String question;
+
+  private String reponse;
+
+  private Float nbPoints;
+
+  public Map<Long, Competence> getCompetences() {
+    return this.competences;
+  }
+
+  public void setCompetences(Map<Long, Competence> competences) {
+    this.competences = competences;
+  }
+
+  public Map<Long, Integer> getPourcentages() {
+    return this.pourcentages;
+  }
+
+  public void setPourcentages(Map<Long, Integer> pourcentages) {
+    this.pourcentages = pourcentages;
+  }
+
+  public String getQuestion() {
+    return this.question;
+  }
+
+  public void setQuestion(String question) {
+    this.question = question;
+  }
+
+  public String getReponse() {
+    return this.reponse;
+  }
+
+  public void setReponse(String reponse) {
+    this.reponse = reponse;
+  }
+
+  public Float getNbPoints() {
+    return this.nbPoints;
+  }
+
+  public void setNbPoints(Float nbPoints) {
+    this.nbPoints = nbPoints;
+  }
+
+  public Integer getId() {
+    return this.id;
+  }
+
+  public void setId(Integer id) {
+    this.id = id;
+  }
+
+  @Override
+  public String toString() {
+    return "Exercice [competence=" + this.competences + ", question=" + this.question + ", reponse="
+        + this.reponse + ", nbPoints=" + this.nbPoints + "]";
+  }
+}

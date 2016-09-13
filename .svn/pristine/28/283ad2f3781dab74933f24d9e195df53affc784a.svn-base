@@ -1,0 +1,534 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>RessourceController.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Atribus</a> &gt; <a href="index.source.html" class="el_package">fr.eseo.atribus.controller</a> &gt; <span class="el_source">RessourceController.java</span></div><h1>RessourceController.java</h1><pre class="source lang-java linenums">package fr.eseo.atribus.controller;
+
+
+import fr.eseo.atribus.beans.ExporteurCsv;
+import fr.eseo.atribus.dao.CompetenceDao;
+import fr.eseo.atribus.dao.EleveDao;
+import fr.eseo.atribus.dao.EvaluationDao;
+import fr.eseo.atribus.dao.ExamenDao;
+import fr.eseo.atribus.dao.MatiereDao;
+import fr.eseo.atribus.dao.PromotionDao;
+import fr.eseo.atribus.dao.RessourceDao;
+import fr.eseo.atribus.entities.EnseignantRefMatiere;
+import fr.eseo.atribus.entities.Promotion;
+import fr.eseo.atribus.entities.Ressource;
+import fr.eseo.atribus.entities.Utilisateur;
+import fr.eseo.atribus.forms.AddRessourceForm;
+import fr.eseo.atribus.forms.ModifierRessourceForm;
+
+import org.springframework.beans.factory.access.BeanFactoryReference;
+import org.springframework.beans.factory.access.SingletonBeanFactoryLocator;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.stereotype.Controller;
+import org.springframework.util.FileCopyUtils;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.ModelAndView;
+
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URLConnection;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.annotation.PostConstruct;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+/**
+ * Servlet implementation class RessourceController.
+ */
+@Controller
+<span class="nc" id="L56">public class RessourceController {</span>
+  public static final String VUE_MODIFIER = &quot;EnseignantRefMatiere/modifierRessource&quot;;
+  public static final String VUE_TELECHARGER = &quot;download&quot;;
+  public static final String VUE_ELEVE_CONSULTER = &quot;Eleve/consulterRessource&quot;;
+  public static final String VUE_UPLOAD = &quot;upload&quot;;
+  public static final String DOWNLOAD_RESSOURCE = &quot;/downloadRessource&quot;;
+  public static final String CONF_BDD_FACTORY = &quot;DaoFactory&quot;;
+  public static final String ATT_RESSOURCES = &quot;ressources&quot;;
+  public static final String ATT_FORM = &quot;form&quot;;
+  public static final String ATT_RESSOURCE = &quot;ressource&quot;;
+  public static final String ATT_COMPETENCES = &quot;competences&quot;;
+  public static final String ATT_MATIERES = &quot;matieres&quot;;
+  private static final String PROPERTY_BASE_PATH = &quot;basePath&quot;;
+  private static final String PROPERTY_SERVEUR_PATH = &quot;serveurPath&quot;;
+  private static final String PROPERTY_TEMP_FOLDER = &quot;tempFolder&quot;;
+  private static final String CHAMP_RESSOURCE = &quot;choixRessource&quot;;
+  private static final String BASE_PATH_STRING = &quot;Le parametre 'basePath' de valeur '&quot;;
+  public static final String ATT_SESSION_USER = &quot;sessionUtilisateur&quot;;
+  private static final String CONTENT = &quot;Content-Disposition&quot;;
+  private static final String EXCEPTION = &quot;exception&quot;;
+  private static final String VUE_HISTORIQUE = &quot;EnseignantRefUE/historiqueRessources&quot;;
+
+  private MatiereDao matiereDao;
+  private RessourceDao ressourceDao;
+  private CompetenceDao competenceDao;
+  private EleveDao eleveDao;
+  private EvaluationDao evaluationDao;
+  private ExamenDao examenDao;
+  private PromotionDao promotionDao;
+  private String basePath;
+  private String serveurPath;
+  private String tempFolder;
+<span class="nc" id="L88">  private static final Logger LOGGER = Logger.getLogger(RessourceController.class.getName());</span>
+  private static final String FICHIER_PROPERTIES = &quot;/fr/eseo/atribus/controller/upload.properties&quot;;
+
+  public String getBasePath() {
+<span class="nc" id="L92">    return this.basePath;</span>
+  }
+
+  public void setBasePath(String basePath) {
+<span class="nc" id="L96">    this.basePath = basePath;</span>
+<span class="nc" id="L97">  }</span>
+
+  public String getServeurPath() {
+<span class="nc" id="L100">    return this.serveurPath;</span>
+  }
+
+  public void setServeurPath(String serveurPath) {
+<span class="nc" id="L104">    this.serveurPath = serveurPath;</span>
+<span class="nc" id="L105">  }</span>
+
+  public String getTempFolder() {
+<span class="nc" id="L108">    return this.tempFolder;</span>
+  }
+
+  public void setTempFolder(String tempFolder) {
+<span class="nc" id="L112">    this.tempFolder = tempFolder;</span>
+<span class="nc" id="L113">  }</span>
+
+  @PostConstruct
+  public void init() throws ServletException {
+    final BeanFactoryReference bf =
+<span class="nc" id="L118">        SingletonBeanFactoryLocator.getInstance().useBeanFactory(&quot;beansDao&quot;);</span>
+    /* Récupération d'une instance de notre DAO Matiere */
+<span class="nc" id="L120">    this.matiereDao = (MatiereDao) bf.getFactory().getBean(&quot;matiereDao&quot;);</span>
+    /* Récupération d'une instance de notre DAO Competence */
+<span class="nc" id="L122">    this.competenceDao = (CompetenceDao) bf.getFactory().getBean(&quot;competenceDao&quot;);</span>
+    /* Récupération d'une instance de notre DAO Ressource */
+<span class="nc" id="L124">    this.ressourceDao = (RessourceDao) bf.getFactory().getBean(&quot;ressourceDao&quot;);</span>
+    /* Récupération d'une instance de notre DAO Eleve */
+<span class="nc" id="L126">    this.eleveDao = (EleveDao) bf.getFactory().getBean(&quot;eleveDao&quot;);</span>
+    /* Récupération d'une instance de notre DAO Examen */
+<span class="nc" id="L128">    this.examenDao = (ExamenDao) bf.getFactory().getBean(&quot;examenDao&quot;);</span>
+    /* Récupération d'une instance de notre DAO Evaluation */
+<span class="nc" id="L130">    this.evaluationDao = (EvaluationDao) bf.getFactory().getBean(&quot;evaluationDao&quot;);</span>
+    /* Récupération d'une instance de notre DAO Evaluation */
+<span class="nc" id="L132">    this.promotionDao = (PromotionDao) bf.getFactory().getBean(&quot;promotionDao&quot;);</span>
+    // On récupére le chemin du fichier où sauvegarder les ressources depuis le fichier de
+    // propriétés
+<span class="nc" id="L135">    final Properties properties = new Properties();</span>
+<span class="nc" id="L136">    final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();</span>
+<span class="nc" id="L137">    final InputStream fichierProperties =</span>
+<span class="nc" id="L138">        classLoader.getResourceAsStream(RessourceController.FICHIER_PROPERTIES);</span>
+<span class="nc bnc" id="L139" title="All 2 branches missed.">    if (fichierProperties == null) {</span>
+<span class="nc" id="L140">      throw new ServletException(</span>
+          &quot;Le fichier properties &quot; + RessourceController.FICHIER_PROPERTIES + &quot; est introuvable.&quot;);
+    }
+    try {
+<span class="nc" id="L144">      properties.load(fichierProperties);</span>
+<span class="nc" id="L145">      this.basePath = properties.getProperty(RessourceController.PROPERTY_BASE_PATH);</span>
+<span class="nc" id="L146">      this.serveurPath = properties.getProperty(RessourceController.PROPERTY_SERVEUR_PATH);</span>
+<span class="nc" id="L147">      this.tempFolder = properties.getProperty(RessourceController.PROPERTY_TEMP_FOLDER);</span>
+<span class="nc" id="L148">    } catch (final IOException ioe) {</span>
+<span class="nc" id="L149">      RessourceController.LOGGER.log(Level.INFO, RessourceController.EXCEPTION, ioe);</span>
+<span class="nc" id="L150">      throw new ServletException(</span>
+          &quot;Impossible de charger le fichier properties &quot; + RessourceController.FICHIER_PROPERTIES,
+          ioe);
+<span class="nc" id="L153">    }</span>
+    // On valider les chemins
+<span class="nc" id="L155">    this.validerFichier();</span>
+<span class="nc" id="L156">  }</span>
+
+  public void validerFichier() throws ServletException {
+<span class="nc bnc" id="L159" title="All 2 branches missed.">    if (this.basePath == null) {</span>
+<span class="nc" id="L160">      throw new ServletException(</span>
+          &quot;Le paramètre 'basePath' doit être dans le fichier de configuration.&quot;);
+    } else {
+<span class="nc" id="L163">      final File path = new File(this.basePath);</span>
+<span class="nc bnc" id="L164" title="All 2 branches missed.">      if (!path.exists()) {</span>
+<span class="nc" id="L165">        throw new ServletException(BASE_PATH_STRING + this.basePath + &quot;' n'existe pas.&quot;);</span>
+<span class="nc bnc" id="L166" title="All 2 branches missed.">      } else if (!path.isDirectory()) {</span>
+<span class="nc" id="L167">        throw new ServletException(BASE_PATH_STRING + this.basePath + &quot;' n'est pas un dossier.&quot;);</span>
+<span class="nc bnc" id="L168" title="All 2 branches missed.">      } else if (!path.canRead()) {</span>
+<span class="nc" id="L169">        throw new ServletException(BASE_PATH_STRING + this.basePath + &quot;'n'est pas lisible.&quot;);</span>
+      }
+    }
+<span class="nc" id="L172">    this.validerFichierServeur();</span>
+<span class="nc" id="L173">  }</span>
+
+  private void validerFichierServeur() throws ServletException {
+<span class="nc bnc" id="L176" title="All 4 branches missed.">    if (this.serveurPath == null || this.tempFolder == null) {</span>
+<span class="nc" id="L177">      throw new ServletException(&quot;Les paramètres 'serveurPath' et 'tempFolder' doivent &quot;</span>
+          + &quot;être dans le fichier de configuration.&quot;);
+    } else {
+<span class="nc" id="L180">      File path = new File(this.serveurPath + File.separator + this.tempFolder);</span>
+<span class="nc" id="L181">      path.mkdir();</span>
+<span class="nc bnc" id="L182" title="All 2 branches missed.">      if (!path.exists()) {</span>
+<span class="nc" id="L183">        path.mkdir();</span>
+<span class="nc" id="L184">        path = new File(this.serveurPath + File.separator + this.tempFolder);</span>
+<span class="nc bnc" id="L185" title="All 2 branches missed.">        if (!path.exists()) {</span>
+<span class="nc" id="L186">          throw new ServletException(&quot;Le dossier&quot; + this.serveurPath + File.separator</span>
+              + this.tempFolder + &quot;' n'existe pas.&quot;);
+        }
+      }
+    }
+<span class="nc" id="L191">  }</span>
+
+  @RequestMapping(value = &quot;/RecupererRessource&quot;, method = RequestMethod.GET)
+  protected ModelAndView afficherTelechargerRessource() {
+<span class="nc" id="L195">    final HashMap&lt;String, Object&gt; attributsRequete = new HashMap&lt;&gt;();</span>
+    // On charge la liste des ressources
+<span class="nc" id="L197">    attributsRequete.put(RessourceController.ATT_RESSOURCES,</span>
+<span class="nc" id="L198">        this.ressourceDao.trouverToutesLesRessources());</span>
+<span class="nc" id="L199">    return new ModelAndView(VUE_TELECHARGER, attributsRequete);</span>
+  }
+
+  @SuppressWarnings(&quot;unchecked&quot;)
+  @RequestMapping(value = &quot;/RecupererRessource&quot;, method = RequestMethod.POST)
+  protected void getFile(HttpServletRequest request, HttpServletResponse response) {
+<span class="nc" id="L205">    final HashMap&lt;String, Object&gt; attributsRequete = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L206">    attributsRequete.put(RessourceController.ATT_RESSOURCES,</span>
+<span class="nc" id="L207">        this.ressourceDao.trouverToutesLesRessources());</span>
+    try {
+<span class="nc" id="L209">      final String fileInfo =</span>
+<span class="nc" id="L210">          RessourceController.getValeurChamp(request, RessourceController.CHAMP_RESSOURCE);</span>
+<span class="nc" id="L211">      final String nom = fileInfo.substring(0, fileInfo.lastIndexOf('.'));</span>
+<span class="nc" id="L212">      final String type = fileInfo.substring(fileInfo.lastIndexOf('.') + 1);</span>
+<span class="nc" id="L213">      final Ressource ressource = this.ressourceDao.trouverParNomEtType(nom, type);</span>
+<span class="nc" id="L214">      final String path = this.ressourceDao.trouverPath(ressource);</span>
+<span class="nc" id="L215">      final File file = new File(this.serveurPath, path);</span>
+<span class="nc" id="L216">      Utilisateur utilisateur = new Utilisateur();</span>
+<span class="nc bnc" id="L217" title="All 2 branches missed.">      for (Utilisateur user : (List&lt;Utilisateur&gt;) request.getSession()</span>
+<span class="nc" id="L218">          .getAttribute(&quot;sessionUtilisateur&quot;)) {</span>
+<span class="nc bnc" id="L219" title="All 2 branches missed.">        if (user.getClass().equals(Utilisateur.class)) {</span>
+<span class="nc" id="L220">          utilisateur = user;</span>
+        }
+<span class="nc" id="L222">      }</span>
+<span class="nc" id="L223">      this.ressourceDao.consulter(ressource, utilisateur);</span>
+<span class="nc" id="L224">      this.envoyerFichier(response, nom, file);</span>
+<span class="nc" id="L225">    } catch (final IOException ioe) {</span>
+<span class="nc" id="L226">      LOGGER.log(Level.INFO, RessourceController.EXCEPTION, ioe);</span>
+<span class="nc" id="L227">    }</span>
+<span class="nc" id="L228">  }</span>
+
+  @RequestMapping(value = &quot;/EnseignantRefMatiere/EnvoyerRessource&quot;, method = RequestMethod.GET)
+  protected ModelAndView afficherUploaderRessource() {
+<span class="nc" id="L232">    final HashMap&lt;String, Object&gt; attributsRequete = new HashMap&lt;&gt;();</span>
+    // On charge la liste des matieres
+<span class="nc" id="L234">    attributsRequete.put(RessourceController.ATT_MATIERES,</span>
+<span class="nc" id="L235">        this.matiereDao.trouverToutesLesMatieres());</span>
+    // On charge la liste des competences
+<span class="nc" id="L237">    attributsRequete.put(RessourceController.ATT_COMPETENCES,</span>
+<span class="nc" id="L238">        this.competenceDao.trouverToutesLesCompetences());</span>
+<span class="nc" id="L239">    return new ModelAndView(VUE_UPLOAD, attributsRequete);</span>
+  }
+
+  /**
+   * Upload d'un fichier.
+   */
+  @RequestMapping(value = &quot;/EnseignantRefMatiere/EnvoyerRessource&quot;, method = RequestMethod.POST)
+  @ResponseBody
+  protected ModelAndView uploadFileHandler(@RequestParam(&quot;file&quot;) MultipartFile file,
+      @RequestParam(&quot;choixMatiere&quot;) String matiere,
+      @RequestParam(&quot;choixCompetence&quot;) List&lt;String&gt; competences) {
+<span class="nc" id="L250">    final HashMap&lt;String, Object&gt; attributsRequete = new HashMap&lt;&gt;();</span>
+    // On charge la liste des matieres
+<span class="nc" id="L252">    attributsRequete.put(RessourceController.ATT_MATIERES,</span>
+<span class="nc" id="L253">        this.matiereDao.trouverToutesLesMatieres());</span>
+    // On charge la liste des competences
+<span class="nc" id="L255">    attributsRequete.put(RessourceController.ATT_COMPETENCES,</span>
+<span class="nc" id="L256">        this.competenceDao.trouverToutesLesCompetences());</span>
+<span class="nc" id="L257">    final String name = file.getOriginalFilename();</span>
+<span class="nc bnc" id="L258" title="All 2 branches missed.">    if (!file.isEmpty()) {</span>
+      try {
+<span class="nc" id="L260">        final byte[] bytes = file.getBytes();</span>
+        // Creation du dossier pour stocker les fichiers temporaires
+<span class="nc" id="L262">        final File dir = new File(this.serveurPath + File.separator + this.tempFolder);</span>
+<span class="nc bnc" id="L263" title="All 2 branches missed.">        if (!dir.exists()) {</span>
+<span class="nc" id="L264">          dir.mkdirs();</span>
+        }
+        // Creation du fichier sur le serveur
+<span class="nc" id="L267">        final File serverFile = new File(this.serveurPath + File.separator + name);</span>
+<span class="nc" id="L268">        final BufferedOutputStream stream =</span>
+            new BufferedOutputStream(new FileOutputStream(serverFile));
+<span class="nc" id="L270">        stream.write(bytes);</span>
+<span class="nc" id="L271">        stream.close();</span>
+<span class="nc" id="L272">        final AddRessourceForm form = new AddRessourceForm();</span>
+<span class="nc" id="L273">        form.addRessource(name, matiere, competences);</span>
+<span class="nc" id="L274">        LOGGER.info(</span>
+<span class="nc" id="L275">            &quot;Fichier téléchargé sur le serveur dans le dossier : &quot; + serverFile.getAbsolutePath());</span>
+<span class="nc" id="L276">        attributsRequete.put(&quot;fileName&quot;, serverFile.getName());</span>
+<span class="nc" id="L277">        return new ModelAndView(VUE_UPLOAD, attributsRequete);</span>
+<span class="nc" id="L278">      } catch (final Exception exc) {</span>
+<span class="nc" id="L279">        LOGGER.info(&quot;Exception lors du téléchargement : &quot; + exc);</span>
+<span class="nc" id="L280">        return new ModelAndView(VUE_UPLOAD, attributsRequete);</span>
+      }
+    } else {
+<span class="nc" id="L283">      return new ModelAndView(VUE_UPLOAD, attributsRequete);</span>
+    }
+  }
+
+  @RequestMapping(value = &quot;/Eleve/ConsulterRessource&quot;, method = RequestMethod.GET)
+  protected ModelAndView afficherConsulterRessourcesAvecCompetences() {
+<span class="nc" id="L289">    final HashMap&lt;String, Object&gt; attributsRequete = new HashMap&lt;&gt;();</span>
+    // On charge la liste des ressources
+<span class="nc" id="L291">    attributsRequete.put(RessourceController.ATT_RESSOURCES,</span>
+<span class="nc" id="L292">        this.ressourceDao.trouverToutesLesRessources());</span>
+    // On charge la liste des competences
+<span class="nc" id="L294">    attributsRequete.put(ExerciceController.ATT_COMPETENCES,</span>
+<span class="nc" id="L295">        this.competenceDao.trouverToutesLesCompetences());</span>
+<span class="nc" id="L296">    return new ModelAndView(VUE_ELEVE_CONSULTER, attributsRequete);</span>
+  }
+
+  @RequestMapping(value = &quot;/Eleve/ConsulterRessource&quot;, method = RequestMethod.POST)
+  protected void consulterRessourcesAvecCompetences(HttpServletRequest request,
+      HttpServletResponse response) {
+<span class="nc" id="L302">    final HashMap&lt;String, Object&gt; attributsRequete = new HashMap&lt;&gt;();</span>
+    // On charge la liste des ressources
+<span class="nc" id="L304">    attributsRequete.put(RessourceController.ATT_RESSOURCES,</span>
+<span class="nc" id="L305">        this.ressourceDao.trouverToutesLesRessources());</span>
+    // On charge la liste des competences
+<span class="nc" id="L307">    attributsRequete.put(ExerciceController.ATT_COMPETENCES,</span>
+<span class="nc" id="L308">        this.competenceDao.trouverToutesLesCompetences());</span>
+    try {
+<span class="nc" id="L310">      final String fileInfo =</span>
+<span class="nc" id="L311">          RessourceController.getValeurChamp(request, RessourceController.CHAMP_RESSOURCE);</span>
+<span class="nc" id="L312">      final String nom = fileInfo.substring(0, fileInfo.lastIndexOf('.'));</span>
+<span class="nc" id="L313">      final String type = fileInfo.substring(fileInfo.lastIndexOf('.') + 1);</span>
+<span class="nc" id="L314">      final Ressource ressource = this.ressourceDao.trouverParNomEtType(nom, type);</span>
+<span class="nc" id="L315">      final String path = this.ressourceDao.trouverPath(ressource);</span>
+<span class="nc" id="L316">      final File file = new File(this.serveurPath, path);</span>
+<span class="nc" id="L317">      Utilisateur utilisateur = new Utilisateur();</span>
+<span class="nc bnc" id="L318" title="All 2 branches missed.">      for (Utilisateur user : (List&lt;Utilisateur&gt;) request.getSession()</span>
+<span class="nc" id="L319">          .getAttribute(&quot;sessionUtilisateur&quot;)) {</span>
+<span class="nc bnc" id="L320" title="All 2 branches missed.">        if (user.getClass().equals(Utilisateur.class)) {</span>
+<span class="nc" id="L321">          utilisateur = user;</span>
+        }
+<span class="nc" id="L323">      }</span>
+<span class="nc" id="L324">      this.ressourceDao.consulter(ressource, utilisateur);</span>
+<span class="nc" id="L325">      this.envoyerFichier(response, nom, file);</span>
+<span class="nc" id="L326">    } catch (final IOException ioe) {</span>
+<span class="nc" id="L327">      LOGGER.log(Level.INFO, RessourceController.EXCEPTION, ioe);</span>
+<span class="nc" id="L328">    }</span>
+<span class="nc" id="L329">  }</span>
+
+  @SuppressWarnings(&quot;unchecked&quot;)
+  @RequestMapping(value = { &quot;/EnseignantRefMatiere/ModifierRessource&quot;,
+      &quot;/EnseignantRefMatiere/SupprimerRessource&quot; }, method = RequestMethod.GET)
+  protected ModelAndView afficherModiferRessource(HttpServletRequest request) {
+<span class="nc" id="L335">    final HashMap&lt;String, Object&gt; attributsRequete = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L336">    final List&lt;Utilisateur&gt; listeUtilisateur =</span>
+<span class="nc" id="L337">        (List&lt;Utilisateur&gt;) request.getSession().getAttribute(ATT_SESSION_USER);</span>
+<span class="nc" id="L338">    EnseignantRefMatiere erm = null;</span>
+<span class="nc bnc" id="L339" title="All 2 branches missed.">    for (final Utilisateur utilisateur : listeUtilisateur) {</span>
+<span class="nc bnc" id="L340" title="All 2 branches missed.">      if (utilisateur.getClass().equals(EnseignantRefMatiere.class)) {</span>
+<span class="nc" id="L341">        erm = (EnseignantRefMatiere) utilisateur;</span>
+      }
+<span class="nc" id="L343">    }</span>
+<span class="nc bnc" id="L344" title="All 2 branches missed.">    if (erm != null) {</span>
+<span class="nc" id="L345">      final List&lt;Ressource&gt; listeRessourcesErm = this.recupererRessourceErm(erm);</span>
+      // On charge la liste des ressources
+<span class="nc" id="L347">      attributsRequete.put(RessourceController.ATT_RESSOURCES, listeRessourcesErm);</span>
+    }
+<span class="nc" id="L349">    return new ModelAndView(VUE_MODIFIER, attributsRequete);</span>
+  }
+
+  @SuppressWarnings(&quot;unchecked&quot;)
+  @RequestMapping(value = &quot;/EnseignantRefMatiere/ModifierRessource&quot;, method = RequestMethod.POST)
+  protected ModelAndView modiferRessource(HttpServletRequest request,
+      @RequestParam(&quot;nomRessource&quot;) String nomRessource,
+      @RequestParam(&quot;choixRessource&quot;) String choixRessource) {
+<span class="nc" id="L357">    final HashMap&lt;String, Object&gt; attributsRequete = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L358">    final List&lt;Utilisateur&gt; listeUtilisateur =</span>
+<span class="nc" id="L359">        (List&lt;Utilisateur&gt;) request.getSession().getAttribute(ATT_SESSION_USER);</span>
+<span class="nc" id="L360">    EnseignantRefMatiere erm = null;</span>
+<span class="nc bnc" id="L361" title="All 2 branches missed.">    for (final Utilisateur utilisateur : listeUtilisateur) {</span>
+<span class="nc bnc" id="L362" title="All 2 branches missed.">      if (utilisateur.getClass().equals(EnseignantRefMatiere.class)) {</span>
+<span class="nc" id="L363">        erm = (EnseignantRefMatiere) utilisateur;</span>
+      }
+<span class="nc" id="L365">    }</span>
+<span class="nc" id="L366">    this.recupererRessources(nomRessource, choixRessource, attributsRequete, erm);</span>
+<span class="nc" id="L367">    return new ModelAndView(VUE_MODIFIER, attributsRequete);</span>
+  }
+
+  @RequestMapping(value = &quot;/DirecteurEtudes/ExtraireToutesLesNotes&quot;, method = RequestMethod.GET)
+  protected void extraireToutesLesNotes(HttpServletResponse response) {
+    try {
+<span class="nc" id="L373">      final String nom = &quot;notes&quot;;</span>
+<span class="nc" id="L374">      final String type = &quot;csv&quot;;</span>
+<span class="nc" id="L375">      final String path = nom + '.' + type;</span>
+<span class="nc" id="L376">      ExporteurCsv.generateCsvFile(</span>
+          this.serveurPath + File.separator + this.tempFolder + File.separator + path,
+<span class="nc" id="L378">          this.eleveDao.recupererListe(), this.evaluationDao.trouverToutesLesEvaluations(),</span>
+<span class="nc" id="L379">          this.examenDao.trouverTousLesExamens());</span>
+<span class="nc" id="L380">      final File file = new File(this.serveurPath + File.separator + this.tempFolder, path);</span>
+<span class="nc" id="L381">      this.envoyerFichier(response, path, file);</span>
+<span class="nc" id="L382">    } catch (final IOException ioe) {</span>
+<span class="nc" id="L383">      LOGGER.log(Level.INFO, RessourceController.EXCEPTION, ioe);</span>
+<span class="nc" id="L384">    }</span>
+<span class="nc" id="L385">  }</span>
+
+  @RequestMapping(value = &quot;/DirecteurEtudes/ExtraireNotes&quot;, method = RequestMethod.GET)
+  protected ModelAndView afficherExtraireNotes() {
+<span class="nc" id="L389">    final HashMap&lt;String, Object&gt; attributsRequete = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L390">    List&lt;Promotion&gt; promotions = this.promotionDao.trouverToutesLesPromotions();</span>
+<span class="nc" id="L391">    attributsRequete.put(&quot;promotions&quot;, promotions);</span>
+<span class="nc" id="L392">    return new ModelAndView(&quot;DirecteurEtudes/extraireNotes&quot;, attributsRequete);</span>
+  }
+
+  @RequestMapping(value = &quot;/DirecteurEtudes/ExtraireNotes&quot;, method = RequestMethod.POST)
+  protected void extraireNotes(HttpServletResponse response,
+      @RequestParam(&quot;choixPromotion&quot;) String choixPromotion,
+      @RequestParam(&quot;dateDebut&quot;) @DateTimeFormat(pattern = &quot;yyyy-MM-dd&quot;) Date dateDebut,
+      @RequestParam(&quot;dateFin&quot;) @DateTimeFormat(pattern = &quot;yyyy-MM-dd&quot;) Date dateFin) {
+
+<span class="nc" id="L401">    final String nom = &quot;notes&quot;;</span>
+<span class="nc" id="L402">    final String type = &quot;csv&quot;;</span>
+<span class="nc" id="L403">    final String path = nom + '.' + type;</span>
+<span class="nc" id="L404">    List&lt;Promotion&gt; promotions = this.promotionDao.trouverToutesLesPromotions();</span>
+<span class="nc" id="L405">    Promotion promotion = null;</span>
+<span class="nc" id="L406">    int idPromotion = -1;</span>
+
+    try {
+<span class="nc" id="L409">      idPromotion = Integer.parseInt(choixPromotion);</span>
+<span class="nc" id="L410">    } catch (NumberFormatException nfe) {</span>
+<span class="nc" id="L411">      LOGGER.log(Level.INFO, RessourceController.EXCEPTION, nfe);</span>
+<span class="nc" id="L412">    }</span>
+
+    try {
+<span class="nc bnc" id="L415" title="All 2 branches missed.">      for (Promotion promo : promotions) {</span>
+<span class="nc bnc" id="L416" title="All 2 branches missed.">        if (promo.getId() == idPromotion) {</span>
+<span class="nc" id="L417">          promotion = promo;</span>
+        }
+<span class="nc" id="L419">      }</span>
+<span class="nc" id="L420">      ExporteurCsv.generateCsvFile(</span>
+          this.serveurPath + File.separator + this.tempFolder + File.separator + path,
+<span class="nc" id="L422">          this.eleveDao.recupererListe(), this.evaluationDao.trouverToutesLesEvaluations(),</span>
+<span class="nc" id="L423">          this.examenDao.trouverTousLesExamens(), promotion, dateDebut, dateFin);</span>
+<span class="nc" id="L424">      final File file = new File(this.serveurPath + File.separator + this.tempFolder, path);</span>
+<span class="nc" id="L425">      this.envoyerFichier(response, path, file);</span>
+<span class="nc" id="L426">    } catch (final IOException ioe) {</span>
+<span class="nc" id="L427">      LOGGER.log(Level.INFO, RessourceController.EXCEPTION, ioe);</span>
+<span class="nc" id="L428">    }</span>
+<span class="nc" id="L429">  }</span>
+
+
+  private void envoyerFichier(HttpServletResponse response, final String nom, final File file)
+      throws IOException {
+<span class="nc" id="L434">    String mimeType = URLConnection.guessContentTypeFromName(file.getName());</span>
+<span class="nc bnc" id="L435" title="All 2 branches missed.">    if (mimeType == null) {</span>
+<span class="nc" id="L436">      mimeType = &quot;application/octet-stream&quot;;</span>
+    }
+<span class="nc" id="L438">    response.setContentType(mimeType);</span>
+<span class="nc" id="L439">    final String tmp = new String(&quot;inline; filename=\&quot;&quot; + nom + &quot;\&quot;&quot;);</span>
+<span class="nc" id="L440">    response.setHeader(RessourceController.CONTENT, String.format(tmp));</span>
+<span class="nc" id="L441">    response.setContentLength((int) file.length());</span>
+<span class="nc" id="L442">    final InputStream inputStream = new BufferedInputStream(new FileInputStream(file));</span>
+<span class="nc" id="L443">    FileCopyUtils.copy(inputStream, response.getOutputStream());</span>
+<span class="nc" id="L444">    response.flushBuffer();</span>
+<span class="nc" id="L445">    inputStream.close();</span>
+<span class="nc" id="L446">  }</span>
+
+  private void recupererRessources(String nomRessource, String choixRessource,
+      final HashMap&lt;String, Object&gt; attributsRequete, EnseignantRefMatiere erm) {
+<span class="nc bnc" id="L450" title="All 2 branches missed.">    if (erm != null) {</span>
+<span class="nc" id="L451">      final ModifierRessourceForm form = new ModifierRessourceForm();</span>
+<span class="nc" id="L452">      form.modifierRessource(erm, nomRessource, choixRessource);</span>
+<span class="nc" id="L453">      attributsRequete.put(RessourceController.ATT_FORM, form);</span>
+<span class="nc" id="L454">      final List&lt;Ressource&gt; listeRessourcesErm = this.recupererRessourceErm(erm);</span>
+      // On charge la liste des ressources
+<span class="nc" id="L456">      attributsRequete.put(RessourceController.ATT_RESSOURCES, listeRessourcesErm);</span>
+    }
+<span class="nc" id="L458">  }</span>
+
+  @RequestMapping(value = &quot;/EnseignantRefUE/UtilisationRessources&quot;, method = RequestMethod.GET)
+  protected ModelAndView afficherUtilisationRessources() {
+<span class="nc" id="L462">    final HashMap&lt;String, Object&gt; attributsRequete = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L463">    attributsRequete.put(ATT_RESSOURCES, this.ressourceDao.listerConsultations());</span>
+<span class="nc" id="L464">    return new ModelAndView(VUE_HISTORIQUE, attributsRequete);</span>
+  }
+
+  @SuppressWarnings(&quot;unchecked&quot;)
+  @RequestMapping(value = &quot;/EnseignantRefMatiere/SupprimerRessource&quot;, method = RequestMethod.POST)
+  protected ModelAndView supprimerrRessource(HttpServletRequest request,
+      @RequestParam(&quot;hiddenRessource&quot;) String choixRessource) {
+<span class="nc" id="L471">    final HashMap&lt;String, Object&gt; attributsRequete = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L472">    final List&lt;Utilisateur&gt; listeUtilisateur =</span>
+<span class="nc" id="L473">        (List&lt;Utilisateur&gt;) request.getSession().getAttribute(ATT_SESSION_USER);</span>
+<span class="nc" id="L474">    EnseignantRefMatiere erm = null;</span>
+<span class="nc bnc" id="L475" title="All 2 branches missed.">    for (final Utilisateur utilisateur : listeUtilisateur) {</span>
+<span class="nc bnc" id="L476" title="All 2 branches missed.">      if (utilisateur.getClass().equals(EnseignantRefMatiere.class)) {</span>
+<span class="nc" id="L477">        erm = (EnseignantRefMatiere) utilisateur;</span>
+      }
+<span class="nc" id="L479">    }</span>
+<span class="nc bnc" id="L480" title="All 2 branches missed.">    if (erm != null) {</span>
+<span class="nc" id="L481">      final ModifierRessourceForm form = new ModifierRessourceForm();</span>
+      try {
+<span class="nc" id="L483">        form.supprimerRessource(erm, choixRessource, this.serveurPath + File.separator);</span>
+<span class="nc" id="L484">        attributsRequete.put(RessourceController.ATT_FORM, form);</span>
+<span class="nc" id="L485">      } catch (final Exception exc) {</span>
+<span class="nc" id="L486">        LOGGER.log(Level.INFO, RessourceController.EXCEPTION, exc);</span>
+<span class="nc" id="L487">      }</span>
+<span class="nc" id="L488">      final List&lt;Ressource&gt; listeRessourcesErm = this.recupererRessourceErm(erm);</span>
+      // On charge la liste des ressources
+<span class="nc" id="L490">      attributsRequete.put(RessourceController.ATT_RESSOURCES, listeRessourcesErm);</span>
+    }
+<span class="nc" id="L492">    return new ModelAndView(VUE_MODIFIER, attributsRequete);</span>
+  }
+
+  private List&lt;Ressource&gt; recupererRessourceErm(EnseignantRefMatiere erm) {
+<span class="nc" id="L496">    final List&lt;Ressource&gt; listeRessources = this.ressourceDao.trouverToutesLesRessources();</span>
+<span class="nc" id="L497">    final List&lt;Ressource&gt; listeRessourcesErm = new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L498" title="All 2 branches missed.">    for (final Ressource ressource : listeRessources) {</span>
+<span class="nc" id="L499">      final int idMatiereRessource = ressource.getMatiere().getId();</span>
+<span class="nc" id="L500">      final int idMatiereErm = erm.getMatiere().getId();</span>
+<span class="nc bnc" id="L501" title="All 2 branches missed.">      if (idMatiereErm == idMatiereRessource) {</span>
+<span class="nc" id="L502">        eviterDoublons(listeRessourcesErm, ressource);</span>
+      }
+<span class="nc" id="L504">      listeRessourcesErm.add(ressource);</span>
+<span class="nc" id="L505">    }</span>
+<span class="nc" id="L506">    return listeRessourcesErm;</span>
+  }
+
+  private void eviterDoublons(final List&lt;Ressource&gt; listeRessourcesErm, final Ressource ressource) {
+<span class="nc" id="L510">    boolean trouve = false;</span>
+<span class="nc bnc" id="L511" title="All 2 branches missed.">    for (Ressource res : listeRessourcesErm) {</span>
+<span class="nc bnc" id="L512" title="All 2 branches missed.">      if (res.getId() == ressource.getId()) {</span>
+<span class="nc" id="L513">        trouve = true;</span>
+      }
+<span class="nc" id="L515">    }</span>
+<span class="nc bnc" id="L516" title="All 2 branches missed.">    if (!trouve) {</span>
+<span class="nc" id="L517">      listeRessourcesErm.add(ressource);</span>
+    }
+<span class="nc" id="L519">  }</span>
+
+  /*
+   * Méthode utilitaire qui retourne null si un champ est vide, et son contenu sinon.
+   */
+  private static String getValeurChamp(HttpServletRequest request, String nomChamp) {
+<span class="nc" id="L525">    final String valeur = request.getParameter(nomChamp);</span>
+<span class="nc bnc" id="L526" title="All 4 branches missed.">    if (valeur == null || valeur.trim().length() == 0) {</span>
+<span class="nc" id="L527">      return null;</span>
+    } else {
+<span class="nc" id="L529">      return valeur.trim();</span>
+    }
+  }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.6.201602180812</span></div></body></html>

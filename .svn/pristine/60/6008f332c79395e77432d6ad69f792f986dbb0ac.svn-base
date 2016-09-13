@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>PromotionDaoImpl.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Atribus</a> &gt; <a href="index.source.html" class="el_package">fr.eseo.atribus.dao</a> &gt; <span class="el_source">PromotionDaoImpl.java</span></div><h1>PromotionDaoImpl.java</h1><pre class="source lang-java linenums">package fr.eseo.atribus.dao;
+
+import fr.eseo.atribus.entities.Promotion;
+
+import org.joda.time.DateTime;
+import org.springframework.beans.factory.access.BeanFactoryReference;
+import org.springframework.beans.factory.access.SingletonBeanFactoryLocator;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+public class PromotionDaoImpl implements PromotionDao {
+
+<span class="nc" id="L20">  private static final Logger LOGGER = Logger.getLogger(CompetenceDaoImpl.class.getName());</span>
+  private final DaoFactory daoFactory;
+  private static final String SQL_SELECT_ALL = &quot;SELECT * FROM promotion&quot;;
+  private static final String SQL_SELECT_PAR_NOM = &quot;SELECT * FROM promotion WHERE nom = ?&quot;;
+  private static final String EXCEPTION = &quot;Exception&quot;;
+
+<span class="nc" id="L26">  PromotionDaoImpl() {</span>
+    final BeanFactoryReference bf =
+<span class="nc" id="L28">        SingletonBeanFactoryLocator.getInstance().useBeanFactory(&quot;contextDao&quot;);</span>
+<span class="nc" id="L29">    this.daoFactory = (DaoFactory) bf.getFactory().getBean(&quot;daoFactory&quot;);</span>
+<span class="nc" id="L30">  }</span>
+
+  /* Implémentation de la méthode trouverParNom() définie dans l'interface PromotionDao */
+  @Override
+  public Promotion trouverParNom(String nom) {
+<span class="nc" id="L35">    return this.trouverPromotion(PromotionDaoImpl.SQL_SELECT_PAR_NOM, nom);</span>
+  }
+
+  /*
+   * Implémentation de la méthode trouverToutesLesPromtions() définie dans l'interface PromotionDao
+   */
+  @Override
+  public List&lt;Promotion&gt; trouverToutesLesPromotions() {
+<span class="nc" id="L43">    Connection connexion = null;</span>
+<span class="nc" id="L44">    PreparedStatement preparedStatement = null;</span>
+<span class="nc" id="L45">    ResultSet resultSet = null;</span>
+<span class="nc" id="L46">    ArrayList&lt;Promotion&gt; promotions = null;</span>
+    try {
+      /* Récupération d'une connexion depuis la Factory */
+<span class="nc" id="L49">      connexion = this.daoFactory.getConnection();</span>
+      /*
+       * Préparation de la requête avec les objets passés en arguments (ici, uniquement un id) et
+       * exécution.
+       */
+<span class="nc" id="L54">      preparedStatement = DaoUtilitaire.initialisationRequetePreparee(connexion,</span>
+          PromotionDaoImpl.SQL_SELECT_ALL, false);
+<span class="nc" id="L56">      resultSet = preparedStatement.executeQuery();</span>
+<span class="nc" id="L57">      promotions = new ArrayList&lt;&gt;();</span>
+      /* Parcours de la ligne de données retournée dans le ResultSet */
+<span class="nc bnc" id="L59" title="All 2 branches missed.">      while (resultSet.next()) {</span>
+<span class="nc" id="L60">        promotions.add(this.map(resultSet));</span>
+      }
+<span class="nc" id="L62">    } catch (final SQLException sqle) {</span>
+<span class="nc" id="L63">      throw new DaoException(sqle);</span>
+    } finally {
+<span class="nc" id="L65">      DaoUtilitaire.fermeturesSilencieuses(resultSet, preparedStatement, connexion);</span>
+<span class="nc" id="L66">    }</span>
+<span class="nc" id="L67">    return promotions;</span>
+  }
+
+  /**.
+   * Methode utilitaire permettant d'effectuer n'importe quelle requête avec un nombre d'objet
+   * variable
+   */
+  public Promotion trouverPromotion(String sql, Object... objets) {
+<span class="nc" id="L75">    Connection connexion = null;</span>
+<span class="nc" id="L76">    PreparedStatement preparedStatement = null;</span>
+<span class="nc" id="L77">    ResultSet resultSet = null;</span>
+<span class="nc" id="L78">    Promotion promotion = null;</span>
+
+    try {
+      /** Récupération d'une connexion depuis la Factory. */
+<span class="nc" id="L82">      connexion = this.daoFactory.getConnection();</span>
+      /**
+       * Préparation de la requête avec les objets passés en arguments et exécution.
+       */
+<span class="nc" id="L86">      preparedStatement =</span>
+<span class="nc" id="L87">          DaoUtilitaire.initialisationRequetePreparee(connexion, sql, false, objets);</span>
+<span class="nc" id="L88">      resultSet = preparedStatement.executeQuery();</span>
+      /** Parcours de la ligne de données retournée dans le ResultSet. */
+<span class="nc bnc" id="L90" title="All 2 branches missed.">      if (resultSet.next()) {</span>
+<span class="nc" id="L91">        promotion = this.map(resultSet);</span>
+      }
+<span class="nc" id="L93">    } catch (final SQLException sqle) {</span>
+<span class="nc" id="L94">      PromotionDaoImpl.LOGGER.log(Level.INFO, EXCEPTION, sqle);</span>
+<span class="nc" id="L95">      throw new DaoException(sqle);</span>
+    } finally {
+<span class="nc" id="L97">      DaoUtilitaire.fermeturesSilencieuses(resultSet, preparedStatement, connexion);</span>
+<span class="nc" id="L98">    }</span>
+<span class="nc" id="L99">    return promotion;</span>
+  }
+
+  /*
+   * Méthode utilitaire permettant de faire la correspondance (le mapping) entre une ligne issue de
+   * la table des adminsyss (un ResultSet) et un bean Utilisateur.
+   */
+  private Promotion map(ResultSet resultSet) throws SQLException {
+<span class="nc" id="L107">    final Promotion promotion = new Promotion();</span>
+<span class="nc" id="L108">    promotion.setId(resultSet.getInt(&quot;id&quot;));</span>
+<span class="nc" id="L109">    promotion.setNom(resultSet.getString(&quot;nom&quot;));</span>
+<span class="nc" id="L110">    promotion.setAnneeDiplome(new DateTime(resultSet.getTimestamp(&quot;annee_diplome&quot;)));</span>
+<span class="nc" id="L111">    return promotion;</span>
+  }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.6.201602180812</span></div></body></html>

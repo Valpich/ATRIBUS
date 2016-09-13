@@ -1,0 +1,54 @@
+package fr.eseo.atribus.entities;
+
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
+
+import org.testng.annotations.BeforeTest;
+import org.testng.annotations.Test;
+
+public class EleveTest {
+  
+  Eleve eleve;
+  
+  @BeforeTest
+  public void beforeTest() {
+    eleve = new Eleve();
+  }
+
+  @Test
+  public void constructeurEleve() {
+    
+    Utilisateur utilisateur = new Utilisateur();
+    
+    utilisateur.setNom("NomTest");
+    eleve = new Eleve(utilisateur);
+    
+    assertNotNull(eleve);
+    assertEquals(eleve.getNom(), "NomTest");
+    
+  }
+  
+  @Test
+  public void setGetPromotion() {
+    
+    Promotion promotion = new Promotion();
+    
+    promotion.setNom("PromotionTest");
+    eleve.setPromotion(promotion);
+    
+    assertEquals(eleve.getPromotion().getNom(), "PromotionTest");
+    
+  }
+  
+  @Test
+  public void setGetIdEleve() {  
+    eleve.setIdEleve(1);
+    assertEquals(eleve.getIdEleve(), 1);   
+  }
+  
+  @Test
+  public void methodToString() {
+    assertEquals(eleve.toString(), eleve.toString());
+  }
+  
+}

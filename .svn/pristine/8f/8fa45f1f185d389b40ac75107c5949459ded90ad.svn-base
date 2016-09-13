@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testng-results skipped="0" failed="0" total="9" passed="9">
+  <reporter-output>
+  </reporter-output>
+  <suite name="Default suite" duration-ms="3149" started-at="2016-05-26T08:36:51Z" finished-at="2016-05-26T08:36:54Z">
+    <groups>
+    </groups>
+    <test name="Default test" duration-ms="3149" started-at="2016-05-26T08:36:51Z" finished-at="2016-05-26T08:36:54Z">
+      <class name="fr.eseo.atribus.controller.UeControllerTest">
+        <test-method status="PASS" signature="setup()[pri:0, instance:fr.eseo.atribus.controller.UeControllerTest@b9dfc5a]" name="setup" is-config="true" duration-ms="2093" started-at="2016-05-26T10:36:51Z" finished-at="2016-05-26T10:36:53Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- setup -->
+        <test-method status="PASS" signature="afficherCompetenceMatiereGet()[pri:0, instance:fr.eseo.atribus.controller.UeControllerTest@b9dfc5a]" name="afficherCompetenceMatiereGet" duration-ms="610" started-at="2016-05-26T10:36:53Z" finished-at="2016-05-26T10:36:54Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- afficherCompetenceMatiereGet -->
+        <test-method status="PASS" signature="afficherCompetenceMatierePost()[pri:0, instance:fr.eseo.atribus.controller.UeControllerTest@b9dfc5a]" name="afficherCompetenceMatierePost" duration-ms="35" started-at="2016-05-26T10:36:54Z" finished-at="2016-05-26T10:36:54Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- afficherCompetenceMatierePost -->
+        <test-method status="PASS" signature="afficherCompetenceUeGet()[pri:0, instance:fr.eseo.atribus.controller.UeControllerTest@b9dfc5a]" name="afficherCompetenceUeGet" duration-ms="15" started-at="2016-05-26T10:36:54Z" finished-at="2016-05-26T10:36:54Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- afficherCompetenceUeGet -->
+        <test-method status="PASS" signature="afficherCompetenceUePost()[pri:0, instance:fr.eseo.atribus.controller.UeControllerTest@b9dfc5a]" name="afficherCompetenceUePost" duration-ms="9" started-at="2016-05-26T10:36:54Z" finished-at="2016-05-26T10:36:54Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- afficherCompetenceUePost -->
+        <test-method status="PASS" signature="afficherModifierUeSelectionUe()[pri:0, instance:fr.eseo.atribus.controller.UeControllerTest@b9dfc5a]" name="afficherModifierUeSelectionUe" duration-ms="13" started-at="2016-05-26T10:36:54Z" finished-at="2016-05-26T10:36:54Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- afficherModifierUeSelectionUe -->
+        <test-method status="PASS" signature="ajouterUeGet()[pri:0, instance:fr.eseo.atribus.controller.UeControllerTest@b9dfc5a]" name="ajouterUeGet" duration-ms="140" started-at="2016-05-26T10:36:54Z" finished-at="2016-05-26T10:36:54Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- ajouterUeGet -->
+        <test-method status="PASS" signature="ajouterUePost()[pri:0, instance:fr.eseo.atribus.controller.UeControllerTest@b9dfc5a]" name="ajouterUePost" duration-ms="126" started-at="2016-05-26T10:36:54Z" finished-at="2016-05-26T10:36:54Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- ajouterUePost -->
+        <test-method status="PASS" signature="validerCompetencesUeGet()[pri:0, instance:fr.eseo.atribus.controller.UeControllerTest@b9dfc5a]" name="validerCompetencesUeGet" duration-ms="73" started-at="2016-05-26T10:36:54Z" finished-at="2016-05-26T10:36:54Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- validerCompetencesUeGet -->
+        <test-method status="PASS" signature="validerCompetencesUePost()[pri:0, instance:fr.eseo.atribus.controller.UeControllerTest@b9dfc5a]" name="validerCompetencesUePost" duration-ms="4" started-at="2016-05-26T10:36:54Z" finished-at="2016-05-26T10:36:54Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- validerCompetencesUePost -->
+      </class> <!-- fr.eseo.atribus.controller.UeControllerTest -->
+    </test> <!-- Default test -->
+  </suite> <!-- Default suite -->
+</testng-results>

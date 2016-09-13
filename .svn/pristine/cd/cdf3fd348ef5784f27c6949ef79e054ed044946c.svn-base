@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>PasswordStorage.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Atribus</a> &gt; <a href="index.source.html" class="el_package">fr.eseo.atribus.beans</a> &gt; <span class="el_source">PasswordStorage.java</span></div><h1>PasswordStorage.java</h1><pre class="source lang-java linenums">package fr.eseo.atribus.beans;
+
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.security.spec.InvalidKeySpecException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
+import javax.xml.bind.DatatypeConverter;
+
+public class PasswordStorage {
+  public static final String PBKDF2_ALGORITHM = &quot;PBKDF2WithHmacSHA256&quot;;
+<span class="nc" id="L15">  private static final Logger LOGGER = Logger.getLogger(PasswordStorage.class.getName());</span>
+  private static final String EXCEPTION = &quot;Exception&quot;;
+
+  // These constants may be changed without breaking existing hashes.
+  public static final int SALT_BYTE_SIZE = 24;
+  public static final int HASH_BYTE_SIZE = 64;
+  public static final int PBKDF2_ITERATIONS = 64000;
+
+  // These constants define the encoding and may not be changed.
+  public static final int HASH_SECTIONS = 5;
+  public static final int HASH_ALGORITHM_INDEX = 0;
+  public static final int ITERATION_INDEX = 1;
+  public static final int HASH_SIZE_INDEX = 2;
+  public static final int SALT_INDEX = 3;
+  public static final int PBKDF2_INDEX = 4;
+
+  private PasswordStorage() {
+<span class="nc" id="L32">    super();</span>
+<span class="nc" id="L33">  }</span>
+
+  public static class InvalidHashException extends Exception {
+
+    private static final long serialVersionUID = 1L;
+
+    public InvalidHashException(String message) {
+<span class="nc" id="L40">      super(message);</span>
+<span class="nc" id="L41">    }</span>
+
+  }
+
+  public static class CannotPerformOperationException extends Exception {
+
+    private static final long serialVersionUID = 1L;
+
+    public CannotPerformOperationException(String message) {
+<span class="nc" id="L50">      super(message);</span>
+<span class="nc" id="L51">    }</span>
+
+  }
+
+  public static String createHash(String password) throws CannotPerformOperationException {
+<span class="nc" id="L56">    return PasswordStorage.createHash(password.toCharArray());</span>
+  }
+
+  public static String createHash(char[] password) throws CannotPerformOperationException {
+    // Generate a random salt
+<span class="nc" id="L61">    final SecureRandom random = new SecureRandom();</span>
+<span class="nc" id="L62">    final byte[] salt = new byte[PasswordStorage.SALT_BYTE_SIZE];</span>
+<span class="nc" id="L63">    random.nextBytes(salt);</span>
+
+    // Hash the password
+<span class="nc" id="L66">    final byte[] hash = PasswordStorage.pbkdf2(password, salt, PasswordStorage.PBKDF2_ITERATIONS,</span>
+        PasswordStorage.HASH_BYTE_SIZE);
+<span class="nc" id="L68">    final int hashSize = hash.length;</span>
+
+    // format: algorithm:iterations:hashSize:salt:hash
+<span class="nc" id="L71">    return &quot;sha256:&quot; + PasswordStorage.PBKDF2_ITERATIONS + &quot;:&quot; + hashSize + &quot;:&quot;</span>
+<span class="nc" id="L72">        + PasswordStorage.toBase64(salt) + &quot;:&quot; + PasswordStorage.toBase64(hash);</span>
+  }
+
+  public static boolean verifyPassword(String password, String correctHash)
+      throws CannotPerformOperationException, InvalidHashException {
+<span class="nc" id="L77">    return PasswordStorage.verifyPassword(password.toCharArray(), correctHash);</span>
+  }
+
+  public static boolean verifyPassword(char[] password, String correctHash)
+      throws CannotPerformOperationException, InvalidHashException {
+    // Decode the hash into its parameters
+<span class="nc" id="L83">    final String[] params = correctHash.split(&quot;:&quot;);</span>
+<span class="nc bnc" id="L84" title="All 2 branches missed.">    if (params.length != PasswordStorage.HASH_SECTIONS) {</span>
+<span class="nc" id="L85">      throw new InvalidHashException(&quot;Fields are missing from the password hash.&quot;);</span>
+    }
+
+    // Currently, Java only supports SHA1.
+<span class="nc bnc" id="L89" title="All 2 branches missed.">    if (!&quot;sha256&quot;.equals(params[PasswordStorage.HASH_ALGORITHM_INDEX])) {</span>
+<span class="nc" id="L90">      throw new CannotPerformOperationException(&quot;Unsupported hash type.&quot;);</span>
+    }
+
+<span class="nc" id="L93">    int iterations = 0;</span>
+    try {
+<span class="nc" id="L95">      iterations = Integer.parseInt(params[PasswordStorage.ITERATION_INDEX]);</span>
+<span class="nc" id="L96">    } catch (final NumberFormatException ex) {</span>
+<span class="nc" id="L97">      throw new InvalidHashException(&quot;Could not parse the iteration count as an integer.&quot;);</span>
+<span class="nc" id="L98">    }</span>
+
+<span class="nc bnc" id="L100" title="All 2 branches missed.">    if (iterations &lt; 1) {</span>
+<span class="nc" id="L101">      throw new InvalidHashException(&quot;Invalid number of iterations. Must be &gt;= 1.&quot;);</span>
+    }
+
+<span class="nc" id="L104">    byte[] salt = null;</span>
+    try {
+<span class="nc" id="L106">      salt = PasswordStorage.fromBase64(params[PasswordStorage.SALT_INDEX]);</span>
+<span class="nc" id="L107">    } catch (final IllegalArgumentException ex) {</span>
+<span class="nc" id="L108">      PasswordStorage.LOGGER.log(Level.INFO, EXCEPTION, ex);</span>
+<span class="nc" id="L109">      throw new InvalidHashException(&quot;Base64 decoding of salt failed.&quot;);</span>
+<span class="nc" id="L110">    }</span>
+
+<span class="nc" id="L112">    byte[] hash = null;</span>
+    try {
+<span class="nc" id="L114">      hash = PasswordStorage.fromBase64(params[PasswordStorage.PBKDF2_INDEX]);</span>
+<span class="nc" id="L115">    } catch (final IllegalArgumentException ex) {</span>
+<span class="nc" id="L116">      PasswordStorage.LOGGER.log(Level.INFO, EXCEPTION, ex);</span>
+<span class="nc" id="L117">      throw new InvalidHashException(&quot;Base64 decoding of pbkdf2 output failed.&quot;);</span>
+<span class="nc" id="L118">    }</span>
+
+<span class="nc" id="L120">    int storedHashSize = 0;</span>
+    try {
+<span class="nc" id="L122">      storedHashSize = Integer.parseInt(params[PasswordStorage.HASH_SIZE_INDEX]);</span>
+<span class="nc" id="L123">    } catch (final NumberFormatException ex) {</span>
+<span class="nc" id="L124">      throw new InvalidHashException(&quot;Could not parse the hash size as an integer.&quot;);</span>
+<span class="nc" id="L125">    }</span>
+
+<span class="nc bnc" id="L127" title="All 2 branches missed.">    if (storedHashSize != hash.length) {</span>
+<span class="nc" id="L128">      throw new InvalidHashException(&quot;Hash length doesn't match stored hash length.&quot;);</span>
+    }
+
+    // Compute the hash of the provided password, using the same salt,
+    // iteration count, and hash length
+<span class="nc" id="L133">    final byte[] testHash = PasswordStorage.pbkdf2(password, salt, iterations, hash.length);</span>
+    // Compare the hashes in constant time. The password is correct if
+    // both hashes match.
+<span class="nc" id="L136">    return PasswordStorage.slowEquals(hash, testHash);</span>
+  }
+
+  private static boolean slowEquals(byte[] a, byte[] b) {
+<span class="nc" id="L140">    int diff = a.length ^ b.length;</span>
+<span class="nc bnc" id="L141" title="All 4 branches missed.">    for (int i = 0; i &lt; a.length &amp;&amp; i &lt; b.length; i++) {</span>
+<span class="nc" id="L142">      diff |= a[i] ^ b[i];</span>
+    }
+<span class="nc bnc" id="L144" title="All 2 branches missed.">    return diff == 0;</span>
+  }
+
+  private static byte[] pbkdf2(char[] password, byte[] salt, int iterations, int bytes)
+      throws CannotPerformOperationException {
+    try {
+<span class="nc" id="L150">      final PBEKeySpec spec = new PBEKeySpec(password, salt, iterations, bytes * 8);</span>
+<span class="nc" id="L151">      final SecretKeyFactory skf = SecretKeyFactory.getInstance(PBKDF2_ALGORITHM);</span>
+<span class="nc" id="L152">      return skf.generateSecret(spec).getEncoded();</span>
+<span class="nc" id="L153">    } catch (final NoSuchAlgorithmException ex) {</span>
+<span class="nc" id="L154">      PasswordStorage.LOGGER.log(Level.INFO, EXCEPTION, ex);</span>
+<span class="nc" id="L155">      throw new CannotPerformOperationException(&quot;Hash algorithm not supported.&quot;);</span>
+<span class="nc" id="L156">    } catch (final InvalidKeySpecException ex) {</span>
+<span class="nc" id="L157">      PasswordStorage.LOGGER.log(Level.INFO, EXCEPTION, ex);</span>
+<span class="nc" id="L158">      throw new CannotPerformOperationException(&quot;Invalid key spec.&quot;);</span>
+    }
+  }
+
+  private static byte[] fromBase64(String hex) {
+<span class="nc" id="L163">    return DatatypeConverter.parseBase64Binary(hex);</span>
+  }
+
+  private static String toBase64(byte[] array) {
+<span class="nc" id="L167">    return DatatypeConverter.printBase64Binary(array);</span>
+  }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.6.201602180812</span></div></body></html>

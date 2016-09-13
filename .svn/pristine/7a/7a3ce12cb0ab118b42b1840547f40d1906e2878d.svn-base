@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>EvaluationDaoImpl.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Atribus</a> &gt; <a href="index.source.html" class="el_package">fr.eseo.atribus.dao</a> &gt; <span class="el_source">EvaluationDaoImpl.java</span></div><h1>EvaluationDaoImpl.java</h1><pre class="source lang-java linenums">package fr.eseo.atribus.dao;
+
+import fr.eseo.atribus.entities.Eleve;
+import fr.eseo.atribus.entities.Evaluation;
+import fr.eseo.atribus.entities.Examen;
+import fr.eseo.atribus.entities.Exercice;
+
+import org.springframework.beans.factory.access.BeanFactoryReference;
+import org.springframework.beans.factory.access.SingletonBeanFactoryLocator;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+public class EvaluationDaoImpl implements EvaluationDao {
+<span class="nc" id="L22">  private static final Logger LOGGER = Logger.getLogger(EvaluationDaoImpl.class.getName());</span>
+  private final DaoFactory daoFactory;
+  private static final String INSERER_REPONSE =
+      &quot;INSERT INTO notes ( id_eleve, id_exercice, reponse, auto_evaluation) VALUES (?,?,?,?);&quot;;
+  private static final String ECHEC =
+      &quot;Échec de la création de l'examen, aucune ligne&quot; + &quot; ajoutée dans la table.&quot;;
+  private static final String EXCEPTION = &quot;Exception&quot;;
+  private static final String SQL_SELECT_ALL = &quot;SELECT * FROM notes&quot;;
+  private static final String SQL_SELECT_ALL_ELEVE = &quot;SELECT * FROM notes WHERE id_eleve = ?&quot;;
+  private static final String MAJ_EVALUATION = &quot;UPDATE notes SET note = ? WHERE id = ?;&quot;;
+
+<span class="nc" id="L33">  EvaluationDaoImpl() {</span>
+    final BeanFactoryReference bf =
+<span class="nc" id="L35">        SingletonBeanFactoryLocator.getInstance().useBeanFactory(&quot;contextDao&quot;);</span>
+<span class="nc" id="L36">    this.daoFactory = (DaoFactory) bf.getFactory().getBean(&quot;daoFactory&quot;);</span>
+<span class="nc" id="L37">  }</span>
+
+  @Override
+  public void majEvaluation(List&lt;Evaluation&gt; evaluations) {
+<span class="nc" id="L41">    Connection connexion = null;</span>
+<span class="nc" id="L42">    PreparedStatement preparedStatement = null;</span>
+<span class="nc bnc" id="L43" title="All 2 branches missed.">    for (final Evaluation evaluation : evaluations) {</span>
+      try {
+        /* Récupération d'une connexion depuis la Factory */
+<span class="nc" id="L46">        connexion = this.daoFactory.getConnection();</span>
+<span class="nc" id="L47">        preparedStatement = DaoUtilitaire.initialisationRequetePreparee(connexion,</span>
+<span class="nc" id="L48">            EvaluationDaoImpl.MAJ_EVALUATION, false, evaluation.getNote(), evaluation.getId());</span>
+<span class="nc" id="L49">        final int statut = preparedStatement.executeUpdate();</span>
+        /* Analyse du statut retourné par la requête d'insertion */
+<span class="nc bnc" id="L51" title="All 2 branches missed.">        if (statut == 0) {</span>
+<span class="nc" id="L52">          throw new DaoException(ECHEC);</span>
+        }
+<span class="nc" id="L54">      } catch (final SQLException sqle) {</span>
+<span class="nc" id="L55">        EvaluationDaoImpl.LOGGER.log(Level.INFO, EXCEPTION, sqle);</span>
+<span class="nc" id="L56">        throw new DaoException(sqle);</span>
+      } finally {
+<span class="nc" id="L58">        DaoUtilitaire.fermeturesSilencieuses(preparedStatement, connexion);</span>
+<span class="nc" id="L59">      }</span>
+<span class="nc" id="L60">    }</span>
+<span class="nc" id="L61">  }</span>
+
+  @Override
+  public void repondre(Eleve eleve, List&lt;String&gt; reponses, Examen examen, Boolean autoEvaluation) {
+<span class="nc" id="L65">    Connection connexion = null;</span>
+<span class="nc" id="L66">    PreparedStatement preparedStatement = null;</span>
+<span class="nc" id="L67">    int compteur = 0;</span>
+<span class="nc bnc" id="L68" title="All 2 branches missed.">    for (final Exercice exercice : examen.getExercices()) {</span>
+      try {
+        /* Récupération d'une connexion depuis la Factory */
+<span class="nc" id="L71">        connexion = this.daoFactory.getConnection();</span>
+<span class="nc" id="L72">        preparedStatement = DaoUtilitaire.initialisationRequetePreparee(connexion,</span>
+<span class="nc" id="L73">            EvaluationDaoImpl.INSERER_REPONSE, false, eleve.getIdEleve(), exercice.getId(),</span>
+<span class="nc" id="L74">            reponses.get(compteur), autoEvaluation);</span>
+<span class="nc" id="L75">        final int statut = preparedStatement.executeUpdate();</span>
+        /* Analyse du statut retourné par la requête d'insertion */
+<span class="nc bnc" id="L77" title="All 2 branches missed.">        if (statut == 0) {</span>
+<span class="nc" id="L78">          throw new DaoException(ECHEC);</span>
+        }
+<span class="nc" id="L80">      } catch (final SQLException sqle) {</span>
+<span class="nc" id="L81">        EvaluationDaoImpl.LOGGER.log(Level.INFO, EXCEPTION, sqle);</span>
+<span class="nc" id="L82">        throw new DaoException(sqle);</span>
+      } finally {
+<span class="nc" id="L84">        DaoUtilitaire.fermeturesSilencieuses(preparedStatement, connexion);</span>
+<span class="nc" id="L85">      }</span>
+<span class="nc" id="L86">      compteur++;</span>
+<span class="nc" id="L87">    }</span>
+<span class="nc" id="L88">  }</span>
+
+  @Override
+  public void repondre(Eleve eleve, Map&lt;Exercice, List&lt;String&gt;&gt; reponsesParser, Examen examen,
+      Boolean autoEvaluation) {
+<span class="nc" id="L93">    Connection connexion = null;</span>
+<span class="nc" id="L94">    PreparedStatement preparedStatement = null;</span>
+<span class="nc bnc" id="L95" title="All 2 branches missed.">    for (final Exercice exercice : examen.getExercices()) {</span>
+      try {
+        /* Récupération d'une connexion depuis la Factory */
+<span class="nc" id="L98">        connexion = this.daoFactory.getConnection();</span>
+<span class="nc" id="L99">        preparedStatement = DaoUtilitaire.initialisationRequetePreparee(connexion,</span>
+<span class="nc" id="L100">            EvaluationDaoImpl.INSERER_REPONSE, false, eleve.getIdEleve(), exercice.getId(),</span>
+<span class="nc" id="L101">            String.join(&quot;/&quot;, reponsesParser.get(exercice)), autoEvaluation);</span>
+<span class="nc" id="L102">        final int statut = preparedStatement.executeUpdate();</span>
+        /* Analyse du statut retourné par la requête d'insertion */
+<span class="nc bnc" id="L104" title="All 2 branches missed.">        if (statut == 0) {</span>
+<span class="nc" id="L105">          throw new DaoException(ECHEC);</span>
+        }
+<span class="nc" id="L107">      } catch (final SQLException sqle) {</span>
+<span class="nc" id="L108">        EvaluationDaoImpl.LOGGER.log(Level.INFO, EXCEPTION, sqle);</span>
+<span class="nc" id="L109">        throw new DaoException(sqle);</span>
+      } finally {
+<span class="nc" id="L111">        DaoUtilitaire.fermeturesSilencieuses(preparedStatement, connexion);</span>
+<span class="nc" id="L112">      }</span>
+<span class="nc" id="L113">    }</span>
+<span class="nc" id="L114">  }</span>
+
+  /* Implémentation de la méthode trouverParNom() définie dans l'interface ExamenBdd */
+  @Override
+  public List&lt;Evaluation&gt; trouverToutesLesEvaluations() {
+<span class="nc" id="L119">    return this.trouverToutesLesEvaluations(EvaluationDaoImpl.SQL_SELECT_ALL, null);</span>
+  }
+
+  /* Implémentation de la méthode trouverParNom() définie dans l'interface ExamenBdd */
+  @Override
+  public List&lt;Evaluation&gt; trouverToutesLesEvaluationsEleve(Eleve eleve) {
+<span class="nc" id="L125">    return this.trouverToutesLesEvaluations(EvaluationDaoImpl.SQL_SELECT_ALL_ELEVE, eleve);</span>
+  }
+
+  private List&lt;Evaluation&gt; trouverToutesLesEvaluations(String sql, Eleve eleve) {
+<span class="nc" id="L129">    Connection connexion = null;</span>
+<span class="nc" id="L130">    PreparedStatement preparedStatement = null;</span>
+<span class="nc" id="L131">    ResultSet resultSet = null;</span>
+<span class="nc" id="L132">    List&lt;Evaluation&gt; evaluations = null;</span>
+    try {
+      /* Récupération d'une connexion depuis la Factory */
+<span class="nc" id="L135">      connexion = this.daoFactory.getConnection();</span>
+<span class="nc bnc" id="L136" title="All 2 branches missed.">      if (eleve != null) {</span>
+<span class="nc" id="L137">        preparedStatement =</span>
+<span class="nc" id="L138">            DaoUtilitaire.initialisationRequetePreparee(connexion, sql, false, eleve.getIdEleve());</span>
+      } else {
+<span class="nc" id="L140">        preparedStatement = DaoUtilitaire.initialisationRequetePreparee(connexion, sql, false);</span>
+      }
+<span class="nc" id="L142">      resultSet = preparedStatement.executeQuery();</span>
+<span class="nc" id="L143">      evaluations = new ArrayList&lt;&gt;();</span>
+      /* Parcours de la ligne de données retournée dans le ResultSet */
+<span class="nc bnc" id="L145" title="All 2 branches missed.">      while (resultSet.next()) {</span>
+<span class="nc" id="L146">        evaluations.add(this.map(resultSet));</span>
+      }
+<span class="nc" id="L148">    } catch (final SQLException sqle) {</span>
+<span class="nc" id="L149">      EvaluationDaoImpl.LOGGER.log(Level.INFO, EXCEPTION, sqle);</span>
+<span class="nc" id="L150">      throw new DaoException(sqle);</span>
+    } finally {
+<span class="nc" id="L152">      DaoUtilitaire.fermeturesSilencieuses(resultSet, preparedStatement, connexion);</span>
+<span class="nc" id="L153">    }</span>
+<span class="nc" id="L154">    return evaluations;</span>
+  }
+
+  /*
+   * Simple méthode utilitaire permettant de faire la correspondance (le mapping) entre une ligne
+   * issue de la table des evaluations (un ResultSet) et un bean Examen.
+   */
+  private Evaluation map(ResultSet resultSet) throws SQLException {
+<span class="nc" id="L162">    final Evaluation evaluation = new Evaluation();</span>
+<span class="nc" id="L163">    evaluation.setDateExamen(resultSet.getTimestamp(&quot;date_examen&quot;));</span>
+    final BeanFactoryReference bf =
+<span class="nc" id="L165">        SingletonBeanFactoryLocator.getInstance().useBeanFactory(&quot;beansDao&quot;);</span>
+<span class="nc" id="L166">    final EleveDao eleveDao = (EleveDao) bf.getFactory().getBean(&quot;eleveDao&quot;);</span>
+<span class="nc" id="L167">    final ExerciceDao exerciceDao = (ExerciceDao) bf.getFactory().getBean(&quot;exerciceDao&quot;);</span>
+<span class="nc" id="L168">    evaluation.setEleve(eleveDao.trouverParId(resultSet.getInt(&quot;id_eleve&quot;)));</span>
+<span class="nc" id="L169">    evaluation.setExercice(exerciceDao.trouverParId(resultSet.getInt(&quot;id_exercice&quot;)));</span>
+<span class="nc" id="L170">    evaluation.setId(resultSet.getInt(&quot;id&quot;));</span>
+<span class="nc" id="L171">    evaluation.setNote(resultSet.getFloat(&quot;note&quot;));</span>
+<span class="nc" id="L172">    evaluation.setReponse(resultSet.getString(&quot;reponse&quot;));</span>
+<span class="nc" id="L173">    return evaluation;</span>
+  }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.6.201602180812</span></div></body></html>

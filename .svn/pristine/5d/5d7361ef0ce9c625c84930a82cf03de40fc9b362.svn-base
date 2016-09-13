@@ -1,0 +1,292 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>ExamenDaoImpl.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Atribus</a> &gt; <a href="index.source.html" class="el_package">fr.eseo.atribus.dao</a> &gt; <span class="el_source">ExamenDaoImpl.java</span></div><h1>ExamenDaoImpl.java</h1><pre class="source lang-java linenums">package fr.eseo.atribus.dao;
+
+import fr.eseo.atribus.entities.Examen;
+import fr.eseo.atribus.entities.Exercice;
+import fr.eseo.atribus.entities.Matiere;
+
+import org.springframework.beans.factory.access.BeanFactoryReference;
+import org.springframework.beans.factory.access.SingletonBeanFactoryLocator;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+public class ExamenDaoImpl implements ExamenDao {
+<span class="nc" id="L21">  private static final Logger LOGGER = Logger.getLogger(ExamenDaoImpl.class.getName());</span>
+  private final DaoFactory daoFactory;
+  private static final String SQL_INSERT =
+      &quot;INSERT INTO examen (nom, id_matiere, auto_evaluation) VALUES (?,?,?)&quot;;
+  private static final String SQL_SELECT_PAR_NOM = &quot;SELECT * FROM examen WHERE nom = ?&quot;;
+  private static final String SQL_SELECT_ALL = &quot;SELECT * FROM examen&quot;;
+  private static final String ECHEC =
+      &quot;Échec de la création de l'examen, aucune ligne&quot; + &quot; ajoutée dans la table.&quot;;
+  private static final String UPDATE = &quot;UPDATE examen SET nom = ?, id_matiere = ? WHERE id = ?;&quot;;
+  private static final String EXCEPTION = &quot;Exception&quot;;
+  private static final String SQL_DELETE = &quot;DELETE FROM examen WHERE id = ?;&quot;;
+  private static final String COMPTER_EXERCICE =
+      &quot;SELECT COUNT(*) FROM notes WHERE id_exercice = ? AND date_examen BETWEEN ? AND ?;&quot;;
+  private static final String COMPTER_EXERCICE_DEBUT =
+      &quot;SELECT COUNT(*) FROM notes WHERE id_exercice = ? AND date_examen &gt; ? ;&quot;;
+  private static final String COMPTER_EXERCICE_FIN =
+      &quot;SELECT COUNT(*) FROM notes WHERE id_exercice = ? AND date_examen &lt; ? ;&quot;;
+  private static final String COMPTER_EXERCICE_ALL =
+      &quot;SELECT COUNT(*) FROM notes WHERE id_exercice = ? ;&quot;;
+
+<span class="nc" id="L41">  public ExamenDaoImpl() {</span>
+    final BeanFactoryReference bf =
+<span class="nc" id="L43">        SingletonBeanFactoryLocator.getInstance().useBeanFactory(&quot;contextDao&quot;);</span>
+<span class="nc" id="L44">    this.daoFactory = (DaoFactory) bf.getFactory().getBean(&quot;daoFactory&quot;);</span>
+<span class="nc" id="L45">  }</span>
+
+  /* Implémentation de la méthode trouverParNom() définie dans l'interface ExamenBdd */
+  @Override
+  public Examen trouverParNom(String nom) {
+<span class="nc" id="L50">    return this.trouver(ExamenDaoImpl.SQL_SELECT_PAR_NOM, nom);</span>
+  }
+
+  /* Implémentation de la méthode trouverParNom() définie dans l'interface ExamenBdd */
+  @Override
+  public List&lt;Examen&gt; trouverTousLesExamens() {
+<span class="nc" id="L56">    return this.trouverTous(ExamenDaoImpl.SQL_SELECT_ALL);</span>
+  }
+
+  /* Implémentation de la méthode trouverParNom() définie dans l'interface ExamenBdd */
+  @Override
+  public int trouverIdParNom(String nom) {
+<span class="nc" id="L62">    return DaoUtilitaire.trouverId(this.daoFactory, ExamenDaoImpl.SQL_SELECT_PAR_NOM, nom);</span>
+  }
+
+  /* Implémentation de la méthode définie dans l'interface ExamenBdd */
+  @Override
+  public void ajouter(Examen examen, Matiere matiere) {
+<span class="nc" id="L68">    Connection connexion = null;</span>
+<span class="nc" id="L69">    PreparedStatement preparedStatement = null;</span>
+<span class="nc" id="L70">    final ResultSet valeursAutoGenerees = null;</span>
+    try {
+      /* Récupération d'une connexion depuis la Factory */
+<span class="nc" id="L73">      connexion = this.daoFactory.getConnection();</span>
+<span class="nc" id="L74">      final int idMatiere = this.getIdMatiere(matiere);</span>
+<span class="nc" id="L75">      preparedStatement = DaoUtilitaire.initialisationRequetePreparee(connexion,</span>
+<span class="nc" id="L76">          ExamenDaoImpl.SQL_INSERT, true, examen.getNom(), idMatiere, examen.getAutoEvaluation());</span>
+<span class="nc" id="L77">      final int statut = preparedStatement.executeUpdate();</span>
+      /* Analyse du statut retourné par la requête d'insertion */
+<span class="nc bnc" id="L79" title="All 2 branches missed.">      if (statut == 0) {</span>
+<span class="nc" id="L80">        throw new DaoException(ECHEC);</span>
+      }
+<span class="nc" id="L82">    } catch (final SQLException sqle) {</span>
+<span class="nc" id="L83">      ExamenDaoImpl.LOGGER.log(Level.INFO, EXCEPTION, sqle);</span>
+<span class="nc" id="L84">      throw new DaoException(sqle);</span>
+    } finally {
+<span class="nc" id="L86">      DaoUtilitaire.fermeturesSilencieuses(valeursAutoGenerees, preparedStatement, connexion);</span>
+<span class="nc" id="L87">    }</span>
+<span class="nc" id="L88">  }</span>
+
+  /* Implémentation de la méthode définie dans l'interface ExamenDao */
+  @Override
+  public void supprimer(Examen examen) {
+<span class="nc" id="L93">    Connection connexion = null;</span>
+<span class="nc" id="L94">    PreparedStatement preparedStatement = null;</span>
+<span class="nc" id="L95">    final ResultSet valeursAutoGenerees = null;</span>
+    try {
+      /* Récupération d'une connexion depuis la Factory */
+<span class="nc" id="L98">      connexion = this.daoFactory.getConnection();</span>
+<span class="nc" id="L99">      preparedStatement = DaoUtilitaire.initialisationRequetePreparee(connexion,</span>
+<span class="nc" id="L100">          ExamenDaoImpl.SQL_DELETE, false, examen.getId());</span>
+<span class="nc" id="L101">      final int statut = preparedStatement.executeUpdate();</span>
+      /* Analyse du statut retourné par la requête d'insertion */
+<span class="nc bnc" id="L103" title="All 2 branches missed.">      if (statut == 0) {</span>
+<span class="nc" id="L104">        throw new DaoException(</span>
+            &quot;Échec de la suppresion de la ressource, aucune ligne supprimée dans la table.&quot;);
+      }
+<span class="nc" id="L107">    } catch (final SQLException sqle) {</span>
+<span class="nc" id="L108">      ExamenDaoImpl.LOGGER.log(Level.INFO, EXCEPTION, sqle);</span>
+<span class="nc" id="L109">      throw new DaoException(sqle);</span>
+    } finally {
+<span class="nc" id="L111">      DaoUtilitaire.fermeturesSilencieuses(valeursAutoGenerees, preparedStatement, connexion);</span>
+<span class="nc" id="L112">    }</span>
+<span class="nc" id="L113">  }</span>
+
+
+  /* Implémentation de la méthode définie dans l'interface ExamenBdd */
+  @Override
+  public void update(Examen examen, String ancienNom) {
+<span class="nc" id="L119">    Connection connexion = null;</span>
+<span class="nc" id="L120">    PreparedStatement preparedStatement = null;</span>
+<span class="nc" id="L121">    final ResultSet valeursAutoGenerees = null;</span>
+<span class="nc" id="L122">    final PreparedStatement preparedStatementDeux = null;</span>
+    try {
+      /* Récupération d'une connexion depuis la Factory */
+<span class="nc" id="L125">      connexion = this.daoFactory.getConnection();</span>
+<span class="nc" id="L126">      preparedStatement =</span>
+<span class="nc" id="L127">          DaoUtilitaire.initialisationRequetePreparee(connexion, ExamenDaoImpl.UPDATE, true,</span>
+<span class="nc" id="L128">              examen.getNom(), examen.getMatiere().getId(), this.getIdExamen(ancienNom));</span>
+<span class="nc" id="L129">      final int statut = preparedStatement.executeUpdate();</span>
+      /* Analyse du statut retourné par la requête d'insertion */
+<span class="nc bnc" id="L131" title="All 2 branches missed.">      if (statut == 0) {</span>
+<span class="nc" id="L132">        throw new DaoException(ECHEC);</span>
+      }
+<span class="nc" id="L134">    } catch (final SQLException sqle) {</span>
+<span class="nc" id="L135">      ExamenDaoImpl.LOGGER.log(Level.INFO, EXCEPTION, sqle);</span>
+<span class="nc" id="L136">      throw new DaoException(sqle);</span>
+    } finally {
+<span class="nc" id="L138">      DaoUtilitaire.fermeturesSilencieuses(valeursAutoGenerees, preparedStatement, connexion);</span>
+<span class="nc" id="L139">      DaoUtilitaire.fermetureSilencieuse(preparedStatementDeux);</span>
+<span class="nc" id="L140">    }</span>
+<span class="nc" id="L141">  }</span>
+
+
+  /*
+   * Méthode générique utilisée pour retourner un examen depuis la base de données, correspondant à
+   * la requête SQL donnée prenant en paramètres les objets passés en argument.
+   */
+  private Examen trouver(String sql, Object... objets) {
+<span class="nc" id="L149">    Connection connexion = null;</span>
+<span class="nc" id="L150">    PreparedStatement preparedStatement = null;</span>
+<span class="nc" id="L151">    ResultSet resultSet = null;</span>
+<span class="nc" id="L152">    Examen examen = null;</span>
+
+    try {
+      /* Récupération d'une connexion depuis la Factory */
+<span class="nc" id="L156">      connexion = this.daoFactory.getConnection();</span>
+      /*
+       * Préparation de la requête avec les objets passés en arguments (ici, uniquement un id) et
+       * exécution.
+       */
+<span class="nc" id="L161">      preparedStatement =</span>
+<span class="nc" id="L162">          DaoUtilitaire.initialisationRequetePreparee(connexion, sql, false, objets);</span>
+<span class="nc" id="L163">      resultSet = preparedStatement.executeQuery();</span>
+      /* Parcours de la ligne de données retournée dans le ResultSet */
+<span class="nc bnc" id="L165" title="All 2 branches missed.">      if (resultSet.next()) {</span>
+<span class="nc" id="L166">        examen = this.map(resultSet);</span>
+      }
+<span class="nc" id="L168">    } catch (final SQLException sqle) {</span>
+<span class="nc" id="L169">      ExamenDaoImpl.LOGGER.log(Level.INFO, &quot;Exception&quot;, sqle);</span>
+<span class="nc" id="L170">      throw new DaoException(sqle);</span>
+    } finally {
+<span class="nc" id="L172">      DaoUtilitaire.fermeturesSilencieuses(resultSet, preparedStatement, connexion);</span>
+<span class="nc" id="L173">    }</span>
+<span class="nc" id="L174">    return examen;</span>
+  }
+
+  /*
+   * Méthode générique utilisée pour retourner un examen depuis la base de données, correspondant à
+   * la requête SQL donnée prenant en paramètres les objets passés en argument.
+   */
+  private List&lt;Examen&gt; trouverTous(String sql) {
+<span class="nc" id="L182">    Connection connexion = null;</span>
+<span class="nc" id="L183">    PreparedStatement preparedStatement = null;</span>
+<span class="nc" id="L184">    ResultSet resultSet = null;</span>
+<span class="nc" id="L185">    List&lt;Examen&gt; examens = null;</span>
+    try {
+      /* Récupération d'une connexion depuis la Factory */
+<span class="nc" id="L188">      connexion = this.daoFactory.getConnection();</span>
+      /*
+       * Préparation de la requête avec les objets passés en arguments (ici, uniquement un id) et
+       * exécution.
+       */
+<span class="nc" id="L193">      preparedStatement = DaoUtilitaire.initialisationRequetePreparee(connexion, sql, false);</span>
+<span class="nc" id="L194">      resultSet = preparedStatement.executeQuery();</span>
+<span class="nc" id="L195">      examens = new ArrayList&lt;&gt;();</span>
+      /* Parcours de la ligne de données retournée dans le ResultSet */
+<span class="nc bnc" id="L197" title="All 2 branches missed.">      while (resultSet.next()) {</span>
+<span class="nc" id="L198">        examens.add(this.map(resultSet));</span>
+      }
+<span class="nc" id="L200">    } catch (final SQLException sqle) {</span>
+<span class="nc" id="L201">      ExamenDaoImpl.LOGGER.log(Level.INFO, EXCEPTION, sqle);</span>
+<span class="nc" id="L202">      throw new DaoException(sqle);</span>
+    } finally {
+<span class="nc" id="L204">      DaoUtilitaire.fermeturesSilencieuses(resultSet, preparedStatement, connexion);</span>
+<span class="nc" id="L205">    }</span>
+<span class="nc" id="L206">    return examens;</span>
+  }
+
+  private int getIdExamen(String nom) {
+<span class="nc" id="L210">    final int idExamen = this.trouverIdParNom(nom);</span>
+<span class="nc bnc" id="L211" title="All 2 branches missed.">    if (idExamen &lt; 0) {</span>
+<span class="nc" id="L212">      throw new DaoException(ECHEC);</span>
+    }
+<span class="nc" id="L214">    return idExamen;</span>
+  }
+
+  /*
+   * Simple méthode utilitaire permettant de faire la correspondance (le mapping) entre une ligne
+   * issue de la table des examens (un ResultSet) et un bean Examen.
+   */
+  private Examen map(ResultSet resultSet) throws SQLException {
+<span class="nc" id="L222">    final Examen examen = new Examen();</span>
+<span class="nc" id="L223">    examen.setNom(resultSet.getString(&quot;nom&quot;));</span>
+<span class="nc" id="L224">    examen.setId(resultSet.getInt(&quot;id&quot;));</span>
+    final BeanFactoryReference bf =
+<span class="nc" id="L226">        SingletonBeanFactoryLocator.getInstance().useBeanFactory(&quot;beansDao&quot;);</span>
+<span class="nc" id="L227">    final MatiereDao matiereDao = (MatiereDao) bf.getFactory().getBean(&quot;matiereDao&quot;);</span>
+<span class="nc" id="L228">    final ExerciceDao exerciceDao = (ExerciceDao) bf.getFactory().getBean(&quot;exerciceDao&quot;);</span>
+<span class="nc" id="L229">    examen.setMatiere(matiereDao.trouverParId(resultSet.getInt(&quot;id_matiere&quot;)));</span>
+<span class="nc" id="L230">    final List&lt;Exercice&gt; questions = exerciceDao.trouverParExamen(examen);</span>
+<span class="nc" id="L231">    examen.setExercices(questions);</span>
+<span class="nc" id="L232">    examen.setAutoEvaluation(resultSet.getBoolean(&quot;auto_evaluation&quot;));</span>
+<span class="nc" id="L233">    return examen;</span>
+  }
+
+  private int getIdMatiere(Matiere matiere) {
+    final BeanFactoryReference bf =
+<span class="nc" id="L238">        SingletonBeanFactoryLocator.getInstance().useBeanFactory(&quot;beansDao&quot;);</span>
+<span class="nc" id="L239">    final MatiereDao matiereDao = (MatiereDao) bf.getFactory().getBean(&quot;matiereDao&quot;);</span>
+<span class="nc" id="L240">    final int idMatiere = matiereDao.trouverIdParNom(matiere.getNom());</span>
+<span class="nc bnc" id="L241" title="All 2 branches missed.">    if (idMatiere &lt; 0) {</span>
+<span class="nc" id="L242">      throw new DaoException(ECHEC);</span>
+    }
+<span class="nc" id="L244">    return idMatiere;</span>
+  }
+
+  @Override
+  public int calculerHistorique(Examen examen, Date dateDebut, Date dateFin) {
+<span class="nc" id="L249">    Connection connexion = null;</span>
+<span class="nc" id="L250">    ResultSet resultSet = null;</span>
+<span class="nc" id="L251">    int quantite = 0;</span>
+<span class="nc" id="L252">    PreparedStatement preparedStatement = null;</span>
+    try {
+      /* Récupération d'une connexion depuis la Factory */
+<span class="nc" id="L255">      connexion = this.daoFactory.getConnection();</span>
+      /*
+       * Préparation de la requête avec les objets passés en arguments (ici, uniquement un id) et
+       * exécution.
+       */
+<span class="nc bnc" id="L260" title="All 2 branches missed.">      if (dateDebut == null) {</span>
+<span class="nc bnc" id="L261" title="All 2 branches missed.">        if (dateFin == null) {</span>
+<span class="nc" id="L262">          preparedStatement = DaoUtilitaire.initialisationRequetePreparee(connexion,</span>
+<span class="nc" id="L263">              COMPTER_EXERCICE_ALL, false, examen.getExercices().get(0).getId());</span>
+        } else {
+<span class="nc" id="L265">          preparedStatement = DaoUtilitaire.initialisationRequetePreparee(connexion,</span>
+<span class="nc" id="L266">              COMPTER_EXERCICE_FIN, false, examen.getExercices().get(0).getId(), dateFin);</span>
+        }
+      } else {
+<span class="nc bnc" id="L269" title="All 2 branches missed.">        if (dateFin == null) {</span>
+<span class="nc" id="L270">          preparedStatement = DaoUtilitaire.initialisationRequetePreparee(connexion,</span>
+<span class="nc" id="L271">              COMPTER_EXERCICE_DEBUT, false, examen.getExercices().get(0).getId(), dateDebut);</span>
+        } else {
+<span class="nc" id="L273">          preparedStatement = DaoUtilitaire.initialisationRequetePreparee(connexion,</span>
+<span class="nc" id="L274">              COMPTER_EXERCICE, false, examen.getExercices().get(0).getId(), dateDebut, dateFin);</span>
+        }
+      }
+<span class="nc" id="L277">      resultSet = preparedStatement.executeQuery();</span>
+      /* Parcours de la ligne de données retournée dans le ResultSet */
+<span class="nc bnc" id="L279" title="All 2 branches missed.">      while (resultSet.next()) {</span>
+<span class="nc" id="L280">        quantite = resultSet.getInt(1);</span>
+      }
+<span class="nc" id="L282">    } catch (final SQLException sqle) {</span>
+<span class="nc" id="L283">      ExamenDaoImpl.LOGGER.log(Level.INFO, EXCEPTION, sqle);</span>
+<span class="nc" id="L284">      throw new DaoException(sqle);</span>
+    } finally {
+<span class="nc" id="L286">      DaoUtilitaire.fermeturesSilencieuses(resultSet, preparedStatement, connexion);</span>
+<span class="nc" id="L287">    }</span>
+<span class="nc" id="L288">    return quantite;</span>
+  }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.6.201602180812</span></div></body></html>

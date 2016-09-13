@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>ExerciceFormMethods.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Atribus</a> &gt; <a href="index.source.html" class="el_package">fr.eseo.atribus.forms</a> &gt; <span class="el_source">ExerciceFormMethods.java</span></div><h1>ExerciceFormMethods.java</h1><pre class="source lang-java linenums">package fr.eseo.atribus.forms;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.servlet.http.HttpServletRequest;
+
+public class ExerciceFormMethods {
+<span class="nc" id="L14">  private static final Logger LOGGER = Logger.getLogger(ExerciceFormMethods.class.getName());</span>
+<span class="nc" id="L15">  protected ExerciceFormData data = new ExerciceFormData(new HashMap&lt;&gt;());</span>
+
+  public ExerciceFormMethods() {
+<span class="nc" id="L18">    super();</span>
+<span class="nc" id="L19">  }</span>
+
+  protected static String getValeurChamp(HttpServletRequest request, String nomChamp) {
+<span class="nc" id="L22">    final String valeur = request.getParameter(nomChamp);</span>
+<span class="nc bnc" id="L23" title="All 4 branches missed.">    if (valeur == null || valeur.trim().length() == 0) {</span>
+<span class="nc" id="L24">      return null;</span>
+    } else {
+<span class="nc" id="L26">      return valeur.trim();</span>
+    }
+  }
+
+  public String getResultat() {
+<span class="nc" id="L31">    return this.data.getResultat();</span>
+  }
+
+  public Map&lt;String, String&gt; getErreurs() {
+<span class="nc" id="L35">    return this.data.getErreurs();</span>
+  }
+
+  protected void validationPourcentage(String pourcentage) throws FormValidationException {
+    try {
+<span class="nc" id="L40">      final int test = Integer.parseInt(pourcentage);</span>
+<span class="nc bnc" id="L41" title="All 4 branches missed.">      if (test &lt; 0 || test &gt; 100) {</span>
+<span class="nc" id="L42">        throw new FormValidationException(&quot;Le pourcentage doit être compris entre 0 et 100.&quot;);</span>
+      }
+<span class="nc" id="L44">    } catch (final NumberFormatException nfe) {</span>
+<span class="nc" id="L45">      this.setErreur(ExerciceFormData.CHAMP_POINTS, nfe.getMessage());</span>
+<span class="nc" id="L46">      throw new FormValidationException(&quot;Le chiffre inscrit est invalide ...&quot;);</span>
+<span class="nc" id="L47">    }</span>
+<span class="nc" id="L48">  }</span>
+
+  protected void validationQuestion(String question) throws FormValidationException {
+<span class="nc bnc" id="L51" title="All 4 branches missed.">    if (question == null || question.length() &lt; 3) {</span>
+<span class="nc" id="L52">      throw new FormValidationException(&quot;Le question de l'exercice au moins 3 caractères.&quot;);</span>
+    }
+<span class="nc" id="L54">  }</span>
+
+  protected void validationReponseQcm(String reponse, String bonneReponses)
+      throws FormValidationException {
+<span class="nc bnc" id="L58" title="All 4 branches missed.">    if (reponse == null || reponse.length() &lt; 3) {</span>
+<span class="nc" id="L59">      throw new FormValidationException(</span>
+          &quot;Les reponses de l'exercice doivent comporter au moins 3 caractères.&quot;);
+    }
+<span class="nc" id="L62">    final List&lt;String&gt; rep = this.testerNumeroDesBonnesReponses(reponse, bonneReponses);</span>
+<span class="nc bnc" id="L63" title="All 2 branches missed.">    for (final String repon : rep) {</span>
+<span class="nc bnc" id="L64" title="All 4 branches missed.">      if (repon == null || repon.length() &lt; 3) {</span>
+<span class="nc" id="L65">        throw new FormValidationException(</span>
+            &quot;Les reponses de l'exercice doivent comporter au moins 3 caractères.&quot;);
+      }
+<span class="nc" id="L68">    }</span>
+<span class="nc" id="L69">  }</span>
+
+  private List&lt;String&gt; testerNumeroDesBonnesReponses(String reponse, String bonneReponses)
+      throws FormValidationException {
+<span class="nc" id="L73">    final List&lt;String&gt; bonneRep = new ArrayList&lt;&gt;(Arrays.asList(bonneReponses.split(&quot;/&quot;)));</span>
+<span class="nc" id="L74">    final List&lt;String&gt; rep = new ArrayList&lt;&gt;(Arrays.asList(reponse.split(&quot;/&quot;)));</span>
+    try {
+<span class="nc bnc" id="L76" title="All 2 branches missed.">      for (final String repNum : bonneRep) {</span>
+<span class="nc bnc" id="L77" title="All 2 branches missed.">        if (!&quot;&quot;.equals(repNum)) {</span>
+<span class="nc" id="L78">          rep.get(Integer.parseInt(repNum) - 1);</span>
+        }
+<span class="nc" id="L80">      }</span>
+<span class="nc" id="L81">    } catch (final Exception exc) {</span>
+<span class="nc" id="L82">      ExerciceFormMethods.LOGGER.log(Level.INFO, ExerciceFormData.EXCEPTION, exc);</span>
+<span class="nc" id="L83">      throw new FormValidationException(&quot;Une réponse n'a pas le bon le numéro.&quot;);</span>
+<span class="nc" id="L84">    }</span>
+<span class="nc" id="L85">    return rep;</span>
+  }
+
+  protected void validationReponse(String reponse) throws FormValidationException {
+<span class="nc bnc" id="L89" title="All 4 branches missed.">    if (reponse == null || reponse.length() &lt; 3) {</span>
+<span class="nc" id="L90">      throw new FormValidationException(&quot;La reponse de l'exercice au moins 3 caractères.&quot;);</span>
+    }
+<span class="nc" id="L92">  }</span>
+
+  protected void validationPoints(String nbPoints) throws FormValidationException {
+    try {
+<span class="nc" id="L96">      final float test = Float.parseFloat(nbPoints);</span>
+<span class="nc bnc" id="L97" title="All 2 branches missed.">      if (test &lt; 0) {</span>
+<span class="nc" id="L98">        throw new FormValidationException(&quot;Merci d'inscrire une valeur positive ou nulle.&quot;);</span>
+      }
+<span class="nc" id="L100">    } catch (final NumberFormatException nfe) {</span>
+<span class="nc" id="L101">      this.setErreur(ExerciceFormData.CHAMP_POINTS, nfe.getMessage());</span>
+<span class="nc" id="L102">      throw new FormValidationException(&quot;Le chiffre inscrit est invalide ...&quot;);</span>
+<span class="nc" id="L103">    }</span>
+<span class="nc" id="L104">  }</span>
+
+  protected void validationCompetence(String competence) throws FormValidationException {
+<span class="nc bnc" id="L107" title="All 2 branches missed.">    if (this.data.getCompetenceBdd().trouverUniqueParNom(competence) == null) {</span>
+<span class="nc" id="L108">      throw new FormValidationException(&quot;Cette compétence n'existe pas&quot;);</span>
+    }
+<span class="nc" id="L110">  }</span>
+
+  protected void validationExamen(String examen) throws FormValidationException {
+<span class="nc bnc" id="L113" title="All 2 branches missed.">    if (this.data.getExamenBdd().trouverParNom(examen) == null) {</span>
+<span class="nc" id="L114">      throw new FormValidationException(&quot;Cette examen n'existe pas&quot;);</span>
+    }
+<span class="nc" id="L116">  }</span>
+
+  protected void setErreur(String champ, String message) {
+<span class="nc" id="L119">    this.getErreurs().put(champ, message);</span>
+<span class="nc" id="L120">  }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.6.201602180812</span></div></body></html>

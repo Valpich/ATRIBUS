@@ -1,0 +1,27 @@
+message.convocationDePartieUn=Bonjour,<br/>Vous avez été convoqué par 
+message.convocationDePartieDeux=, 
+message.convocationDePartieTrois=.<br/> Cordialement. <br/> La direction des études.
+
+message.enseignantSuggereCompetenceUn=Bonjour,<br/> L'enseignant 
+message.enseignantSuggereCompetenceDeux=à souhaiter vous suggerer d'ajouter la compétence suivante :<br/>
+message.enseignantSuggereCompetenceTrois=.<br/>Il vous a également ajouté le message suivant :<br/>
+message.enseignantSuggereCompetenceQuatre=<br/>Cordialement. <br/>
+
+message.eureSuggereCompetenceUn=Bonjour,<br/> L'enseignant référent d'unité d'enseignement 
+message.eureSuggereCompetenceDeux=à souhaiter vous suggerer d'ajouter la compétence suivante :<br/>
+message.eureSuggereCompetenceTrois=.<br/>Il vous a également ajouté le message suivant :<br/>
+message.eureSuggereCompetenceQuatre=<br/>Cordialement. <br/>
+
+message.ermSuggereCompetenceUn=Bonjour,<br/> L'enseignant responsable matière  
+message.ermSuggereCompetenceDeux=à souhaiter vous suggerer d'ajouter la compétence suivante :<br/>
+message.ermSuggereCompetenceTrois=<br/>Il vous a également ajouté le message suivant :<br/>
+message.ermSuggereCompetenceQuatre=<br/>Cordialement. <br/>
+
+message.eleveSuggereCompetenceUn=Bonjour,<br/> L'eleve 
+message.eleveSuggereCompetenceDeux=à souhaiter vous suggerer d'ajouter la compétence suivante :<br/>
+message.eleveSuggereCompetenceTrois=.<br/>Il vous a également ajouté le message suivant :<br/>
+message.eleveSuggereCompetenceQuatre=<br/>Cordialement. <br/>
+
+message.adminSystProblemeUn=Bonjour administrateur système,<br/>Un nombre anormal de requêtes en simultannées par un utilisateur sur l'application ATRIBUS à été detecté.<br/> Vous trouverez une trace dans les logs de l'application.<br/>Cordialement.
+message.adminSystProblemeDeux=Bonjour administrateur système,<br/>Un nombre anormal de requêtes en simultannées sur l'application ATRIBUS à été detecté.<br/> Vous trouverez une trace dans les logs de l'application.<br/>Cordialement.
+message.adminSystProblemeTrois=Bonjour administrateur système,<br/>Un arrêt de l'application ATRIBUS à été detecté.<br/> Vous trouverez une trace dans les logs de l'application.<br/>Cordialement.

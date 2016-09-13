@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>NotificationDaoImpl.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Atribus</a> &gt; <a href="index.source.html" class="el_package">fr.eseo.atribus.dao</a> &gt; <span class="el_source">NotificationDaoImpl.java</span></div><h1>NotificationDaoImpl.java</h1><pre class="source lang-java linenums">package fr.eseo.atribus.dao;
+
+import fr.eseo.atribus.entities.Notification;
+import fr.eseo.atribus.entities.Utilisateur;
+
+import org.springframework.beans.factory.access.BeanFactoryReference;
+import org.springframework.beans.factory.access.SingletonBeanFactoryLocator;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+
+
+
+public class NotificationDaoImpl implements NotificationDao {
+  private final DaoFactory daoFactory;
+  private static final String SQL_SELECT_ALL_ID =
+      &quot;SELECT * FROM notification WHERE id_destinataire = ?&quot;;
+  private static final String SQL_SELECT_NOM_ID =
+      &quot;SELECT nom, prenom FROM utilisateur WHERE id = ?&quot;;
+  private static final String SQL_INSERT =
+      &quot;INSERT INTO notification (id_emetteur, id_destinataire, message, date_creation) &quot;
+          + &quot;VALUES (? , ? , ? , CURRENT_TIMESTAMP);&quot;;
+  private static final String SQL_DELETE = &quot;DELETE FROM notification WHERE id = ?;&quot;;
+
+<span class="nc" id="L29">  NotificationDaoImpl() {</span>
+    final BeanFactoryReference bf =
+<span class="nc" id="L31">        SingletonBeanFactoryLocator.getInstance().useBeanFactory(&quot;contextDao&quot;);</span>
+<span class="nc" id="L32">    this.daoFactory = (DaoFactory) bf.getFactory().getBean(&quot;daoFactory&quot;);</span>
+<span class="nc" id="L33">  }</span>
+
+  @Override
+  public List&lt;Notification&gt; trouverToutesLesNotification(Utilisateur utilisateur) {
+<span class="nc" id="L37">    return this.trouver(NotificationDaoImpl.SQL_SELECT_ALL_ID, utilisateur.getId());</span>
+  }
+
+  /* Implémentation de la méthode définie dans l'interface NotificationDao */
+  @Override
+  public void supprimer(Notification notification) {
+<span class="nc" id="L43">    Connection connexion = null;</span>
+<span class="nc" id="L44">    PreparedStatement preparedStatement = null;</span>
+<span class="nc" id="L45">    final ResultSet valeursAutoGenerees = null;</span>
+    try {
+      /* Récupération d'une connexion depuis la Factory */
+<span class="nc" id="L48">      connexion = this.daoFactory.getConnection();</span>
+<span class="nc" id="L49">      preparedStatement = DaoUtilitaire.initialisationRequetePreparee(connexion,</span>
+<span class="nc" id="L50">          NotificationDaoImpl.SQL_DELETE, false, notification.getId());</span>
+<span class="nc" id="L51">      final int statut = preparedStatement.executeUpdate();</span>
+      /* Analyse du statut retourné par la requête d'insertion */
+<span class="nc bnc" id="L53" title="All 2 branches missed.">      if (statut == 0) {</span>
+<span class="nc" id="L54">        throw new DaoException(</span>
+            &quot;Échec de la suppresion de la ressource, aucune ligne supprimée dans la table.&quot;);
+      }
+<span class="nc" id="L57">    } catch (final SQLException sqle) {</span>
+<span class="nc" id="L58">      throw new DaoException(sqle);</span>
+    } finally {
+<span class="nc" id="L60">      DaoUtilitaire.fermeturesSilencieuses(valeursAutoGenerees, preparedStatement, connexion);</span>
+<span class="nc" id="L61">    }</span>
+<span class="nc" id="L62">  }</span>
+
+  @Override
+  public void ajouter(Notification notification) {
+<span class="nc" id="L66">    Connection connexion = null;</span>
+<span class="nc" id="L67">    PreparedStatement preparedStatement = null;</span>
+<span class="nc" id="L68">    ResultSet valeursAutoGenerees = null;</span>
+    try {
+      /* Récupération d'une connexion depuis la Factory */
+<span class="nc" id="L71">      connexion = this.daoFactory.getConnection();</span>
+
+<span class="nc" id="L73">      preparedStatement = DaoUtilitaire.initialisationRequetePreparee(connexion,</span>
+<span class="nc" id="L74">          NotificationDaoImpl.SQL_INSERT, true, notification.getEmetteur(),</span>
+<span class="nc" id="L75">          notification.getDestinataire(), notification.getMessage());</span>
+
+<span class="nc" id="L77">      final int statut = preparedStatement.executeUpdate();</span>
+
+      /* Analyse du statut retourné par la requête d'insertion */
+<span class="nc bnc" id="L80" title="All 2 branches missed.">      if (statut == 0) {</span>
+<span class="nc" id="L81">        throw new DaoException(</span>
+            &quot;Échec de la création de la matière, aucune ligne ajoutée dans la table.&quot;);
+      }
+
+      /* Récupération de l'id auto-généré par la requête d'insertion */
+<span class="nc" id="L86">      valeursAutoGenerees = preparedStatement.getGeneratedKeys();</span>
+<span class="nc bnc" id="L87" title="All 2 branches missed.">      if (valeursAutoGenerees.next()) {</span>
+        /* Puis initialisation de la propriété id du bean Notification avec sa valeur */
+<span class="nc" id="L89">        notification.setId(valeursAutoGenerees.getInt(1));</span>
+      } else {
+<span class="nc" id="L91">        throw new DaoException(</span>
+            &quot;Échec de la création de la matière en base, aucun ID auto-généré retourné.&quot;);
+      }
+<span class="nc" id="L94">    } catch (final SQLException sqle) {</span>
+<span class="nc" id="L95">      throw new DaoException(sqle);</span>
+    } finally {
+<span class="nc" id="L97">      DaoUtilitaire.fermeturesSilencieuses(valeursAutoGenerees, preparedStatement, connexion);</span>
+<span class="nc" id="L98">    }</span>
+
+<span class="nc" id="L100">  }</span>
+
+  /*
+   * Méthode générique utilisée pour retourner un utilisateur depuis la base de données,
+   * correspondant à la requête SQL donnée prenant en paramètres les objets passés en argument.
+   */
+  private List&lt;Notification&gt; trouver(String sql, Object... objets) {
+<span class="nc" id="L107">    Connection connexion = null;</span>
+<span class="nc" id="L108">    PreparedStatement preparedStatement = null;</span>
+<span class="nc" id="L109">    ResultSet resultSet = null;</span>
+<span class="nc" id="L110">    List&lt;Notification&gt; notifications = new ArrayList&lt;&gt;();</span>
+    try {
+      /* Récupération d'une connexion depuis la Factory */
+<span class="nc" id="L113">      connexion = this.daoFactory.getConnection();</span>
+      /*
+       * Préparation de la requête avec les objets passés en arguments (ici, uniquement un id) et
+       * exécution.
+       */
+<span class="nc" id="L118">      preparedStatement =</span>
+<span class="nc" id="L119">          DaoUtilitaire.initialisationRequetePreparee(connexion, sql, false, objets);</span>
+<span class="nc" id="L120">      resultSet = preparedStatement.executeQuery();</span>
+      /* Parcours de la ligne de données retournée dans le ResultSet */
+<span class="nc bnc" id="L122" title="All 2 branches missed.">      while (resultSet.next()) {</span>
+<span class="nc" id="L123">        notifications.add(this.map(resultSet));</span>
+      }
+<span class="nc" id="L125">    } catch (final SQLException sqle) {</span>
+<span class="nc" id="L126">      throw new DaoException(sqle);</span>
+    } finally {
+<span class="nc" id="L128">      DaoUtilitaire.fermeturesSilencieuses(resultSet, preparedStatement, connexion);</span>
+<span class="nc" id="L129">    }</span>
+<span class="nc" id="L130">    return notifications;</span>
+  }
+
+  private void trouverNomUtilisateur(Notification notification) {
+<span class="nc" id="L134">    Connection connexion = null;</span>
+<span class="nc" id="L135">    PreparedStatement preparedStatement = null;</span>
+<span class="nc" id="L136">    ResultSet resultSet = null;</span>
+    try {
+      /* Récupération d'une connexion depuis la Factory */
+<span class="nc" id="L139">      connexion = this.daoFactory.getConnection();</span>
+<span class="nc" id="L140">      preparedStatement = DaoUtilitaire.initialisationRequetePreparee(connexion,</span>
+<span class="nc" id="L141">          NotificationDaoImpl.SQL_SELECT_NOM_ID, false, notification.getEmetteur());</span>
+      /* Analyse du statut retourné par la requête d'insertion */
+<span class="nc" id="L143">      resultSet = preparedStatement.executeQuery();</span>
+      /* Parcours de la ligne de données retournée dans le ResultSet */
+<span class="nc bnc" id="L145" title="All 2 branches missed.">      if (resultSet.next()) {</span>
+<span class="nc" id="L146">        notification</span>
+<span class="nc" id="L147">            .setNomEmetteur(resultSet.getString(&quot;nom&quot;) + &quot; &quot; + resultSet.getString(&quot;prenom&quot;));</span>
+      }
+<span class="nc" id="L149">    } catch (final SQLException sqle) {</span>
+<span class="nc" id="L150">      throw new DaoException(sqle);</span>
+    } finally {
+<span class="nc" id="L152">      DaoUtilitaire.fermeturesSilencieuses(resultSet, preparedStatement, connexion);</span>
+<span class="nc" id="L153">    }</span>
+<span class="nc" id="L154">  }</span>
+
+  /*
+   * Simple méthode utilitaire permettant de faire la correspondance (le mapping) entre une ligne
+   * issue de la table des utilisateurs (un ResultSet) et un bean Notification.
+   */
+  private Notification map(ResultSet resultSet) throws SQLException {
+<span class="nc" id="L161">    final Notification notification = new Notification();</span>
+<span class="nc" id="L162">    notification.setDestinataire(resultSet.getInt(&quot;id_destinataire&quot;));</span>
+<span class="nc" id="L163">    notification.setEmetteur(resultSet.getInt(&quot;id_emetteur&quot;));</span>
+<span class="nc" id="L164">    notification.setMessage(resultSet.getString(&quot;message&quot;));</span>
+<span class="nc" id="L165">    notification.setDateCreation(resultSet.getTimestamp(&quot;date_creation&quot;));</span>
+<span class="nc" id="L166">    notification.setId(resultSet.getInt(&quot;id&quot;));</span>
+<span class="nc" id="L167">    trouverNomUtilisateur(notification);</span>
+<span class="nc" id="L168">    return notification;</span>
+  }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.6.201602180812</span></div></body></html>

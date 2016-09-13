@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testng-results skipped="0" failed="0" total="1" passed="1">
+  <reporter-output>
+  </reporter-output>
+  <suite name="Atribus Test Suite" duration-ms="29427" started-at="2016-05-22T13:38:41Z" finished-at="2016-05-22T13:39:10Z">
+    <groups>
+    </groups>
+    <test name="tests" duration-ms="29427" started-at="2016-05-22T13:38:41Z" finished-at="2016-05-22T13:39:10Z">
+      <class name="fr.eseo.atribus.integration.Test49">
+        <test-method status="PASS" signature="setUp()[pri:0, instance:fr.eseo.atribus.integration.Test49@773bd77b]" name="setUp" is-config="true" duration-ms="5432" started-at="2016-05-22T15:38:41Z" finished-at="2016-05-22T15:38:46Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- setUp -->
+        <test-method status="PASS" signature="test49()[pri:0, instance:fr.eseo.atribus.integration.Test49@773bd77b]" name="test49" duration-ms="23861" started-at="2016-05-22T15:38:46Z" finished-at="2016-05-22T15:39:10Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- test49 -->
+        <test-method status="PASS" signature="tearDown()[pri:0, instance:fr.eseo.atribus.integration.Test49@773bd77b]" name="tearDown" is-config="true" duration-ms="102" started-at="2016-05-22T15:39:10Z" finished-at="2016-05-22T15:39:10Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- tearDown -->
+      </class> <!-- fr.eseo.atribus.integration.Test49 -->
+    </test> <!-- tests -->
+  </suite> <!-- Atribus Test Suite -->
+</testng-results>

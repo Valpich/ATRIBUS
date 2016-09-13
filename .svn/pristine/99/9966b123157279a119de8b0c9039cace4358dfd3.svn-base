@@ -1,0 +1,291 @@
+package fr.eseo.atribus.forms;
+
+import static org.testng.Assert.assertNotNull;
+
+import fr.eseo.atribus.dao.ExamenDaoImpl;
+
+import org.mockito.Mockito;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+
+public class AddExerciceFormTest {
+  AddExerciceForm form;
+  ExamenDaoImpl examenDao;
+
+  @BeforeClass
+  public void beforeClass() {
+    form = new AddExerciceForm();
+    examenDao = new ExamenDaoImpl();
+  }
+
+  @Test
+  public void ajouterExercice() {
+
+    try {
+      final HttpServletRequest httpServletRequest = Mockito.mock(HttpServletRequest.class);
+      final Map<String, String[]> parameters = new HashMap<>();
+      final List<String> reponses = new ArrayList<>();
+      final List<String> competences = new ArrayList<>();
+      final List<String> pourcentages = new ArrayList<>();
+
+      reponses.add("Reponse1");
+      reponses.add("Reponse2");
+      competences.add("Exploiter");
+      pourcentages.add("19");
+
+      String[] tmp = { "12" };
+      String[] tmpDeux = { "Exploiter" };
+      parameters.put("pourcentage1", tmp);
+      parameters.put("choixCompetence1", tmpDeux);
+
+      String point = "10";
+      String reponse = "Bonne réponse";
+      String question = "QuestionTest";
+      String examen = examenDao.trouverTousLesExamens().get(0).getNom();
+
+      Mockito.when(httpServletRequest.getParameterMap()).thenReturn(parameters);
+      Mockito.when(httpServletRequest.getParameter("question")).thenReturn(question);
+      Mockito.when(httpServletRequest.getParameter("reponse")).thenReturn(reponse);
+      Mockito.when(httpServletRequest.getParameter("points")).thenReturn(point);
+      Mockito.when(httpServletRequest.getParameter("choixExamen")).thenReturn(examen);
+
+      assertNotNull(form.addExercice(httpServletRequest));
+    } catch (Exception except) {
+      except.getMessage();
+    }
+
+  }
+
+  @Test
+  public void ajouterAutoEvaluation() {
+
+    final String question = "QuestionTest";
+    List<String> reponses = new ArrayList<>();
+    reponses.add("Reponse1");
+    reponses.add("Reponse2");
+    String nbPoints = "1";
+    List<String> competences = new ArrayList<>();
+    competences.add("Exploiter");
+    List<String> pourcentages = new ArrayList<>();
+    pourcentages.add("19");
+    String examen = examenDao.trouverTousLesExamens().get(0).getNom();
+    String bonneReponses = "1";
+    assertNotNull(form.ajouterAutoEvaluation(question, reponses, nbPoints, competences,
+        pourcentages, examen, bonneReponses));
+
+  }
+
+
+  @Test
+  public void ajouterExerciceFail() {
+
+    try {
+      final HttpServletRequest httpServletRequest = Mockito.mock(HttpServletRequest.class);
+      final Map<String, String[]> parameters = new HashMap<>();
+      final List<String> competences = new ArrayList<>();
+      final List<String> pourcentages = new ArrayList<>();
+
+
+      competences.add("Exploiter");
+      pourcentages.add("120");
+
+      String[] tmp = { "éé" };
+      String[] tmpDeux = { "Exploiter" };
+      parameters.put("pourcentage1", tmp);
+      parameters.put("choixCompetence1", tmpDeux);
+
+      String point = "-1";
+      String reponse = null;
+      String question = null;
+      String examen = null;
+
+      Mockito.when(httpServletRequest.getParameterMap()).thenReturn(parameters);
+      Mockito.when(httpServletRequest.getParameter("question")).thenReturn(question);
+      Mockito.when(httpServletRequest.getParameter("reponse")).thenReturn(reponse);
+      Mockito.when(httpServletRequest.getParameter("points")).thenReturn(point);
+      Mockito.when(httpServletRequest.getParameter("choixExamen")).thenReturn(examen);
+      form.recupererResultat();
+      assertNotNull(form.addExercice(httpServletRequest));
+    } catch (Exception except) {
+      except.getMessage();
+    }
+
+  }
+
+  @Test
+  public void ajouterExerciceFailDeux() {
+
+    try {
+      final HttpServletRequest httpServletRequest = Mockito.mock(HttpServletRequest.class);
+      final Map<String, String[]> parameters = new HashMap<>();
+      final List<String> competences = new ArrayList<>();
+      final List<String> pourcentages = new ArrayList<>();
+
+
+      competences.add("Exploiter");
+      pourcentages.add("éé");
+
+      String[] tmp = { "-1" };
+      String[] tmpDeux = { "Expliter" };
+      parameters.put("pourcentage1", tmp);
+      parameters.put("choixCompetence1", tmpDeux);
+
+      String point = "é";
+      String reponse = null;
+      String question = null;
+      String examen = "teteguyqhjdlqssuq";
+
+      Mockito.when(httpServletRequest.getParameterMap()).thenReturn(parameters);
+      Mockito.when(httpServletRequest.getParameter("question")).thenReturn(question);
+      Mockito.when(httpServletRequest.getParameter("reponse")).thenReturn(reponse);
+      Mockito.when(httpServletRequest.getParameter("points")).thenReturn(point);
+      Mockito.when(httpServletRequest.getParameter("choixExamen")).thenReturn(examen);
+      form.recupererResultat();
+      assertNotNull(form.addExercice(httpServletRequest));
+    } catch (Exception except) {
+      except.getMessage();
+    }
+  }
+
+  @Test
+  public void ajouterExerciceFailTrois() {
+
+    try {
+      final HttpServletRequest httpServletRequest = Mockito.mock(HttpServletRequest.class);
+      final Map<String, String[]> parameters = new HashMap<>();
+      final List<String> competences = new ArrayList<>();
+      final List<String> pourcentages = new ArrayList<>();
+
+
+      competences.add("Exploiter");
+      pourcentages.add("éé");
+
+      String[] tmp = { "-1" };
+      String[] tmpDeux = { "Expliter" };
+      parameters.put("pourcentage1", tmp);
+      parameters.put("choixCompetence1", tmpDeux);
+
+      String point = null;
+      String reponse = null;
+      String question = null;
+      String examen = null;
+
+      Mockito.when(httpServletRequest.getParameterMap()).thenReturn(parameters);
+      Mockito.when(httpServletRequest.getParameter("question")).thenReturn(question);
+      Mockito.when(httpServletRequest.getParameter("reponse")).thenReturn(reponse);
+      Mockito.when(httpServletRequest.getParameter("points")).thenReturn(point);
+      Mockito.when(httpServletRequest.getParameter("choixExamen")).thenReturn(examen);
+      form.recupererResultat();
+      assertNotNull(form.addExercice(httpServletRequest));
+    } catch (Exception except) {
+      except.getMessage();
+    }
+  }
+
+  @Test
+  public void ajouterAutoEvaluationFail() {
+    try {
+      final String question = "QuestionTest";
+      List<String> reponses = null;
+      String nbPoints = "1";
+      List<String> competences = null;
+      List<String> pourcentages = null;
+      String examen = null;
+      String bonneReponses = "é";
+      assertNotNull(form.ajouterAutoEvaluation(question, reponses, nbPoints, competences,
+          pourcentages, examen, bonneReponses));
+    } catch (Exception except) {
+      except.getMessage();
+    }
+  }
+
+  @Test
+  public void ajouterAutoEvaluationFailDeux() {
+    try {
+      final String question = "QuestionTest";
+      List<String> reponses = new ArrayList<>();
+      reponses.add("Reponse1");
+      reponses.add("Reponse2");
+      String nbPoints = "1";
+      List<String> competences = new ArrayList<>();
+      competences.add("Exploiter");
+      List<String> pourcentages = new ArrayList<>();
+      pourcentages.add("19");
+      String examen = "dfgdfytfsuqgihoflk";
+      String bonneReponses = "1";
+      assertNotNull(form.ajouterAutoEvaluation(question, reponses, nbPoints, competences,
+          pourcentages, examen, bonneReponses));
+    } catch (Exception except) {
+      except.getMessage();
+    }
+  }
+  
+  @Test
+  public void ajouterAutoEvaluationFailTrois() {
+    try {
+      final String question = "QuestionTest";
+      List<String> reponses = new ArrayList<>();
+      reponses.add("Reponse1");
+      reponses.add("Reponse2");
+      String nbPoints = "1";
+      List<String> competences = new ArrayList<>();
+      competences.add("Exploiter");
+      List<String> pourcentages = new ArrayList<>();
+      pourcentages.add("19");
+      String examen = examenDao.trouverTousLesExamens().get(0).getNom();
+      String bonneReponses = "3";
+      assertNotNull(form.ajouterAutoEvaluation(question, reponses, nbPoints, competences,
+          pourcentages, examen, bonneReponses));
+    } catch (Exception except) {
+      except.getMessage();
+    }
+  }
+  
+  @Test
+  public void ajouterAutoEvaluationFailQuatre() {
+    try {
+      final String question = "QuestionTest";
+      List<String> reponses = new ArrayList<>();
+      reponses.add("Re");
+      reponses.add("Re");
+      String nbPoints = "1";
+      List<String> competences = new ArrayList<>();
+      competences.add("Exploiter");
+      List<String> pourcentages = new ArrayList<>();
+      pourcentages.add("19");
+      String examen = examenDao.trouverTousLesExamens().get(0).getNom();
+      String bonneReponses = "1";
+      assertNotNull(form.ajouterAutoEvaluation(question, reponses, nbPoints, competences,
+          pourcentages, examen, bonneReponses));
+    } catch (Exception except) {
+      except.getMessage();
+    }
+  }
+
+  @Test
+  public void ajouterAutoEvaluationFailCinq() {
+    try {
+      final String question = "QuestionTest";
+      List<String> reponses = new ArrayList<>();
+      reponses.add("Re");
+      String nbPoints = "1";
+      List<String> competences = new ArrayList<>();
+      competences.add("Exploiter");
+      List<String> pourcentages = new ArrayList<>();
+      pourcentages.add("19");
+      String examen = examenDao.trouverTousLesExamens().get(0).getNom();
+      String bonneReponses = "1";
+      assertNotNull(form.ajouterAutoEvaluation(question, reponses, nbPoints, competences,
+          pourcentages, examen, bonneReponses));
+    } catch (Exception except) {
+      except.getMessage();
+    }
+  }
+}

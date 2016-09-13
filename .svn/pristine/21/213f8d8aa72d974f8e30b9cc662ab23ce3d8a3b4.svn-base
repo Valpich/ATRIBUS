@@ -1,0 +1,29 @@
+package fr.eseo.atribus.dao;
+
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
+
+import org.testng.annotations.Test;
+
+public class DaoConfigurationExceptionTest {
+  
+  DaoConfigurationException daoConfiguration;
+  
+  @Test
+  public void daoConfigurationExceptionString() {
+    daoConfiguration = new DaoConfigurationException("Message");
+    assertEquals(daoConfiguration.getMessage(), "Message");
+  }
+
+  @Test
+  public void daoConfigurationExceptionStringThrowable() {
+    daoConfiguration = new DaoConfigurationException("Message", new Throwable());
+    assertEquals(daoConfiguration.getMessage(), "Message");
+  }
+
+  @Test
+  public void daoConfigurationExceptionThrowable() {
+    daoConfiguration = new DaoConfigurationException(new Throwable());
+    assertNotNull(this.daoConfiguration);
+  }
+}

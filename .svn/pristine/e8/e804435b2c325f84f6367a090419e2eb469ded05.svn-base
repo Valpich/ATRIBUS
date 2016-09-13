@@ -1,0 +1,25 @@
+package fr.eseo.atribus.timers;
+
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
+
+import java.util.Date;
+import java.util.logging.Logger;
+
+@Service
+public class Timer {
+  private static final Logger LOGGER = Logger.getLogger(Timer.class.getName());
+
+  public Timer() {
+    Timer.LOGGER.info("Instantiation du timer");
+  }
+  
+  /**
+   * Timer executé toutes les 60 secondes ici :) 
+   * Définition dans le dispatcher-servlet.xml lignes 108-110 :).
+   */
+  @Scheduled(fixedDelay = 60000)
+  public void executer() {
+    Timer.LOGGER.info("Exécution du timer " + new Date());
+  }
+}

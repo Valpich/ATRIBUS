@@ -1,0 +1,170 @@
+package fr.eseo.atribus.dao;
+
+import org.springframework.beans.factory.access.BeanFactoryReference;
+import org.springframework.beans.factory.access.SingletonBeanFactoryLocator;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+/**
+ * La Classe DaoUtilitaire.
+ */
+public final class DaoUtilitaire {
+
+  /** La constante LOGGER. */
+  private static final Logger LOGGER = Logger.getLogger(DaoUtilitaire.class.getName());
+
+  /**
+   * Instancie un nouveau dao utilitaire.
+   */
+  /*
+   * Constructeur caché par défaut (car c'est une classe finale utilitaire, contenant uniquement des
+   * méthode appelées de manière statique)
+   */
+  private DaoUtilitaire() {}
+
+  /**
+   * Initialise la requête préparée basée sur la connexion passée en argument, avec la requête SQL
+   * et les objets donnés.
+   *
+   * @param connexion la connexion
+   * @param sql la requete sql
+   * @param returnGeneratedKeys le return generated keys
+   * @param objets les objets de la requete
+   * @return Le paramètre prepared statement
+   * @throws SQLException de type SQL exception
+   */
+  public static PreparedStatement initialisationRequetePreparee(Connection connexion, String sql,
+      boolean returnGeneratedKeys, Object... objets) throws SQLException {
+    final BeanFactoryReference bf =
+        SingletonBeanFactoryLocator.getInstance().useBeanFactory("contextDao");
+    Connection connection;
+    PreparedStatement preparedStatement;
+    if (connexion == null || connexion.isClosed()) {
+      connection = ((DaoFactory) bf.getFactory().getBean("daoFactory")).getConnection();
+      preparedStatement = connection.prepareStatement(sql,
+          returnGeneratedKeys ? Statement.RETURN_GENERATED_KEYS : Statement.NO_GENERATED_KEYS);
+      for (int i = 0; i < objets.length; i++) {
+        preparedStatement.setObject(i + 1, objets[i]);
+      }
+    } else {
+      preparedStatement = connexion.prepareStatement(sql,
+          returnGeneratedKeys ? Statement.RETURN_GENERATED_KEYS : Statement.NO_GENERATED_KEYS);
+      for (int i = 0; i < objets.length; i++) {
+        preparedStatement.setObject(i + 1, objets[i]);
+      }
+    }
+    return preparedStatement;
+  }
+
+  /**
+   * Fermeture silencieuse du resultset. *
+   *
+   * @param resultSet le result set
+   */
+  public static void fermetureSilencieuse(ResultSet resultSet) {
+    if (resultSet != null) {
+      try {
+        resultSet.close();
+      } catch (final SQLException sqle) {
+        DaoUtilitaire.LOGGER.log(Level.INFO,
+            "Échec de la fermeture du ResultSet : " + sqle.getMessage(), sqle);
+      }
+    }
+  }
+
+  /**
+   * Fermeture silencieuse du statement. *
+   *
+   * @param statement le statement
+   */
+  public static void fermetureSilencieuse(Statement statement) {
+    if (statement != null) {
+      try {
+        statement.close();
+      } catch (final SQLException sqle) {
+        DaoUtilitaire.LOGGER.log(Level.INFO,
+            "Échec de la fermeture du Statement : " + sqle.getMessage(), sqle);
+      }
+    }
+  }
+
+  /**
+   * Fermeture silencieuse de la connexion. *
+   *
+   * @param connexion la connexion
+   */
+  public static void fermetureSilencieuse(Connection connexion) {
+    /**
+     * if (connexion != null) { try { connexion.close(); } catch (final SQLException sqle) {
+     * DaoUtilitaire.LOGGER.log(Level.INFO, "Échec de la fermeture de la connexion : " +
+     * sqle.getMessage(), sqle); } }
+     */
+  }
+
+  /**
+   * Fermetures silencieuses.
+   *
+   * @param statement le statement
+   * @param connexion la connexion
+   */
+  /* Fermetures silencieuses du statement et de la connexion */
+  public static void fermeturesSilencieuses(Statement statement, Connection connexion) {
+    DaoUtilitaire.fermetureSilencieuse(statement);
+    DaoUtilitaire.fermetureSilencieuse(connexion);
+  }
+
+  /**
+   * Fermetures silencieuses du resultset, du statement et de la connexion. *
+   *
+   * @param resultSet le result set
+   * @param statement le statement
+   * @param connexion la connexion
+   */
+  public static void fermeturesSilencieuses(ResultSet resultSet, Statement statement,
+      Connection connexion) {
+    DaoUtilitaire.fermetureSilencieuse(resultSet);
+    DaoUtilitaire.fermetureSilencieuse(statement);
+    DaoUtilitaire.fermetureSilencieuse(connexion);
+  }
+
+  /**
+   * Méthode générique utilisée pour retourner une ID depuis la base de données, correspondant à la
+   * requête SQL donnée prenant en paramètres les objets passés en argument.
+   *
+   * @param daoFactory la dao factory
+   * @param sql la requete sql
+   * @param objets les objets de la requete
+   * @return Le paramètre int
+   */
+  public static int trouverId(DaoFactory daoFactory, String sql, Object... objets) {
+    Connection connexion = null;
+    PreparedStatement preparedStatement = null;
+    ResultSet resultSet = null;
+    try {
+      /* Récupération d'une connexion depuis la Factory */
+      connexion = daoFactory.getConnection();
+      /*
+       * Préparation de la requête avec les objets passés en arguments (ici, uniquement un id) et
+       * exécution.
+       */
+      preparedStatement = initialisationRequetePreparee(connexion, sql, false, objets);
+      resultSet = preparedStatement.executeQuery();
+      /* Parcours de la ligne de données retournée dans le ResultSet */
+      if (resultSet.next()) {
+        return resultSet.getInt("id");
+      }
+    } catch (final SQLException sqle) {
+      throw new DaoException(sqle);
+    } finally {
+      fermeturesSilencieuses(resultSet, preparedStatement, connexion);
+    }
+    return -1;
+  }
+
+}

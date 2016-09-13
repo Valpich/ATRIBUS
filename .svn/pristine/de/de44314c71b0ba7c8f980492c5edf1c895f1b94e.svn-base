@@ -1,0 +1,74 @@
+package fr.eseo.atribus.entities;
+
+import org.joda.time.DateTime;
+
+import java.io.Serializable;
+import java.util.List;
+
+public class Semestre implements Serializable {
+
+  private static final long serialVersionUID = 8244904742770101314L;
+
+  private int id;
+  private Promotion promotion;
+  private List<UniteEnseignement> uniteEnseignement;
+  private int numeroSemestre;
+  private DateTime dateDebut;
+  private DateTime dateFin;
+
+  public int getId() {
+    return this.id;
+  }
+
+  public void setId(int id) {
+    this.id = id;
+  }
+
+  public Promotion getPromotion() {
+    return this.promotion;
+  }
+
+  public List<UniteEnseignement> getUniteEnseignement() {
+    return this.uniteEnseignement;
+  }
+
+  public int getNumeroSemestre() {
+    return this.numeroSemestre;
+  }
+
+  public DateTime getDateDebut() {
+    return this.dateDebut;
+  }
+
+  public DateTime getDateFin() {
+    return this.dateFin;
+  }
+
+  public void setPromotion(Promotion promotion) {
+    this.promotion = promotion;
+  }
+
+  public void setUniteEnseignement(List<UniteEnseignement> uniteEnseignement) {
+    this.uniteEnseignement = uniteEnseignement;
+  }
+
+  public void setNumeroSemestre(int numeroSemestre) {
+    this.numeroSemestre = numeroSemestre;
+  }
+
+  public void setDateDebut(DateTime dateDebut) {
+    this.dateDebut = dateDebut;
+  }
+
+  public void setDateFin(DateTime dateFin) {
+    this.dateFin = dateFin;
+  }
+
+  @Override
+  public String toString() {
+    return "Semestre [promotion=" + this.promotion + ", uniteEnseignement=" + this.uniteEnseignement
+        + ", numeroSemestre=" + this.numeroSemestre + ", dateDebut=" + this.dateDebut + ", dateFin="
+        + this.dateFin;
+  }
+
+}

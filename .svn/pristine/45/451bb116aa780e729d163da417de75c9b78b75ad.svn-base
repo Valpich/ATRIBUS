@@ -1,0 +1,362 @@
+package fr.eseo.atribus.dao;
+
+import fr.eseo.atribus.entities.Competence;
+import fr.eseo.atribus.entities.CompetenceValidable;
+import fr.eseo.atribus.entities.EnseignantRefUe;
+import fr.eseo.atribus.entities.UniteEnseignement;
+
+import org.springframework.beans.factory.access.BeanFactoryReference;
+import org.springframework.beans.factory.access.SingletonBeanFactoryLocator;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+public class UeDaoImpl implements UeDao {
+
+  private final DaoFactory daoFactory;
+
+  private static final String ID_COMPETENCE = "id_competence";
+
+  private static final String SQL_AJOUTER_UE =
+      "INSERT INTO unite_enseignement (nom, nb_credits_ects, nb_heures) VALUES (?, ?, ?)";
+  private static final String SQL_SELECT_PAR_NOM = "SELECT * FROM unite_enseignement WHERE nom =?";
+  private static final String SQL_SELECT_PAR_ID = "SELECT * FROM unite_enseignement WHERE id =?";
+  private static final String SQL_LISTER_UE = "SELECT * FROM unite_enseignement";
+  private static final String SQL_LISTER_ASSOCIATION_COMPETENCE =
+      "SELECT * FROM unite_enseignement_associe_competence";
+  private static final String SQL_DELETE_ASSOCIATION_COMPETENCE =
+      "DELETE FROM unite_enseignement_associe_competence "
+          + "WHERE id_unite_enseignement=? AND id_competence=?;";
+  private static final String SQL_DELETE_ALL_ASSOCIATION_COMPETENCE =
+      "DELETE FROM unite_enseignement_associe_competence "
+          + "WHERE id_unite_enseignement=?;";
+  private static final String SQL_DELETE_UE= "DELETE FROM unite_enseignement WHERE id = ?";
+  private static final String BEANSDAO = "beansDao";
+  private static final String COMPETENCEDAO = "competenceDao";
+
+  UeDaoImpl() {
+    final BeanFactoryReference bf =
+        SingletonBeanFactoryLocator.getInstance().useBeanFactory("contextDao");
+    this.daoFactory = (DaoFactory) bf.getFactory().getBean("daoFactory");
+  }
+
+  /*
+   * Procédure pour ajouter un UE à la BDD
+   */
+  @Override
+  public void ajouterUe(UniteEnseignement ue) {
+    Connection connexion = null;
+    PreparedStatement preparedStatement = null;
+    ResultSet valeursAutoGenerees = null;
+
+    try {
+
+      // Récupération d'une connexion depuis la Factory
+
+      connexion = this.daoFactory.getConnection();
+      preparedStatement = DaoUtilitaire.initialisationRequetePreparee(connexion,
+          UeDaoImpl.SQL_AJOUTER_UE, true, ue.getNom(), ue.getNbCreditsEcts(), ue.getNbHeures());
+
+      final int statut = preparedStatement.executeUpdate();
+
+      // Analyse du statut retourné par la requête d'insertion
+
+      if (statut == 0) {
+        throw new DaoException(
+            "Échec de la création d'une unité d'enseignement, aucune ligne ajoutée dans la table.");
+      }
+
+      // Récupération de l'id auto-généré par la requête d'insertion
+
+      valeursAutoGenerees = preparedStatement.getGeneratedKeys();
+      if (!valeursAutoGenerees.next()) {
+        ue.setId(valeursAutoGenerees.getInt("id"));
+        throw new DaoException("Échec de la création d'une unité d'enseignement en base"
+            + ", aucun ID auto-généré retourné.");
+      }
+    } catch (final SQLException sqle) {
+      throw new DaoException(sqle);
+    } finally {
+      DaoUtilitaire.fermeturesSilencieuses(valeursAutoGenerees, preparedStatement, connexion);
+    }
+  }
+
+  @Override
+  public void supprimerUe(UniteEnseignement ue) {
+    Connection connexion = null;
+    PreparedStatement preparedStatement = null;
+    ResultSet valeursAutoGenerees = null;
+    try(PreparedStatement preparedStatementFk = DaoUtilitaire.initialisationRequetePreparee(connexion,
+        UeDaoImpl.SQL_DELETE_ALL_ASSOCIATION_COMPETENCE, true, ue.getId())) {
+
+      // Récupération d'une connexion depuis la Factory
+
+      connexion = this.daoFactory.getConnection();
+
+      preparedStatementFk.executeUpdate();
+      preparedStatement = DaoUtilitaire.initialisationRequetePreparee(connexion,
+          UeDaoImpl.SQL_DELETE_UE, true, ue.getId());
+
+      final int statut = preparedStatement.executeUpdate();
+
+      // Analyse du statut retourné par la requête d'insertion
+
+      if (statut == 0) {
+        throw new DaoException(
+            "Échec de la suppression d'une unité d'enseignement.");
+      }
+    } catch (final SQLException sqle) {
+      throw new DaoException(sqle);
+    } finally {
+      DaoUtilitaire.fermeturesSilencieuses(valeursAutoGenerees, preparedStatement, connexion);
+    }
+  }
+
+  @Override
+  public UniteEnseignement trouverUeParNom(String nomUe) {
+    return this.trouver(UeDaoImpl.SQL_SELECT_PAR_NOM, nomUe);
+  }
+
+  /*
+   * Méthode générique utilisée pour retourner un UE depuis la base de données, correspondant à la
+   * requête SQL donnée prenant en paramètres les objets passés en argument.
+   */
+  private UniteEnseignement trouver(String sql, Object... objets) {
+    Connection connexion = null;
+    PreparedStatement preparedStatement = null;
+    ResultSet resultSet = null;
+    UniteEnseignement ue = null;
+    try {
+      /* Récupération d'une connexion depuis la Factory */
+      connexion = this.daoFactory.getConnection();
+      /*
+       * Préparation de la requête avec les objets passés en arguments (ici, uniquement un id) et
+       * exécution.
+       */
+      preparedStatement =
+          DaoUtilitaire.initialisationRequetePreparee(connexion, sql, false, objets);
+      resultSet = preparedStatement.executeQuery();
+      /* Parcours de la ligne de données retournée dans le ResultSet */
+      if (resultSet.next()) {
+        ue = this.map(resultSet);
+      }
+    } catch (final SQLException sqle) {
+      throw new DaoException(sqle);
+    } finally {
+      DaoUtilitaire.fermeturesSilencieuses(resultSet, preparedStatement, connexion);
+    }
+    return ue;
+  }
+
+
+  /*
+   * Procédure qui permet d'établir la liste des UE disponibles dans la BDD
+   */
+  @Override
+  public List<UniteEnseignement> listerUe() {
+
+    final ArrayList<UniteEnseignement> listeUe = new ArrayList<>();
+    Connection connexion = null;
+    PreparedStatement preparedStatement = null;
+    ResultSet resultSet = null;
+
+    try {
+      // Récupération d'une connexion depuis la Factory
+      connexion = this.daoFactory.getConnection();
+      preparedStatement = connexion.prepareStatement(UeDaoImpl.SQL_LISTER_UE);
+      resultSet = preparedStatement.executeQuery();
+
+      while (resultSet.next()) {
+        listeUe.add(this.map(resultSet));
+      }
+    } catch (final SQLException sqle) {
+      throw new DaoException(sqle);
+    } finally {
+      DaoUtilitaire.fermeturesSilencieuses(resultSet, preparedStatement, connexion);
+    }
+
+    return listeUe;
+  }
+
+  /*
+   * Simple méthode utilitaire permettant de faire la correspondance (le mapping) entre une ligne
+   * issue de la table des UE (un ResultSet) et un bean UE.
+   */
+  private UniteEnseignement map(ResultSet resultSet) throws SQLException {
+    final UniteEnseignement ue = new UniteEnseignement();
+    ue.setId(resultSet.getInt("id"));
+    ue.setNom(resultSet.getString("nom"));
+    ue.setNbCreditsEcts(resultSet.getInt("nb_credits_ects"));
+    ue.setNbHeures(resultSet.getInt("nb_heures"));
+    final BeanFactoryReference bf =
+        SingletonBeanFactoryLocator.getInstance().useBeanFactory(BEANSDAO);
+    final CompetenceDao competenceDao = (CompetenceDao) bf.getFactory().getBean(COMPETENCEDAO);
+    ue.setCompetences(competenceDao.recupererAssociationCompetenceUe(ue.getId()));
+    final EnseignantRefUeDao erueDao =
+        (EnseignantRefUeDao) bf.getFactory().getBean("enseignantRefUeDao");
+    List<EnseignantRefUe> erues = erueDao.recupererListe();
+    for (EnseignantRefUe erue : erues) {
+      if (erue.getIdEnseignantRefUe() == resultSet.getInt("id_enseignant_ref")) {
+        ue.setEnseignantRefUe(erue);
+      }
+    }
+    return ue;
+  }
+
+  @Override
+  public int trouverIdParNom(String nom) {
+    Connection connexion = null;
+    PreparedStatement preparedStatement = null;
+    ResultSet resultSet = null;
+    int id = -1;
+    try {
+      /* Récupération d'une connexion depuis la Factory */
+      connexion = this.daoFactory.getConnection();
+      /*
+       * Préparation de la requête avec les objets passés en arguments (ici, uniquement un id) et
+       * exécution.
+       */
+      preparedStatement =
+          DaoUtilitaire.initialisationRequetePreparee(connexion, SQL_SELECT_PAR_NOM, false, nom);
+      resultSet = preparedStatement.executeQuery();
+      /* Parcours de la ligne de données retournée dans le ResultSet */
+      if (resultSet.next()) {
+        id = resultSet.getInt("id");
+      }
+    } catch (final SQLException sqle) {
+      throw new DaoException(sqle);
+    } finally {
+      DaoUtilitaire.fermeturesSilencieuses(resultSet, preparedStatement, connexion);
+    }
+    return id;
+  }
+
+  /**
+   * Méthode qui va renvoyer un UE en fonction de son ID.
+   */
+  @Override
+  public UniteEnseignement trouverUeParId(int idUe) {
+
+    Connection connexion = null;
+    PreparedStatement preparedStatement = null;
+    ResultSet resultSet = null;
+    UniteEnseignement ue;
+
+    try {
+      connexion = this.daoFactory.getConnection();
+      preparedStatement =
+          DaoUtilitaire.initialisationRequetePreparee(connexion, SQL_SELECT_PAR_ID, false, idUe);
+      resultSet = preparedStatement.executeQuery();
+
+      ue = new UniteEnseignement();
+
+      while (resultSet.next()) {
+        ue = this.map(resultSet);
+      }
+    } catch (final SQLException sqle) {
+      throw new DaoException(sqle);
+    } finally {
+      DaoUtilitaire.fermeturesSilencieuses(resultSet, preparedStatement, connexion);
+    }
+    return ue;
+  }
+
+  /*
+   * Procédure qui permet d'établir la liste des UE disponibles dans la BDD
+   */
+  @Override
+  public List<UniteEnseignement> listerUeAssociationCompetenceUe() {
+
+    List<UniteEnseignement> listeUe = new ArrayList<>();
+    Connection connexion = null;
+    PreparedStatement preparedStatement = null;
+    ResultSet resultSet = null;
+    UniteEnseignement ue;
+    Map<Long, CompetenceValidable> competences;
+
+    try {
+
+      connexion = this.daoFactory.getConnection();
+      preparedStatement = connexion.prepareStatement(UeDaoImpl.SQL_LISTER_ASSOCIATION_COMPETENCE);
+      resultSet = preparedStatement.executeQuery();
+
+      while (resultSet.next()) {
+
+        final int idUe = resultSet.getInt("id_unite_enseignement");
+        final long idCompetence = resultSet.getLong(ID_COMPETENCE);
+        final int niveau = resultSet.getInt("niveau");
+        final BeanFactoryReference bf =
+            SingletonBeanFactoryLocator.getInstance().useBeanFactory(BEANSDAO);
+        final CompetenceDao competenceDao = (CompetenceDao) bf.getFactory().getBean(COMPETENCEDAO);
+
+        competences = new HashMap<>();
+        Competence comp = new Competence();
+        ue = new UniteEnseignement();
+
+        comp = competenceDao.trouverParId(resultSet.getInt(ID_COMPETENCE));
+        comp.setNiveau(niveau);
+        competences.put(idCompetence, new CompetenceValidable(comp));
+
+        ue = this.trouverUeParId(idUe);
+        ue.setCompetences(competences);
+
+        listeUe.add(ue);
+
+      }
+    } catch (final SQLException sqle) {
+      throw new DaoException(sqle);
+    } finally {
+      DaoUtilitaire.fermeturesSilencieuses(resultSet, preparedStatement, connexion);
+    }
+
+    return listeUe;
+  }
+
+  /**
+   * Méthode pour supprimer une association en BDD.
+   */
+  @Override
+  public void supprimerAssociationCompetenceUe(String nomUe, String nomCompetence) {
+    Connection connexion = null;
+    PreparedStatement preparedStatement = null;
+    ResultSet resultSet = null;
+    int idUe;
+    int idCompetence;
+    int statut;
+
+    try {
+
+      final BeanFactoryReference bf =
+          SingletonBeanFactoryLocator.getInstance().useBeanFactory(BEANSDAO);
+      final CompetenceDao competenceDao = (CompetenceDao) bf.getFactory().getBean(COMPETENCEDAO);
+
+      idUe = this.trouverIdParNom(nomUe);
+      idCompetence = competenceDao.trouverIdParNom(nomCompetence);
+
+      connexion = this.daoFactory.getConnection();
+      preparedStatement = DaoUtilitaire.initialisationRequetePreparee(connexion,
+          UeDaoImpl.SQL_DELETE_ASSOCIATION_COMPETENCE, false, idUe, idCompetence);
+      statut = preparedStatement.executeUpdate();
+
+      if (statut == 0) {
+        throw new DaoException(
+            "Échec de la suppresion de l'association, aucune ligne supprimée dans la table.");
+      }
+
+    } catch (final SQLException sqle) {
+      throw new DaoException(sqle);
+    } finally {
+      DaoUtilitaire.fermeturesSilencieuses(resultSet, preparedStatement, connexion);
+    }
+
+  }
+
+}
+
+

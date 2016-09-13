@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>AddUserForm.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Atribus</a> &gt; <a href="index.source.html" class="el_package">fr.eseo.atribus.forms</a> &gt; <span class="el_source">AddUserForm.java</span></div><h1>AddUserForm.java</h1><pre class="source lang-java linenums">package fr.eseo.atribus.forms;
+
+import fr.eseo.atribus.beans.PasswordStorage;
+import fr.eseo.atribus.dao.AdminSystDao;
+import fr.eseo.atribus.dao.DaoException;
+import fr.eseo.atribus.dao.DirecteurEtudesDao;
+import fr.eseo.atribus.dao.DirecteurProgrammesDao;
+import fr.eseo.atribus.dao.EleveDao;
+import fr.eseo.atribus.dao.EnseignantDao;
+import fr.eseo.atribus.dao.UtilisateurDao;
+import fr.eseo.atribus.entities.AdminSyst;
+import fr.eseo.atribus.entities.DirecteurEtudes;
+import fr.eseo.atribus.entities.DirecteurProgrammes;
+import fr.eseo.atribus.entities.Eleve;
+import fr.eseo.atribus.entities.Enseignant;
+import fr.eseo.atribus.entities.EnseignantRefMatiere;
+import fr.eseo.atribus.entities.EnseignantRefUe;
+import fr.eseo.atribus.entities.Utilisateur;
+
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.servlet.http.HttpServletRequest;
+
+public class AddUserForm extends UtilisateurForm {
+<span class="nc" id="L27">  private static final Logger LOGGER = Logger.getLogger(AddUserForm.class.getName());</span>
+
+  public AddUserForm() {
+<span class="nc" id="L30">    super();</span>
+<span class="nc" id="L31">  }</span>
+
+  public String getResultat() {
+<span class="nc" id="L34">    return this.resultat;</span>
+  }
+
+  public Map&lt;String, String&gt; getErreurs() {
+<span class="nc" id="L38">    return this.erreurs;</span>
+  }
+
+  public Utilisateur addUser(HttpServletRequest request) {
+<span class="nc" id="L42">    final String login = UtilisateurForm.getValeurChamp(request, UtilisateurForm.CHAMP_LOGIN);</span>
+<span class="nc" id="L43">    final String password = UtilisateurForm.getValeurChamp(request, UtilisateurForm.CHAMP_PASS);</span>
+<span class="nc" id="L44">    final String nom = UtilisateurForm.getValeurChamp(request, UtilisateurForm.CHAMP_NOM);</span>
+<span class="nc" id="L45">    final String prenom = UtilisateurForm.getValeurChamp(request, UtilisateurForm.CHAMP_PRENOM);</span>
+<span class="nc" id="L46">    final String email = UtilisateurForm.getValeurChamp(request, UtilisateurForm.CHAMP_EMAIL);</span>
+<span class="nc" id="L47">    final String cbAdminSyst = UtilisateurForm.getValeurChamp(request, UtilisateurForm.CB_AS);</span>
+<span class="nc" id="L48">    final String cbDirecteurEtudes = UtilisateurForm.getValeurChamp(request, UtilisateurForm.CB_DE);</span>
+<span class="nc" id="L49">    final String cbDirecteurProgrammes =</span>
+<span class="nc" id="L50">        UtilisateurForm.getValeurChamp(request, UtilisateurForm.CB_DP);</span>
+<span class="nc" id="L51">    final String cbEnseignant = UtilisateurForm.getValeurChamp(request, UtilisateurForm.CB_EN);</span>
+<span class="nc" id="L52">    final String cbEnseignantRefUe = ModifierUtilisateurForm.getValeurChamp(request, UtilisateurForm.CB_EURE); </span>
+<span class="nc" id="L53">    final String cbEnseignantRefMat = ModifierUtilisateurForm.getValeurChamp(request, UtilisateurForm.CB_ERM);</span>
+<span class="nc" id="L54">    final String cbEleve = UtilisateurForm.getValeurChamp(request, UtilisateurForm.CB_EL);</span>
+    
+
+
+<span class="nc" id="L58">    Utilisateur utilisateur = new Utilisateur();</span>
+
+    try {
+<span class="nc" id="L61">      this.traiterLogin(login, utilisateur);</span>
+<span class="nc" id="L62">      this.traiterPassword(password, utilisateur);</span>
+<span class="nc" id="L63">      this.traiterNom(nom, utilisateur);</span>
+<span class="nc" id="L64">      this.traiterPrenom(prenom, utilisateur);</span>
+<span class="nc" id="L65">      this.traiterEmail(email, utilisateur);</span>
+<span class="nc bnc" id="L66" title="All 2 branches missed.">      if (this.erreurs.isEmpty()) {</span>
+
+<span class="nc" id="L68">        utilisateur = this.utilisateurDao.ajouter(utilisateur);</span>
+
+<span class="nc bnc" id="L70" title="All 2 branches missed.">        if (cbAdminSyst != null) { // AS checké</span>
+<span class="nc" id="L71">          final AdminSyst adminSyst = new AdminSyst(utilisateur);</span>
+<span class="nc" id="L72">          this.adminSystDao.ajouter(adminSyst);</span>
+        }
+
+<span class="nc bnc" id="L75" title="All 2 branches missed.">        if (cbDirecteurEtudes != null) { // DE checké</span>
+<span class="nc" id="L76">          final DirecteurEtudes directeurEtudes = new DirecteurEtudes(utilisateur);</span>
+<span class="nc" id="L77">          this.directeurEtudesDao.ajouter(directeurEtudes);</span>
+        }
+
+<span class="nc bnc" id="L80" title="All 2 branches missed.">        if (cbDirecteurProgrammes != null) { // DP checké</span>
+<span class="nc" id="L81">          final DirecteurProgrammes directeurProgrammes = new DirecteurProgrammes(utilisateur);</span>
+<span class="nc" id="L82">          this.directeurProgrammesDao.ajouter(directeurProgrammes);</span>
+        }
+
+<span class="nc bnc" id="L85" title="All 2 branches missed.">        if (cbEnseignant != null) { // EN checké</span>
+<span class="nc" id="L86">          final Enseignant enseignant = new Enseignant(utilisateur);</span>
+<span class="nc" id="L87">          this.enseignantDao.ajouter(enseignant);</span>
+          
+          /** TODO : compléter / refactoriser**/
+<span class="nc bnc" id="L90" title="All 2 branches missed.">          if (cbEnseignantRefUe != null) { // EN checké</span>
+<span class="nc" id="L91">            final EnseignantRefUe enseignantRefUe = new EnseignantRefUe(utilisateur);</span>
+<span class="nc" id="L92">            this.enseignantRefUeDao.ajouter(enseignantRefUe);</span>
+          }
+          
+<span class="nc bnc" id="L95" title="All 2 branches missed.">          if (cbEnseignantRefMat != null) { // EN checké</span>
+<span class="nc" id="L96">            final EnseignantRefMatiere enseignantRefMat = new EnseignantRefMatiere(utilisateur);</span>
+<span class="nc" id="L97">            this.enseignantRefMatiereDao.ajouter(enseignantRefMat);</span>
+          }
+          
+        } 
+        
+
+
+<span class="nc bnc" id="L104" title="All 2 branches missed.">        if (cbEleve != null) { // EN checké</span>
+<span class="nc" id="L105">          final Eleve eleve = new Eleve(utilisateur);</span>
+
+
+<span class="nc" id="L108">          this.eleveDao.ajouter(eleve);</span>
+        }
+
+
+
+<span class="nc" id="L113">        this.resultat = &quot;Succès de l'inscription.&quot;;</span>
+      } else {
+<span class="nc" id="L115">        this.resultat = &quot;Échec de l'inscription.&quot;;</span>
+      }
+<span class="nc" id="L117">    } catch (final DaoException bdde) {</span>
+<span class="nc" id="L118">      AddUserForm.LOGGER.log(Level.INFO, &quot;Exception&quot;, bdde);</span>
+<span class="nc" id="L119">      this.resultat = &quot;Échec de l'inscription : une erreur imprévue est survenue,&quot;</span>
+          + &quot; merci de réessayer dans quelques instants.&quot;;
+<span class="nc" id="L121">    }</span>
+
+<span class="nc" id="L123">    return utilisateur;</span>
+  }
+
+  private void traiterLogin(String login, Utilisateur utilisateur) {
+    try {
+<span class="nc" id="L128">      this.validationLogin(login);</span>
+<span class="nc" id="L129">    } catch (final FormValidationException fve) {</span>
+<span class="nc" id="L130">      AddUserForm.LOGGER.log(Level.INFO, EXCEPTION, fve);</span>
+<span class="nc" id="L131">      this.setErreur(UtilisateurForm.CHAMP_LOGIN, fve.getMessage());</span>
+<span class="nc" id="L132">    }</span>
+<span class="nc" id="L133">    utilisateur.setLogin(login);</span>
+<span class="nc" id="L134">  }</span>
+
+  private void traiterPassword(String password, Utilisateur utilisateur) {
+    try {
+      String passwordHash;
+<span class="nc" id="L139">      this.validationPassword(password);</span>
+<span class="nc" id="L140">      passwordHash = PasswordStorage.createHash(password);</span>
+<span class="nc" id="L141">      utilisateur.setPassword(passwordHash);</span>
+<span class="nc" id="L142">    } catch (final FormValidationException fve) {</span>
+<span class="nc" id="L143">      AddUserForm.LOGGER.log(Level.INFO, EXCEPTION, fve);</span>
+<span class="nc" id="L144">      this.setErreur(UtilisateurForm.CHAMP_PASS, fve.getMessage());</span>
+<span class="nc" id="L145">    } catch (final Exception exc) {</span>
+<span class="nc" id="L146">      AddUserForm.LOGGER.log(Level.INFO, EXCEPTION, exc);</span>
+<span class="nc" id="L147">      this.setErreur(UtilisateurForm.CHAMP_PASS, &quot;Impossible de générer le hash du mot de passe.&quot;);</span>
+<span class="nc" id="L148">    }</span>
+<span class="nc" id="L149">  }</span>
+
+  private void traiterNom(String nom, Utilisateur utilisateur) {
+<span class="nc" id="L152">    utilisateur.setNom(nom);</span>
+<span class="nc" id="L153">  }</span>
+
+  private void traiterPrenom(String prenom, Utilisateur utilisateur) {
+<span class="nc" id="L156">    utilisateur.setPrenom(prenom);</span>
+<span class="nc" id="L157">  }</span>
+
+  private void traiterEmail(String email, Utilisateur utilisateur) {
+    try {
+<span class="nc" id="L161">      this.validationEmail(email);</span>
+<span class="nc" id="L162">      utilisateur.setEmail(email);</span>
+<span class="nc" id="L163">    } catch (final Exception exc) {</span>
+<span class="nc" id="L164">      AddUserForm.LOGGER.log(Level.INFO, EXCEPTION, exc);</span>
+<span class="nc" id="L165">      this.setErreur(UtilisateurForm.CHAMP_EMAIL, exc.getMessage());</span>
+<span class="nc" id="L166">    }</span>
+<span class="nc" id="L167">  }</span>
+
+
+  private void validationLogin(String login) throws FormValidationException {
+<span class="nc bnc" id="L171" title="All 4 branches missed.">    if (login == null || login.length() &lt; 5) {</span>
+<span class="nc" id="L172">      throw new FormValidationException(</span>
+          &quot;Le nom d'utilisateur doit contenir au moins 5 caractères.&quot;);
+<span class="nc bnc" id="L174" title="All 2 branches missed.">    } else if (this.utilisateurDao.trouverParLogin(login) != null) {</span>
+<span class="nc" id="L175">      throw new FormValidationException(</span>
+          &quot;Ce login est déjà utilisée, merci d'en choisir une autre.&quot;);
+    }
+<span class="nc" id="L178">  }</span>
+
+  private void validationPassword(String password) throws FormValidationException {
+<span class="nc bnc" id="L181" title="All 2 branches missed.">    if (password != null) {</span>
+<span class="nc bnc" id="L182" title="All 2 branches missed.">      if (password.length() &lt; 5) {</span>
+<span class="nc" id="L183">        throw new FormValidationException(</span>
+            &quot;Les mots de passe doivent contenir au moins 5 caractères.&quot;);
+      }
+    } else {
+<span class="nc" id="L187">      throw new FormValidationException(&quot;Merci de saisir un mot de passe.&quot;);</span>
+    }
+<span class="nc" id="L189">  }</span>
+
+  private void validationEmail(String email) throws FormValidationException {
+<span class="nc bnc" id="L192" title="All 2 branches missed.">    if (email == null) {</span>
+<span class="nc" id="L193">      throw new FormValidationException(&quot;Merci de saisir une adresse mail.&quot;);</span>
+    }
+<span class="nc bnc" id="L195" title="All 2 branches missed.">    if (!email.matches(&quot;([^.@]+)(\\.[^.@]+)*@([^.@]+\\.)+([^.@]+)&quot;)) {</span>
+<span class="nc" id="L196">      throw new FormValidationException(&quot;Merci de saisir une adresse mail valide.&quot;);</span>
+    }
+<span class="nc" id="L198">  }</span>
+
+  public UtilisateurDao getUtilisateurBdd() {
+<span class="nc" id="L201">    return this.utilisateurDao;</span>
+  }
+
+  public AdminSystDao getAdminSystBdd() {
+<span class="nc" id="L205">    return this.adminSystDao;</span>
+  }
+
+  public DirecteurEtudesDao getDirecteurEtudesBdd() {
+<span class="nc" id="L209">    return this.directeurEtudesDao;</span>
+  }
+
+  public DirecteurProgrammesDao getDirecteurProgrammesBdd() {
+<span class="nc" id="L213">    return this.directeurProgrammesDao;</span>
+  }
+
+  public EnseignantDao getEnseignantBdd() {
+<span class="nc" id="L217">    return this.enseignantDao;</span>
+  }
+
+  public EleveDao getEleveBdd() {
+<span class="nc" id="L221">    return this.eleveDao;</span>
+  }
+
+  public void setResultat(String resultat) {
+<span class="nc" id="L225">    this.resultat = resultat;</span>
+<span class="nc" id="L226">  }</span>
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.6.201602180812</span></div></body></html>

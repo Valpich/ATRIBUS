@@ -1,0 +1,96 @@
+<suite name="Atribus Test Suite">
+	<test name="tests">
+		<classes>
+		
+			<class name="fr.eseo.atribus.beans.ArbreCompetenceTest" />
+			<class name="fr.eseo.atribus.beans.LogsConnexionTest" />
+			<class name="fr.eseo.atribus.beans.ExporteurCsvTest" />
+			<class name="fr.eseo.atribus.beans.MessagesParDefautTest" />
+			<class name="fr.eseo.atribus.beans.MailTest" />
+			<class name="fr.eseo.atribus.beans.PasswordStorageTest" />
+
+
+			<class name="fr.eseo.atribus.filters.FiltreAdminSystTest" />
+			<class name="fr.eseo.atribus.filters.FiltreDirecteurEtudesTest" />
+			<class name="fr.eseo.atribus.filters.FiltreDirecteurProgrammesTest" />
+			<class name="fr.eseo.atribus.filters.FiltreEleveTest" />
+			<class name="fr.eseo.atribus.filters.FiltreEnseignantRefMatiereTest" />
+			<class name="fr.eseo.atribus.filters.FiltreEnseignantRefUETest" />
+			<class name="fr.eseo.atribus.filters.FiltreEnseignantTest" />
+			<class name="fr.eseo.atribus.filters.FiltreErreurRequeteTest" />
+			<class name="fr.eseo.atribus.filters.FiltreLimiteurRequeteApplicationTest" />
+			<class name="fr.eseo.atribus.filters.FiltreLimiteurRequeteUtilisateurTest" />
+			<class name="fr.eseo.atribus.filters.FiltreUtilisateurTest" />
+
+			<class name="fr.eseo.atribus.entities.AdminSystTest" />
+			<class name="fr.eseo.atribus.entities.CompetenceTest" />
+			<class name="fr.eseo.atribus.entities.DirecteurEtudesTest" />
+			<class name="fr.eseo.atribus.entities.DirecteurProgrammesTest" />
+			<class name="fr.eseo.atribus.entities.EleveTest" />
+			<class name="fr.eseo.atribus.entities.EnseignantTest" />
+			<class name="fr.eseo.atribus.entities.ExamenTest" />
+			<class name="fr.eseo.atribus.entities.ExerciceTest" />
+			<class name="fr.eseo.atribus.entities.MatiereTest" />
+			<class name="fr.eseo.atribus.entities.PromotionTest" />
+			<class name="fr.eseo.atribus.entities.RessourceTest" />
+			<class name="fr.eseo.atribus.entities.NotificationTest" />
+			<class name="fr.eseo.atribus.entities.SemestreTest" />
+			<class name="fr.eseo.atribus.entities.UETest" />
+			<class name="fr.eseo.atribus.entities.UtilisateurTest" />
+			<class name="fr.eseo.atribus.entities.EvaluationTest" />
+			<class name="fr.eseo.atribus.entities.UtilisateurLdapTest" />
+			<class name="fr.eseo.atribus.entities.EnseignantRefUeTest" />
+			<class name="fr.eseo.atribus.entities.EnseignantRefMatiereTest" />
+
+			<class name="fr.eseo.atribus.dao.CompetenceDaoImplTest" />
+			<class name="fr.eseo.atribus.dao.RessourceDaoImplTest" />
+			<class name="fr.eseo.atribus.dao.UtilisateurDaoImplTest" />
+			<class name="fr.eseo.atribus.dao.ExerciceDaoImplTest" />
+			<class name="fr.eseo.atribus.dao.ExamenDaoImplTest" />
+			<class name="fr.eseo.atribus.dao.DaoConfigurationExceptionTest" />
+			<class name="fr.eseo.atribus.dao.EvaluationDaoImplTest" />
+			<class name="fr.eseo.atribus.dao.SemestreDaoImplTest" />
+			<class name="fr.eseo.atribus.dao.EnseignantDaoImplTest" />
+			<class name="fr.eseo.atribus.dao.MatiereDaoImplTest" />
+			<class name="fr.eseo.atribus.dao.UeDaoImplTest" />
+
+			<class name="fr.eseo.atribus.forms.AddExerciceFormTest" />
+			<class name="fr.eseo.atribus.forms.ModifierExerciceFormTest" />
+			<class name="fr.eseo.atribus.forms.ConnexionFormTest" />
+			<class name="fr.eseo.atribus.forms.AddUserFormTest" />
+			<class name="fr.eseo.atribus.forms.AddCompetenceFormTest" />
+			<class name="fr.eseo.atribus.forms.AddUeFormTest" />
+			<class name="fr.eseo.atribus.forms.AssocierCompetenceUeFormTest" />
+			<class name="fr.eseo.atribus.forms.AddExamenFormTest" />
+			<class name="fr.eseo.atribus.forms.AddMatiereFormTest" />
+			<class name="fr.eseo.atribus.forms.AddRessourceFormTest" />
+			<class name="fr.eseo.atribus.forms.RepondreExamenFormTest" />
+			<class name="fr.eseo.atribus.forms.ModifierUtilisateurFormTest" />
+			<class name="fr.eseo.atribus.forms.ModifierCompetenceFormTest" />
+			<class name="fr.eseo.atribus.forms.SupprimerUtilisateurFormTest" />
+			<class name="fr.eseo.atribus.forms.ModifierUeFormTest" />
+			<class name="fr.eseo.atribus.forms.MailFormTest" />
+			<class name="fr.eseo.atribus.forms.ExamenFormTest" />
+			<!-- <class name="fr.eseo.atribus.forms.ModifierExamenFormTest" /> -->
+
+			<class name="fr.eseo.atribus.controller.CompetencesControllerTest" />
+			<class name="fr.eseo.atribus.controller.ExamenControllerTest" />
+			<class name="fr.eseo.atribus.controller.ExerciceControllerTest" />
+			<class name="fr.eseo.atribus.controller.IndexControllerTest" />
+			<class name="fr.eseo.atribus.controller.LdapControlleurTest" />
+			<class name="fr.eseo.atribus.controller.LogsControllerTest" />
+			<class name="fr.eseo.atribus.controller.MailControllerTest" />
+			
+			<class name="fr.eseo.atribus.controller.NotificationControllerTest" />
+			<class name="fr.eseo.atribus.controller.MatiereControllerTest" />
+			<class name="fr.eseo.atribus.controller.RessourceControllerTest" />
+			<class name="fr.eseo.atribus.controller.SimulerControllerTest" />
+			<class name="fr.eseo.atribus.controller.UeControllerTest" />
+			<class name="fr.eseo.atribus.controller.UtilisateurControllerTest" />
+
+			<class name="fr.eseo.atribus.timers.NotificationUpdaterTest" />
+			<class name="fr.eseo.atribus.timers.TimerConversionNotificationEnMailTest" />
+
+		</classes>
+	</test> <!-- tests -->
+</suite>

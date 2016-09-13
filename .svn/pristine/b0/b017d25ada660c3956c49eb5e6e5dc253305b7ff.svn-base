@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testng-results skipped="0" failed="0" total="11" passed="11">
+  <reporter-output>
+  </reporter-output>
+  <suite name="Default suite" duration-ms="8389" started-at="2016-05-28T15:45:12Z" finished-at="2016-05-28T15:45:21Z">
+    <groups>
+    </groups>
+    <test name="Default test" duration-ms="8389" started-at="2016-05-28T15:45:12Z" finished-at="2016-05-28T15:45:21Z">
+      <class name="fr.eseo.atribus.controller.UtilisateurControllerTest">
+        <test-method status="PASS" signature="setup()[pri:0, instance:fr.eseo.atribus.controller.UtilisateurControllerTest@24db6ce]" name="setup" is-config="true" duration-ms="2555" started-at="2016-05-28T17:45:12Z" finished-at="2016-05-28T17:45:15Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- setup -->
+        <test-method status="PASS" signature="afficherContactAdmin()[pri:0, instance:fr.eseo.atribus.controller.UtilisateurControllerTest@24db6ce]" name="afficherContactAdmin" duration-ms="378" started-at="2016-05-28T17:45:15Z" finished-at="2016-05-28T17:45:15Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- afficherContactAdmin -->
+        <test-method status="PASS" signature="afficherMonProfil()[pri:0, instance:fr.eseo.atribus.controller.UtilisateurControllerTest@24db6ce]" name="afficherMonProfil" duration-ms="2939" started-at="2016-05-28T17:45:15Z" finished-at="2016-05-28T17:45:18Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- afficherMonProfil -->
+        <test-method status="PASS" signature="contactAdmin()[pri:0, instance:fr.eseo.atribus.controller.UtilisateurControllerTest@24db6ce]" name="contactAdmin" duration-ms="96" started-at="2016-05-28T17:45:18Z" finished-at="2016-05-28T17:45:18Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- contactAdmin -->
+        <test-method status="PASS" signature="contactAdminConnecte()[pri:0, instance:fr.eseo.atribus.controller.UtilisateurControllerTest@24db6ce]" name="contactAdminConnecte" duration-ms="31" started-at="2016-05-28T17:45:18Z" finished-at="2016-05-28T17:45:18Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- contactAdminConnecte -->
+        <test-method status="PASS" signature="modifierMonProfil()[pri:0, instance:fr.eseo.atribus.controller.UtilisateurControllerTest@24db6ce]" name="modifierMonProfil" duration-ms="175" started-at="2016-05-28T17:45:18Z" finished-at="2016-05-28T17:45:19Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- modifierMonProfil -->
+        <test-method status="PASS" signature="testAjouterUtilisateur()[pri:0, instance:fr.eseo.atribus.controller.UtilisateurControllerTest@24db6ce]" name="testAjouterUtilisateur" duration-ms="562" started-at="2016-05-28T17:45:19Z" finished-at="2016-05-28T17:45:19Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- testAjouterUtilisateur -->
+        <test-method status="PASS" signature="testConnexion()[pri:0, instance:fr.eseo.atribus.controller.UtilisateurControllerTest@24db6ce]" name="testConnexion" duration-ms="3" started-at="2016-05-28T17:45:19Z" finished-at="2016-05-28T17:45:19Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- testConnexion -->
+        <test-method status="PASS" signature="testDeconnexion()[pri:0, instance:fr.eseo.atribus.controller.UtilisateurControllerTest@24db6ce]" name="testDeconnexion" duration-ms="6" started-at="2016-05-28T17:45:19Z" finished-at="2016-05-28T17:45:19Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- testDeconnexion -->
+        <test-method status="PASS" signature="testGestionUtilisateur()[pri:0, instance:fr.eseo.atribus.controller.UtilisateurControllerTest@24db6ce]" name="testGestionUtilisateur" duration-ms="114" started-at="2016-05-28T17:45:19Z" finished-at="2016-05-28T17:45:19Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- testGestionUtilisateur -->
+        <test-method status="PASS" signature="testTenterConnexion()[pri:0, instance:fr.eseo.atribus.controller.UtilisateurControllerTest@24db6ce]" name="testTenterConnexion" duration-ms="972" started-at="2016-05-28T17:45:19Z" finished-at="2016-05-28T17:45:20Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- testTenterConnexion -->
+        <test-method status="PASS" signature="testTenterMauvaiseConnexion()[pri:0, instance:fr.eseo.atribus.controller.UtilisateurControllerTest@24db6ce]" name="testTenterMauvaiseConnexion" duration-ms="490" started-at="2016-05-28T17:45:20Z" finished-at="2016-05-28T17:45:21Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- testTenterMauvaiseConnexion -->
+      </class> <!-- fr.eseo.atribus.controller.UtilisateurControllerTest -->
+    </test> <!-- Default test -->
+  </suite> <!-- Default suite -->
+</testng-results>

@@ -1,0 +1,81 @@
+package fr.eseo.atribus.entities;
+
+import static org.testng.Assert.assertEquals;
+
+import fr.eseo.atribus.entities.Promotion;
+import fr.eseo.atribus.entities.Semestre;
+import fr.eseo.atribus.entities.UniteEnseignement;
+
+import org.joda.time.DateTime;
+import org.testng.annotations.Test;
+
+import java.util.List;
+
+public class SemestreTest {
+  
+  Semestre semestre = new Semestre();
+  Promotion promotion;
+  List<UniteEnseignement> ue;
+  int numeroSemestre = 1;
+  DateTime dateDebut = new DateTime(2016, 01, 01, 12, 00);
+  DateTime dateFin = new DateTime(2016, 02, 01, 12, 00);
+  
+  @Test
+  public void getDateDebut() {
+    semestre.setDateDebut(dateDebut);
+    assertEquals(semestre.getDateDebut(), dateDebut);
+  }
+
+  @Test
+  public void getDateFin() {
+    semestre.setDateFin(dateFin);
+    assertEquals(semestre.getDateFin(), dateFin);
+  }
+
+  @Test
+  public void getNumeroSemestre() {
+    semestre.setNumeroSemestre(numeroSemestre);
+    assertEquals(semestre.getNumeroSemestre(), numeroSemestre);
+  }
+
+  @Test
+  public void getPromotion() {
+    semestre.setPromotion(promotion);
+    assertEquals(semestre.getPromotion(), promotion);
+  }
+
+  @Test
+  public void getUniteEnseignement() {
+    semestre.setUniteEnseignement(ue);
+    assertEquals(semestre.getUniteEnseignement(), ue);
+  }
+  
+  @Test
+  public void getIdSemestre() {
+    semestre.setId(numeroSemestre);
+    assertEquals(semestre.getId(), numeroSemestre);
+  }
+  
+  @Test
+  public void setIdSemestre() {
+    semestre.setId(numeroSemestre);
+    assertEquals(semestre.getId(), numeroSemestre);
+  }
+  
+  
+
+  @Test
+  public void testtoString() {
+    
+    String string =
+        "Semestre [promotion=null, uniteEnseignement=null, numeroSemestre=0, "
+        + "dateDebut=null, dateFin=null";
+        
+    semestre = new Semestre();
+   
+    
+    assertEquals(semestre.toString(), string);
+  }
+  
+  
+}

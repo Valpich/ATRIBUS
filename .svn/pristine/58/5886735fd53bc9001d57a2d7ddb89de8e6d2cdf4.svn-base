@@ -1,0 +1,277 @@
+package fr.eseo.atribus.forms;
+
+import fr.eseo.atribus.dao.CompetenceDao;
+import fr.eseo.atribus.dao.DaoException;
+import fr.eseo.atribus.entities.Competence;
+
+import org.springframework.beans.factory.access.BeanFactoryReference;
+import org.springframework.beans.factory.access.SingletonBeanFactoryLocator;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.servlet.http.HttpServletRequest;
+
+/**
+ * La classe AddCompetenceForm.
+ */
+public class AddCompetenceForm {
+
+  /** La constante LOGGER. */
+  private static final Logger LOGGER = Logger.getLogger(AddCompetenceForm.class.getName());
+
+  /** La constante EXCEPTION. */
+  private static final String EXCEPTION = "Exception";
+
+  /** La constante CHAMP_NOM. */
+  private static final String CHAMP_NOM = "nomCompetence";
+
+  /** La constante CHAMP_PARENT_ID. */
+  private static final String CHAMP_PARENT_ID = "parentId";
+
+  /** La constante CHAMP_PROFONDEUR. */
+  private static final String CHAMP_PROFONDEUR = "profondeur";
+
+  /** La variable erreurs. */
+  private final Map<String, String> erreurs = new HashMap<>();
+
+  /** La variable resultat. */
+  private String resultat;
+
+  /** La variable competence dao. */
+  private final CompetenceDao competenceDao;
+
+  /**
+   * Instantiation de la classe AddCompetenceForm.
+   */
+  public AddCompetenceForm() {
+    final BeanFactoryReference bf =
+        SingletonBeanFactoryLocator.getInstance().useBeanFactory("beansDao");
+    /* Récupération d'une instance de notre DAO Competence */
+    this.competenceDao = (CompetenceDao) bf.getFactory().getBean("competenceDao");
+  }
+
+  /**
+   * Accesseur en lecture sur le paramètre erreurs.
+   *
+   * @return le paramètre erreurs
+   */
+  public Map<String, String> getErreurs() {
+    return this.erreurs;
+  }
+
+  /**
+   * Ajoute une erreur.
+   *
+   * @param champ le champ
+   * @param message le message
+   */
+  private void setErreur(String champ, String message) {
+    this.erreurs.put(champ, message);
+  }
+
+  /**
+   * Accesseur en écriture sur le paramètre resultat.
+   *
+   * @param resultat le nouveau paramètre resultat
+   */
+  private void setResultat(String resultat) {
+    this.resultat = resultat;
+  }
+
+  /**
+   * Méthode qui permet l'ajout d'une compétence via un formulaire dans la BDD.
+   *
+   * @param request la requête
+   * @return Le paramètre competence
+   */
+  public Competence ajouterCompetence(HttpServletRequest request) {
+
+    final String nomChamp = AddCompetenceForm.getValeurChamp(request, AddCompetenceForm.CHAMP_NOM);
+    final String parentIdChamp =
+        AddCompetenceForm.getValeurChamp(request, AddCompetenceForm.CHAMP_PARENT_ID);
+    final String profondeurChamp =
+        AddCompetenceForm.getValeurChamp(request, AddCompetenceForm.CHAMP_PROFONDEUR);
+    final Competence competence = new Competence();
+
+    try {
+
+      this.traiterLesChamps(nomChamp, parentIdChamp, profondeurChamp);
+
+      if (this.erreurs.isEmpty()) {
+
+        competence.setNom(nomChamp);
+        competence.setIdParent(Integer.parseInt(parentIdChamp));
+        competence.setProfondeur(Integer.parseInt(profondeurChamp));
+        this.competenceDao.ajouterCompetence(competence);
+        this.setResultat("success");
+
+      } else {
+        this.setResultat("echec");
+      }
+
+    } catch (final DaoException daoEx) {
+      this.setResultat("echecDao");
+      AddCompetenceForm.LOGGER.log(Level.INFO, EXCEPTION, daoEx);
+    }
+
+    return competence;
+
+  }
+
+  /**
+   * Modifie une compétence.
+   * 
+   * @param request la requete.
+   * @return la compétence modifiée
+   */
+  public Competence modifierCompetence(HttpServletRequest request) {
+
+    final String nomChamp = AddCompetenceForm.getValeurChamp(request, AddCompetenceForm.CHAMP_NOM);
+    final String parentIdChamp =
+        AddCompetenceForm.getValeurChamp(request, AddCompetenceForm.CHAMP_PARENT_ID);
+    final String profondeurChamp =
+        AddCompetenceForm.getValeurChamp(request, AddCompetenceForm.CHAMP_PROFONDEUR);
+    final String nomAncienneCompetence =
+        AddCompetenceForm.getValeurChamp(request, "nomAncienneCompetence");
+    final Competence competence = new Competence();
+
+    try {
+
+      this.traiterLesChamps(nomChamp, parentIdChamp, profondeurChamp);
+      if (this.erreurs.isEmpty()) {
+        competence.setNom(nomChamp);
+        competence.setIdParent(Integer.parseInt(parentIdChamp));
+        competence.setProfondeur(Integer.parseInt(profondeurChamp));
+
+        final Competence ancienneCompetence =
+            this.competenceDao.trouverUniqueParNom(nomAncienneCompetence);
+
+        this.competenceDao.modifierCompetence(competence, ancienneCompetence);
+
+        this.setResultat("success");
+
+      } else {
+        LOGGER.info(erreurs.toString());
+        this.setResultat("echec");
+      }
+
+    } catch (final DaoException daoEx) {
+      this.setResultat("echecDao");
+      AddCompetenceForm.LOGGER.log(Level.INFO, EXCEPTION, daoEx);
+    }
+
+    return competence;
+
+  }
+
+  /**
+   * Traiter les champs.
+   *
+   * @param nom le nom
+   * @param parentId l'id du parent
+   * @param profondeur la profondeur
+   */
+  private void traiterLesChamps(String nom, String parentId, String profondeur) {
+
+    try {
+      this.validationNom(nom);
+    } catch (final FormValidationException fve) {
+      AddCompetenceForm.LOGGER.log(Level.INFO, EXCEPTION, fve);
+      this.setErreur("nom", fve.getMessage());
+    }
+
+    try {
+      this.validationParentId(parentId);
+    } catch (final FormValidationException fve) {
+      AddCompetenceForm.LOGGER.log(Level.INFO, EXCEPTION, fve);
+      this.setErreur("parentId", fve.getMessage());
+    }
+
+    try {
+      this.validationProfondeur(profondeur);
+    } catch (final FormValidationException fve) {
+      AddCompetenceForm.LOGGER.log(Level.INFO, EXCEPTION, fve);
+      this.setErreur("profondeur", fve.getMessage());
+    }
+
+  }
+
+  /**
+   * Validation nom.
+   *
+   * @param nom le nom
+   * @throws FormValidationException de type form validation exception
+   */
+  private void validationNom(String nom) throws FormValidationException {
+    if (nom == null || nom.length() < 3) {
+      throw new FormValidationException(
+          "Le nom de la compétence doit comporter au moins 3 caractères.");
+    }
+    if (this.competenceDao.trouverUniqueParNom(nom) != null) {
+      throw new FormValidationException("Cette compétence existe déjà, merci d'en créer une autre.");
+    }
+  }
+
+  /**
+   * Validation parent id.
+   *
+   * @param parentId l'id du parent
+   * @throws FormValidationException de type form validation exception
+   */
+  private void validationParentId(String parentId) throws FormValidationException {
+    try {
+      if (Integer.parseInt(parentId) < 0) {
+        throw new FormValidationException("Merci d'inscrire un id parent compris entre 0 et 20.");
+      }
+    } catch (final NumberFormatException nfe) {
+      this.setErreur(AddCompetenceForm.CHAMP_PARENT_ID, nfe.getMessage());
+      throw new FormValidationException("Le chiffre inscrit est invalide.");
+    }
+  }
+
+  /**
+   * Validation profondeur.
+   *
+   * @param profondeur la profondeur
+   * @throws FormValidationException de type form validation exception
+   */
+  private void validationProfondeur(String profondeur) throws FormValidationException {
+    try {
+      if (Integer.parseInt(profondeur) < 0 || Integer.parseInt(profondeur) > 4) {
+        throw new FormValidationException("Merci d'inscrire une profondeur comprise entre 0 et 3.");
+      }
+    } catch (final NumberFormatException nfe) {
+      this.setErreur(AddCompetenceForm.CHAMP_PROFONDEUR, nfe.getMessage());
+      throw new FormValidationException("Le chiffre inscrit est invalide.");
+    }
+  }
+
+  /**
+   * Accesseur en lecture sur le paramètre valeur champ.
+   *
+   * @param request la request
+   * @param nomChamp le nom du champ
+   * @return le paramètre valeur champ
+   */
+  private static String getValeurChamp(HttpServletRequest request, String nomChamp) {
+    final String valeur = request.getParameter(nomChamp);
+    if (valeur == null || valeur.trim().length() == 0) {
+      return null;
+    } else {
+      return valeur.trim();
+    }
+  }
+
+  /**
+   * Accesseur en lecture sur le paramètre resultat.
+   *
+   * @return le paramètre resultat
+   */
+  public String getResultat() {
+    return this.resultat;
+  }
+
+}

@@ -1,0 +1,870 @@
+	SET AUTOCOMMIT = 0;
+START TRANSACTION;
+
+-- --------------------------------------------------------
+-- Suppression de l'ancienne base
+-- --------------------------------------------------------
+
+DROP DATABASE IF EXISTS atribus;
+
+-- --------------------------------------------------------
+-- Création de la base
+-- --------------------------------------------------------
+
+CREATE DATABASE IF NOT EXISTS atribus DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;
+GRANT ALL PRIVILEGES ON atribus.* TO 'atribususer'@'localhost' IDENTIFIED BY 'atribuspassword';
+
+USE atribus;
+
+-- --------------------------------------------------------
+-- Création des nouvelles tables
+-- --------------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS utilisateur (
+  id INT NOT NULL AUTO_INCREMENT,
+  login VARCHAR(255) UNIQUE NOT NULL,
+  password VARCHAR(170) NOT NULL,
+  nom VARCHAR(255),
+  prenom VARCHAR(255),
+  email VARCHAR(255) COLLATE utf8_general_ci,
+  date_inscription TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  notification_active TINYINT(1) UNSIGNED DEFAULT 1,
+  notification_mail TINYINT(1) UNSIGNED DEFAULT 0,
+  frequence_notification_mail INT UNSIGNED NOT NULL DEFAULT 3,
+--  id_eleve INT DEFAULT NULL,
+--  id_administrateur_systeme INT DEFAULT NULL,
+--  id_enseignant INT DEFAULT NULL,
+--  id_directeur_etudes INT DEFAULT NULL,
+--  id_directeur_programmes INT DEFAULT NULL,
+  PRIMARY KEY (id)
+) ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin AUTO_INCREMENT=1;
+
+CREATE TABLE IF NOT EXISTS directeur_programmes (
+  id INT NOT NULL AUTO_INCREMENT,
+  id_utilisateur INT NOT NULL,
+  PRIMARY KEY (id)
+) ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin AUTO_INCREMENT=1;
+
+CREATE TABLE IF NOT EXISTS directeur_etudes (
+  id INT NOT NULL AUTO_INCREMENT,
+  id_utilisateur INT NOT NULL,
+  PRIMARY KEY (id)
+) ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin AUTO_INCREMENT=1;
+
+
+CREATE TABLE IF NOT EXISTS administrateur_systeme (
+  id INT NOT NULL AUTO_INCREMENT,
+  id_utilisateur INT NOT NULL,
+  PRIMARY KEY (id)
+) ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin AUTO_INCREMENT=1;
+
+CREATE TABLE IF NOT EXISTS enseignant (
+  id INT NOT NULL AUTO_INCREMENT,
+  id_utilisateur INT NOT NULL,
+  PRIMARY KEY (id)
+) ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin AUTO_INCREMENT=1;
+
+CREATE TABLE IF NOT EXISTS enseignant_ref_matiere (
+  id INT NOT NULL AUTO_INCREMENT,
+  id_enseignant INT NOT NULL,
+  PRIMARY KEY (id)
+) ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin AUTO_INCREMENT=1;
+
+CREATE TABLE IF NOT EXISTS enseignant_ref_ue (
+  id INT NOT NULL AUTO_INCREMENT,
+  id_enseignant INT NOT NULL,
+  PRIMARY KEY (id)
+) ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin AUTO_INCREMENT=1;
+
+CREATE TABLE IF NOT EXISTS eleve (
+  id INT NOT NULL AUTO_INCREMENT,
+  id_utilisateur INT NOT NULL UNIQUE,
+  id_promotion INT DEFAULT NULL,
+  PRIMARY KEY (id)
+) ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin AUTO_INCREMENT=1;
+
+CREATE TABLE IF NOT EXISTS promotion (
+  id INT NOT NULL AUTO_INCREMENT,
+  nom VARCHAR(50) UNIQUE NOT NULL,
+  annee_diplome YEAR(4) UNIQUE NOT NULL,
+  PRIMARY KEY (id)
+) ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin AUTO_INCREMENT=1;
+
+
+ CREATE TABLE IF NOT EXISTS semestre (
+  id INT NOT NULL AUTO_INCREMENT,
+  numero TINYINT(1) UNSIGNED,
+  date_debut TIMESTAMP,
+  date_fin TIMESTAMP,
+  id_promotion INT,
+  PRIMARY KEY (id)
+) ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin AUTO_INCREMENT=1;
+
+
+CREATE TABLE IF NOT EXISTS unite_enseignement (
+  id INT NOT NULL AUTO_INCREMENT,
+  nom VARCHAR(50) NOT NULL,
+  nb_credits_ects FLOAT,
+  nb_heures INT,
+  id_semestre INT DEFAULT NULL,
+  id_enseignant_ref INT DEFAULT NULL,
+  PRIMARY KEY (id)
+ ) ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin AUTO_INCREMENT=1;
+ 
+ 
+ CREATE TABLE IF NOT EXISTS matiere (
+  id INT NOT NULL AUTO_INCREMENT,
+  nom VARCHAR(50) NOT NULL,
+  coefficient FLOAT,
+  id_enseignant_ref INT DEFAULT NULL,
+  id_unite_enseignement INT DEFAULT NULL,
+  PRIMARY KEY (id)
+ ) ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin AUTO_INCREMENT=1;
+ 
+CREATE TABLE IF NOT EXISTS competence (
+  id INT NOT NULL AUTO_INCREMENT,
+  nom VARCHAR(100) NOT NULL,
+  parent_id INT,
+  profondeur INT,
+  PRIMARY KEY (id)
+ ) ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin AUTO_INCREMENT=1;
+ 
+  CREATE TABLE IF NOT EXISTS ressource (
+  id INT NOT NULL AUTO_INCREMENT,
+  path VARCHAR(500) NOT NULL,
+  nom VARCHAR(255) NOT NULL,
+  type VARCHAR(50) DEFAULT NULL,
+  date_publication TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  id_matiere INT DEFAULT NULL,
+  PRIMARY KEY (id)
+ ) ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin AUTO_INCREMENT=1;
+
+ 
+CREATE TABLE IF NOT EXISTS examen (
+  id INT NOT NULL AUTO_INCREMENT,
+  nom VARCHAR(100) NOT NULL,
+  id_matiere INT,
+  auto_evaluation BOOLEAN NOT NULL DEFAULT FALSE,
+  PRIMARY KEY (id)
+ ) ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin AUTO_INCREMENT=1;
+ 
+CREATE TABLE IF NOT EXISTS exercice (
+  id INT NOT NULL AUTO_INCREMENT,
+  question TEXT DEFAULT NULL,
+  reponse TEXT DEFAULT NULL,
+  nb_points FLOAT,
+  id_examen INT,
+  PRIMARY KEY (id)
+ ) ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin AUTO_INCREMENT=1;
+
+ CREATE TABLE IF NOT EXISTS exercice_ancien (
+  id INT NOT NULL AUTO_INCREMENT,
+  question TEXT DEFAULT NULL,
+  reponse TEXT DEFAULT NULL,
+  nb_points FLOAT,
+  id_examen INT,
+  PRIMARY KEY (id)
+ ) ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin AUTO_INCREMENT=1;
+ 
+ 
+CREATE TABLE IF NOT EXISTS notes (
+  id INT NOT NULL AUTO_INCREMENT,
+  id_eleve INT NOT NULL,
+  id_exercice INT NOT NULL,
+  reponse VARCHAR(1000) NULL,
+  note FLOAT,
+  date_examen TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  auto_evaluation BOOLEAN NOT NULL DEFAULT FALSE,
+  PRIMARY KEY (id)
+) ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin AUTO_INCREMENT=1;
+
+
+CREATE TABLE IF NOT EXISTS consultation_ressource (
+  id INT NOT NULL AUTO_INCREMENT,
+  id_ressource INT,
+  id_utilisateur INT,
+  date_consultation TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id)
+) ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin AUTO_INCREMENT=1;
+
+
+ CREATE TABLE IF NOT EXISTS matiere_ancien (
+  id INT NOT NULL AUTO_INCREMENT,
+  id_matiere INT NOT NULL,
+  nom VARCHAR(50) NOT NULL,
+  coefficient FLOAT,
+  id_enseignant_ref INT DEFAULT NULL,
+  id_unite_enseignement INT DEFAULT NULL,
+  date_modification TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id)
+ ) ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin AUTO_INCREMENT=1;
+ 
+  CREATE TABLE IF NOT EXISTS notification (
+  id INT NOT NULL AUTO_INCREMENT,
+  id_emetteur INT NOT NULL,
+  id_destinataire INT NOT NULL,
+  message VARCHAR(1000) NOT NULL,
+  date_creation TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id)
+ ) ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin AUTO_INCREMENT=1;
+ 
+-- --------------------------------------------------------
+-- Tables d'associations
+-- --------------------------------------------------------
+ 
+CREATE TABLE IF NOT EXISTS enseignant_enseigne_matiere (
+  id_enseignant INT,
+  id_matiere INT,
+  PRIMARY KEY (id_enseignant, id_matiere)
+) ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin AUTO_INCREMENT=1;
+
+CREATE TABLE IF NOT EXISTS unite_enseignement_associe_competence (
+  niveau FLOAT,
+  id_unite_enseignement INT,
+  id_competence INT,
+  valide tinyint(1) NOT NULL DEFAULT 0,
+  PRIMARY KEY (id_unite_enseignement, id_competence)
+) ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin AUTO_INCREMENT=1;
+
+CREATE TABLE IF NOT EXISTS unite_enseignement_associe_competence_ancien (
+  niveau FLOAT,
+  id_unite_enseignement INT,
+  id_competence INT,
+  valide tinyint(1) NOT NULL DEFAULT 0,
+  date_modification TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id_unite_enseignement, id_competence)
+) ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin AUTO_INCREMENT=1;
+
+CREATE TABLE IF NOT EXISTS matiere_associe_competence (
+  niveau FLOAT,
+  id_matiere INT,
+  id_competence INT,
+  valide tinyint(1) NOT NULL DEFAULT 0,
+  PRIMARY KEY (id_matiere, id_competence)
+) ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin AUTO_INCREMENT=1;
+
+CREATE TABLE IF NOT EXISTS matiere_associe_competence_ancien (
+  niveau FLOAT,
+  id_matiere INT,
+  id_competence INT,
+  valide tinyint(1) NOT NULL DEFAULT 0,
+  date_modification TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id_matiere, id_competence)
+) ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin AUTO_INCREMENT=1;
+
+CREATE TABLE IF NOT EXISTS matiere_compose_examen (
+  id_matiere INT,
+  id_examen INT,
+  PRIMARY KEY (id_matiere, id_examen)
+) ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin AUTO_INCREMENT=1;
+
+CREATE TABLE IF NOT EXISTS exercice_associe_competence (
+  pourcentage FLOAT,
+  id_exercice INT,
+  id_competence INT,
+  PRIMARY KEY (id_exercice, id_competence)
+) ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin AUTO_INCREMENT=1;
+
+CREATE TABLE IF NOT EXISTS exercice_associe_competence_ancien (
+  pourcentage FLOAT,
+  id_exercice INT,
+  id_competence INT,
+  PRIMARY KEY (id_exercice, id_competence)
+) ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin AUTO_INCREMENT=1;
+
+
+CREATE TABLE IF NOT EXISTS matiere_compose_ressource (
+  id_matiere INT,
+  id_ressource INT,
+  PRIMARY KEY (id_matiere, id_ressource)
+) ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin AUTO_INCREMENT=1;
+
+CREATE TABLE IF NOT EXISTS ressource_associe_competence (
+  id_competence INT,
+  id_ressource INT,
+  PRIMARY KEY (id_competence, id_ressource)
+) ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin AUTO_INCREMENT=1;
+
+CREATE TABLE IF NOT EXISTS eleve_associe_competence (
+  id_competence INT,
+  id_eleve INT,
+  niveau INT DEFAULT 0,
+  PRIMARY KEY (id_competence, id_eleve)
+) ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin AUTO_INCREMENT=1;
+
+-- --------------------------------------------------------
+-- Création des contraintes
+-- --------------------------------------------------------
+	
+ALTER TABLE directeur_programmes 
+ADD CONSTRAINT fk_directeur_programmes_id_utilisateur 
+	FOREIGN KEY (id_utilisateur) 
+	REFERENCES utilisateur(id)
+	ON DELETE CASCADE;
+	
+ALTER TABLE directeur_etudes 
+ADD CONSTRAINT fk_directeur_etudes_id_utilisateur 
+	FOREIGN KEY (id_utilisateur) 
+	REFERENCES utilisateur(id)
+	ON DELETE CASCADE;
+	
+ALTER TABLE administrateur_systeme 
+ADD CONSTRAINT fk_administrateur_systeme_id_utilisateur 
+	FOREIGN KEY (id_utilisateur) 
+	REFERENCES utilisateur(id)
+	ON DELETE CASCADE;
+	
+ALTER TABLE enseignant 
+ADD CONSTRAINT fk_enseignant_id_utilisateur 
+	FOREIGN KEY (id_utilisateur) 
+	REFERENCES utilisateur(id)
+	ON DELETE CASCADE;
+	
+ALTER TABLE enseignant_ref_matiere
+ADD CONSTRAINT fk_enseignant_ref_matiere_id_enseignant 
+	FOREIGN KEY (id_enseignant) 
+	REFERENCES enseignant(id)
+	ON DELETE CASCADE;
+	
+ALTER TABLE enseignant_ref_ue
+ADD CONSTRAINT fk_enseignant_ref_ue_id_enseignant 
+	FOREIGN KEY (id_enseignant) 
+	REFERENCES enseignant(id)
+	ON DELETE CASCADE;
+
+ALTER TABLE eleve 
+ADD CONSTRAINT fk_eleve_id_utilisateur 
+	FOREIGN KEY (id_utilisateur) 
+	REFERENCES utilisateur(id)
+	ON DELETE CASCADE;
+	
+ALTER TABLE eleve 
+ADD CONSTRAINT fk_eleve_id_promotion
+	FOREIGN KEY (id_promotion) 
+	REFERENCES promotion(id)
+	ON DELETE SET NULL;
+	
+ALTER TABLE semestre 
+ADD CONSTRAINT fk_semestre_id_promotion
+	FOREIGN KEY (id_promotion) 
+	REFERENCES promotion(id)
+	ON DELETE SET NULL;
+	
+ALTER TABLE unite_enseignement 
+ADD CONSTRAINT fk_unite_enseignement_id_semestre
+	FOREIGN KEY (id_semestre) 
+	REFERENCES semestre(id)
+	ON DELETE SET NULL;	
+	
+ALTER TABLE unite_enseignement 
+ADD CONSTRAINT fk_unite_enseignement_id_enseignant_ref
+	FOREIGN KEY (id_enseignant_ref) 
+	REFERENCES enseignant(id)
+	ON DELETE SET NULL;	
+	
+ALTER TABLE enseignant_ref_ue ADD UNIQUE(id_enseignant);
+	
+ALTER TABLE matiere 
+ADD CONSTRAINT fk_matiere_id_enseignant_ref
+	FOREIGN KEY (id_enseignant_ref) 
+	REFERENCES enseignant(id)
+	ON DELETE SET NULL;	
+	
+ALTER TABLE matiere 
+ADD CONSTRAINT fk_matiere_id_unite_enseignement
+	FOREIGN KEY (id_unite_enseignement) 
+	REFERENCES unite_enseignement(id)
+	ON DELETE SET NULL;	
+	
+ALTER TABLE ressource 
+ADD CONSTRAINT fk_ressource_id_matiere
+	FOREIGN KEY (id_matiere) 
+	REFERENCES matiere(id)
+	ON DELETE SET NULL;	
+	
+ALTER TABLE exercice 
+ADD CONSTRAINT fk_exercice_id_examen
+	FOREIGN KEY (id_examen) 
+	REFERENCES examen(id)
+	ON DELETE SET NULL;	
+	
+ALTER TABLE examen
+ADD CONSTRAINT fk_examen_id_matiere
+	FOREIGN KEY (id_matiere) 
+	REFERENCES matiere(id)
+	ON DELETE SET NULL;	
+
+ALTER TABLE enseignant_enseigne_matiere 
+ADD CONSTRAINT fk_enseignant_enseigne_matiere_id_enseignant
+	FOREIGN KEY (id_enseignant) 
+	REFERENCES enseignant(id)
+	ON DELETE CASCADE;
+	
+ALTER TABLE enseignant_enseigne_matiere 
+ADD CONSTRAINT fk_enseignant_enseigne_matiere_id_matiere
+	FOREIGN KEY (id_matiere) 
+	REFERENCES matiere(id)
+  ON DELETE CASCADE;
+
+ALTER TABLE unite_enseignement_associe_competence 
+ADD CONSTRAINT fk_unite_enseignement_associe_competence_id_unite_enseignement
+	FOREIGN KEY (id_unite_enseignement) 
+	REFERENCES unite_enseignement(id);	
+
+ALTER TABLE unite_enseignement_associe_competence 
+ADD CONSTRAINT fk_unite_enseignement_associe_competence_id_competence
+	FOREIGN KEY (id_competence) 
+	REFERENCES competence(id);	
+
+ALTER TABLE matiere_associe_competence 
+ADD CONSTRAINT fk_matiere_associe_competence_id_matiere
+	FOREIGN KEY (id_matiere) 
+	REFERENCES matiere(id);	
+
+ALTER TABLE matiere_associe_competence 
+ADD CONSTRAINT fk_matiere_associe_competence_id_competence
+	FOREIGN KEY (id_competence) 
+	REFERENCES competence(id);
+	
+ALTER TABLE matiere_compose_examen 
+ADD CONSTRAINT fk_matiere_compose_examen_id_matiere
+	FOREIGN KEY (id_matiere) 
+	REFERENCES matiere(id);	
+	
+ALTER TABLE matiere_compose_examen 
+ADD CONSTRAINT fk_matiere_compose_examen_id_examen
+	FOREIGN KEY (id_examen) 
+	REFERENCES examen(id);
+	
+ALTER TABLE matiere_compose_ressource 
+ADD CONSTRAINT matiere_compose_ressource_id_matiere
+	FOREIGN KEY (id_matiere) 
+	REFERENCES matiere(id);
+	
+ALTER TABLE matiere_compose_ressource 
+ADD CONSTRAINT matiere_compose_ressource_id_ressource
+	FOREIGN KEY (id_ressource) 
+	REFERENCES ressource(id);
+
+	ALTER TABLE ressource_associe_competence
+ADD CONSTRAINT ressource_associe_competence_id_ressource
+	FOREIGN KEY (id_ressource) 
+	REFERENCES ressource(id)
+	ON DELETE CASCADE;
+	
+ALTER TABLE ressource_associe_competence
+ADD CONSTRAINT ressource_associe_competence_id_competence
+	FOREIGN KEY (id_competence) 
+	REFERENCES competence(id)
+	ON DELETE RESTRICT;
+	
+ALTER TABLE exercice_associe_competence 
+ADD CONSTRAINT fk_exercice_associe_competence_id_exercice
+	FOREIGN KEY (id_exercice) 
+	REFERENCES exercice(id);
+	
+ALTER TABLE exercice_associe_competence 
+ADD CONSTRAINT fk_exercice_associe_competence_id_competence
+	FOREIGN KEY (id_competence) 
+	REFERENCES competence(id);
+
+ALTER TABLE exercice_associe_competence_ancien
+ADD CONSTRAINT fk_exercice_associe_competence_id_exercice_ancien
+	FOREIGN KEY (id_exercice) 
+	REFERENCES exercice(id);
+	
+ALTER TABLE exercice_associe_competence_ancien
+ADD CONSTRAINT fk_exercice_associe_competence_id_competence_ancien
+	FOREIGN KEY (id_competence) 
+	REFERENCES competence(id);	
+	
+ALTER TABLE notes
+ADD CONSTRAINT fk_note_id_exercice
+	FOREIGN KEY (id_exercice) 
+	REFERENCES exercice(id);
+	
+ALTER TABLE notes
+ADD CONSTRAINT fk_note_id_eleve
+	FOREIGN KEY (id_eleve) 
+	REFERENCES eleve(id)
+	ON DELETE CASCADE;
+	
+ALTER TABLE consultation_ressource
+ADD CONSTRAINT fk_utilisateur_id_utilisateur 
+	FOREIGN KEY (id_utilisateur) 
+	REFERENCES utilisateur(id)
+	ON DELETE CASCADE;
+
+ALTER TABLE consultation_ressource
+ADD CONSTRAINT fk_ressource_id_ressource
+	FOREIGN KEY (id_ressource) 
+	REFERENCES ressource(id)
+	ON DELETE CASCADE;
+	
+ALTER TABLE notification
+ADD CONSTRAINT fk_ressource_id_emetteur
+	FOREIGN KEY (id_emetteur) 
+	REFERENCES utilisateur(id)
+	ON DELETE CASCADE;
+
+	ALTER TABLE notification
+ADD CONSTRAINT fk_ressource_id_destinataire
+	FOREIGN KEY (id_destinataire) 
+	REFERENCES utilisateur(id)
+	ON DELETE CASCADE;
+    
+ALTER TABLE eleve_associe_competence
+ADD CONSTRAINT fk_associe_competence
+	FOREIGN KEY (id_competence) 
+	REFERENCES competence(id)
+	ON DELETE CASCADE;
+
+ALTER TABLE eleve_associe_competence
+ADD CONSTRAINT fk_associe_eleve
+	FOREIGN KEY (id_eleve) 
+	REFERENCES eleve(id)
+	ON DELETE CASCADE;
+
+-- --------------------------------------------------------
+-- Procedures --
+-- -------------------------------------------------------- 
+
+DROP PROCEDURE IF EXISTS ajoutEleveComp;
+
+DELIMITER $$
+
+CREATE PROCEDURE ajoutEleveComp(IN id_eleve INT)
+BEGIN
+  DECLARE done INT DEFAULT FALSE;
+  DECLARE id_competence INT;
+  DECLARE curseur CURSOR FOR SELECT competence.id FROM competence;
+  DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+
+  OPEN curseur;
+
+  read_loop: LOOP
+    FETCH curseur INTO id_competence;
+    IF done THEN
+      LEAVE read_loop;
+    END IF;
+	INSERT INTO eleve_associe_competence (id_competence,id_eleve) VALUES(id_competence,id_eleve);
+  END LOOP;
+
+  CLOSE curseur;
+
+END $$
+
+DELIMITER ;
+
+-- --------------------------------------------------------
+-- Triggers --
+-- --------------------------------------------------------
+
+DROP TRIGGER IF EXISTS Trigger_delete_exercice;
+
+DELIMITER $$
+
+CREATE TRIGGER Trigger_delete_exercice
+BEFORE DELETE ON exercice
+FOR EACH ROW
+BEGIN
+
+INSERT IGNORE INTO exercice_associe_competence_ancien (pourcentage,id_exercice,id_competence)
+    SELECT pourcentage,id_exercice,id_competence
+      FROM exercice_associe_competence
+     WHERE id_exercice= OLD.id;
+     
+    DELETE 
+      FROM exercice_associe_competence
+     WHERE id_exercice = OLD.id;
+     
+ INSERT IGNORE INTO exercice_ancien(id, question, reponse, nb_points, id_examen) VALUES (OLD.id, OLD.question, OLD.reponse, OLD.nb_points, OLD.id_examen);
+
+END $$
+
+DELIMITER ;
+
+DROP TRIGGER IF EXISTS Trigger_modifier_matiere;
+
+DELIMITER $$
+
+CREATE TRIGGER Trigger_modifier_matiere
+BEFORE UPDATE ON matiere
+FOR EACH ROW
+BEGIN
+
+ INSERT IGNORE INTO matiere_ancien(id_matiere, nom, coefficient, id_enseignant_ref, id_unite_enseignement, date_modification) VALUES (OLD.id, OLD.nom, OLD.coefficient, OLD.id_enseignant_ref, OLD.id_unite_enseignement, CURRENT_TIMESTAMP);
+
+END $$
+
+DELIMITER ;
+
+DROP TRIGGER IF EXISTS Trigger_modifier_unite_enseignement_associe_competence;
+
+DELIMITER $$
+
+CREATE TRIGGER Trigger_modifier_unite_enseignement_associe_competence
+BEFORE UPDATE ON unite_enseignement_associe_competence
+FOR EACH ROW
+BEGIN
+
+ INSERT IGNORE INTO unite_enseignement_associe_competence_ancien(niveau, id_unite_enseignement, id_competence, date_modification) VALUES (OLD.niveau, OLD.id_unite_enseignement, OLD.id_competence, CURRENT_TIMESTAMP);
+
+END $$
+
+DELIMITER ;
+
+DROP TRIGGER IF EXISTS Trigger_supprimer_unite_enseignement_associe_competence;
+
+DELIMITER $$
+
+CREATE TRIGGER Trigger_supprimer_unite_enseignement_associe_competence
+BEFORE DELETE ON unite_enseignement_associe_competence
+FOR EACH ROW
+BEGIN
+
+ INSERT IGNORE INTO unite_enseignement_associe_competence_ancien(niveau, id_unite_enseignement, id_competence, valide, date_modification) VALUES (OLD.niveau, OLD.id_unite_enseignement, OLD.id_competence, OLD.valide, CURRENT_TIMESTAMP);
+
+END $$
+
+DELIMITER ;
+
+DROP TRIGGER IF EXISTS Trigger_modifier_matiere_associe_competence;
+
+DELIMITER $$
+
+CREATE TRIGGER Trigger_modifier_matiere_associe_competence
+BEFORE UPDATE ON matiere_associe_competence
+FOR EACH ROW
+BEGIN
+
+ INSERT IGNORE INTO matiere_associe_competence_ancien(niveau, id_matiere, id_competence, date_modification) VALUES (OLD.niveau, OLD.id_matiere, OLD.id_competence, CURRENT_TIMESTAMP);
+
+END $$
+
+DELIMITER ;
+
+DROP TRIGGER IF EXISTS Trigger_supprimer_matiere_associe_competence;
+
+DELIMITER $$
+
+CREATE TRIGGER Trigger_supprimer_matiere_associe_competence
+BEFORE DELETE ON matiere_associe_competence
+FOR EACH ROW
+BEGIN
+
+	INSERT IGNORE INTO matiere_associe_competence_ancien(niveau, id_matiere, id_competence, valide, date_modification) VALUES (OLD.niveau, OLD.id_matiere, OLD.id_competence, OLD.valide, CURRENT_TIMESTAMP);
+
+END $$
+
+DELIMITER ;
+
+DROP TRIGGER IF EXISTS Trigger_delete_matiere;
+
+DELIMITER $$
+
+CREATE TRIGGER Trigger_delete_matiere
+BEFORE DELETE ON matiere
+FOR EACH ROW
+BEGIN
+ DELETE FROM matiere_associe_competence WHERE id_matiere = OLD.id;
+
+ INSERT IGNORE INTO matiere_ancien(id_matiere, nom, coefficient, id_enseignant_ref, id_unite_enseignement, date_modification) VALUES (OLD.id, OLD.nom, OLD.coefficient, OLD.id_enseignant_ref, OLD.id_unite_enseignement, CURRENT_TIMESTAMP);
+
+END $$
+
+DELIMITER ;
+
+DROP TRIGGER IF EXISTS Trigger_eleve_comp;
+
+DELIMITER $$
+
+CREATE TRIGGER Trigger_eleve_comp
+AFTER INSERT ON eleve
+FOR EACH ROW
+BEGIN
+	
+	CALL ajoutEleveComp(NEW.id);
+
+END $$
+
+DELIMITER ;
+
+-- --------------------------------------------------------
+-- Remplissage des tables
+-- --------------------------------------------------------
+	
+INSERT INTO utilisateur (login, password, prenom, nom, email) VALUES
+	('admin', 'sha256:64000:64:SM2UQzuDDgkP8UJyjo0hFT24cim8wPhs:r6t/bI/4EXfs2qysS3oS6tqIhSgSw5bpyWTFjEj45cvJRbfwhVHJ68UieOkemcw/imKl2cTs4KKPGiQ+3pUAhw==', 'Administrateur', '', ''),
+	('hamonrom', 'sha256:64000:64:SM2UQzuDDgkP8UJyjo0hFT24cim8wPhs:r6t/bI/4EXfs2qysS3oS6tqIhSgSw5bpyWTFjEj45cvJRbfwhVHJ68UieOkemcw/imKl2cTs4KKPGiQ+3pUAhw==', 'Romain', 'HAMON', 'romain.haon@reseau.eseo.fr'),
+	('pichavval', 'sha256:64000:64:SM2UQzuDDgkP8UJyjo0hFT24cim8wPhs:r6t/bI/4EXfs2qysS3oS6tqIhSgSw5bpyWTFjEj45cvJRbfwhVHJ68UieOkemcw/imKl2cTs4KKPGiQ+3pUAhw==', 'Valentin', 'PICHAVANT', 'valntin.pichavant@reseau.eseo.fr'),
+	('demayale', 'sha256:64000:64:SM2UQzuDDgkP8UJyjo0hFT24cim8wPhs:r6t/bI/4EXfs2qysS3oS6tqIhSgSw5bpyWTFjEj45cvJRbfwhVHJ68UieOkemcw/imKl2cTs4KKPGiQ+3pUAhw==', 'Alexis', 'DEMAY', 'alexis.demay@reseau.eseo.fr'),
+	('barthpau', 'sha256:64000:64:SM2UQzuDDgkP8UJyjo0hFT24cim8wPhs:r6t/bI/4EXfs2qysS3oS6tqIhSgSw5bpyWTFjEj45cvJRbfwhVHJ68UieOkemcw/imKl2cTs4KKPGiQ+3pUAhw==', 'Pauline', 'BARTHELEMY', 'paulne.barthelemy@reseau.eseo.fr'),
+	('faralhel', 'sha256:64000:64:SM2UQzuDDgkP8UJyjo0hFT24cim8wPhs:r6t/bI/4EXfs2qysS3oS6tqIhSgSw5bpyWTFjEj45cvJRbfwhVHJ68UieOkemcw/imKl2cTs4KKPGiQ+3pUAhw==', 'Hèlène', 'FARAL', 'helene.farl@reseau.eseo.fr'),
+	('lefevque', 'sha256:64000:64:SM2UQzuDDgkP8UJyjo0hFT24cim8wPhs:r6t/bI/4EXfs2qysS3oS6tqIhSgSw5bpyWTFjEj45cvJRbfwhVHJ68UieOkemcw/imKl2cTs4KKPGiQ+3pUAhw==', 'Quentin', 'LEFEVRE', 'quenti.lefevre@reseau.eseo.fr'),
+	('macaunoe', 'sha256:64000:64:SM2UQzuDDgkP8UJyjo0hFT24cim8wPhs:r6t/bI/4EXfs2qysS3oS6tqIhSgSw5bpyWTFjEj45cvJRbfwhVHJ68UieOkemcw/imKl2cTs4KKPGiQ+3pUAhw==', 'Noémie', 'MACAULT', 'noemie.mcault@reseau.eseo.fr'),
+	('zouabyou', 'sha256:64000:64:SM2UQzuDDgkP8UJyjo0hFT24cim8wPhs:r6t/bI/4EXfs2qysS3oS6tqIhSgSw5bpyWTFjEj45cvJRbfwhVHJ68UieOkemcw/imKl2cTs4KKPGiQ+3pUAhw==', 'Youssef', 'ZOUABI', 'youssef.zouabi@reseau.eseo.fr'),
+	('directeurEtudes', 'sha256:64000:64:SM2UQzuDDgkP8UJyjo0hFT24cim8wPhs:r6t/bI/4EXfs2qysS3oS6tqIhSgSw5bpyWTFjEj45cvJRbfwhVHJ68UieOkemcw/imKl2cTs4KKPGiQ+3pUAhw==', 'Directeur', 'ETUDES', 'directeur.etude@reseau.eseo.fr'),
+	('directeurProgrammes', 'sha256:64000:64:SM2UQzuDDgkP8UJyjo0hFT24cim8wPhs:r6t/bI/4EXfs2qysS3oS6tqIhSgSw5bpyWTFjEj45cvJRbfwhVHJ68UieOkemcw/imKl2cTs4KKPGiQ+3pUAhw==', 'Directeur', 'PROGRAMMES', 'directeur.programmes@reseau.eseo.fr'),
+	('enseignantRefUe', 'sha256:64000:64:SM2UQzuDDgkP8UJyjo0hFT24cim8wPhs:r6t/bI/4EXfs2qysS3oS6tqIhSgSw5bpyWTFjEj45cvJRbfwhVHJ68UieOkemcw/imKl2cTs4KKPGiQ+3pUAhw==', 'Enseignant', 'REFUE', 'enseignant.refue@reseau.eseo.fr'),
+	('enseignantRefMatiere', 'sha256:64000:64:SM2UQzuDDgkP8UJyjo0hFT24cim8wPhs:r6t/bI/4EXfs2qysS3oS6tqIhSgSw5bpyWTFjEj45cvJRbfwhVHJ68UieOkemcw/imKl2cTs4KKPGiQ+3pUAhw==', 'Enseignant', 'MATIERE', 'enseignant.matiere@reseau.eseo.fr'),
+	('enseignant', 'sha256:64000:64:SM2UQzuDDgkP8UJyjo0hFT24cim8wPhs:r6t/bI/4EXfs2qysS3oS6tqIhSgSw5bpyWTFjEj45cvJRbfwhVHJ68UieOkemcw/imKl2cTs4KKPGiQ+3pUAhw==', 'Enseignant', 'Simple', 'enseignant@reseau.eseo.fr'),
+	('eleve', 'elevepass', 'Eleve', 'Simple', 'eleve@reseau.eseo.fr');
+	
+INSERT INTO promotion (nom, annee_diplome) VALUES
+	('Fourier', 2016),
+	('De Gennes', 2017),
+	('Hall', 2018),
+	('Josephson', 2019),
+	('Kirchhoff', 2020);
+	
+INSERT INTO administrateur_systeme (id_utilisateur) VALUES
+	('1'), ('2'), ('4');
+	
+INSERT INTO directeur_programmes (id_utilisateur) VALUES
+	('2'), ('4'), ('11');
+
+INSERT INTO directeur_etudes (id_utilisateur) VALUES
+	('3'), ('4'), ('10');
+	
+INSERT INTO enseignant (id_utilisateur) VALUES
+	('3'), ('4'), ('14'), ('13'), ('12');
+	
+INSERT INTO enseignant_ref_matiere (id_enseignant) VALUES
+	('1'), ('2'), ('4');
+	
+INSERT INTO enseignant_ref_ue (id_enseignant) VALUES
+	('1'), ('2'), ('5');
+		
+INSERT INTO semestre (numero, date_debut, date_fin, id_promotion) VALUES
+	('7', '2015-09-01 00:00:00', '2016-02-05 00:00:00', '2'),
+	('6', '2015-01-19 00:00:00', '2015-07-03 00:00:00', '2'),
+	('5', '2014-09-03 00:00:00', '2015-01-16 00:00:00', '2'),
+	('4', '2014-02-03 00:00:00', '2014-06-27 00:00:00', '2'),
+	('3', '2013-09-03 00:00:00', '2014-01-31 00:00:00', '2'),
+	('2', '2013-01-01 00:00:00', '2013-06-28 00:00:00', '2'),
+	('1', '2012-09-03 00:00:00', '2013-01-25 00:00:00', '2');
+	
+INSERT INTO unite_enseignement (nom, nb_credits_ects, nb_heures, id_semestre, id_enseignant_ref) VALUES
+	('Mathématiques', '5.5', '2', '1', '1'),
+	('Fondamentaux en Informatique', '7.25', '2', '1', '2'),
+	('Electronique analogique', '4.5', '2', '1',  '2'),
+	('Traitement du signal', '6.5', '2', '1', '1'),
+	('Logique', '6', '2', '1', '1'),
+	('Anglais', '2.5', '2', '1',  '1'),
+	('Sciences de homme', '6.5', '2', '1', '2'),
+	('Communication', '6.5', '2', '1', '2');
+	
+INSERT INTO matiere (nom, coefficient, id_enseignant_ref, id_unite_enseignement) VALUES
+	('Probabilités', '2.5', '2', '1'),
+	('Analyse', '3', '2', '1'),
+	('Algorithmique', '4.5', '2', '2'),
+	('Introduction to Networks', '1', '2', '2'),
+	('Mini Projet Langage C', '2.5', '2', '2'),
+	('Miniprojet Electronique BF', '3', '2', '3'),
+	('Electronique analogique', '4.5', '2', '3'),
+	('Miniprojet Matlab Simulink', '1', '2', '4'),
+	('Traitement Numérique du signal', '1', '2', '4'),
+	('Traitement Analogique du Signal', '2.5', '2', '4'),
+	('Introduction à MATLAB', '3', '2', '4'),
+	('Miniprojet Logique', '4.5', '2', '5'),
+	('Introduction aux Microprocesseurs', '1', '2', '5'),
+	('Logique', '1', '2', '5'),
+	('Préparation au TOEIC', '2.5', '2', '6'),
+	('English for Business', '3', '2', '6'),
+	('Anglais - Séminaire', '4.5', '2', '6'),
+	('Economie - Géopolitique - Institutions', '1', '2', '7'),
+	('Expression orale - Communication', '1', '2', '8'),
+	('Expression écrite', '2.5', '2', '8'),
+	('Rédaction CV - Entretien (Français)', '3', '2', '8'),
+	('Projet Personnel et Professionnel', '4.5', '2', '6');
+			
+INSERT INTO enseignant_enseigne_matiere (id_enseignant, id_matiere) VALUES
+	('2', '1'),
+	('2', '2'),
+	('2', '3');
+	
+INSERT INTO competence (nom, parent_id, profondeur) VALUES
+	('Connaisances disciplinaires et raisonnement', '0', '1'),
+	('Connaissance des disciplines de base', '1', '2'),
+	('Mathématiques', '2', '3'),
+	('Physique', '2', '3'),
+	('Chimie', '2', '3'),
+	('Biologie', '2', '3'),
+	('Connaissance des principes fondamentaux', '1', '2'),
+	('Connaissance de base en ingénierie', '1', '2'),
+	('Capacités et compétences professionelles et personnelles', '0', '1'),
+	('Raisonnement analytique et résolution des problèmes ', '9', '2'),
+	('Apprendre à poser et à formuler un problème','10','3'),
+    ('test niv 4','11','4'),
+	('Modélisation', '10', '3'),
+	('Estimation et analyse qualitatives', '10', '3'),
+	('Analyse et gestion des incertitudes', '10', '3'),
+	('Solutions et recommandations', '10', '3');
+	
+INSERT INTO examen (id, nom,id_matiere,auto_evaluation) VALUES
+(1, 'Microprocesseur MP',1,0),
+(2, 'Java DS',2,0),
+(3, 'UML DS',2,0),
+(4, 'Reseau DS',1,0),
+(5, 'Electronique numérique DS',3,0),
+(6, 'Examen test MP',3,0),
+(7, 'Auto Evaluation Java', 1, 1);
+
+INSERT INTO exercice (id, question, reponse, nb_points, id_examen) VALUES
+(1, 'Coucou', 'ça va ?', 1, 1),
+(2, 'C''est une bonne question ?', 'Oui oui ...', 1.2, 1),
+(3, 'Qu''est ce qu''une Interface en Java ?', 'Ce sur quoi clic l''utilisateur/**REPONSES**/Un moyen d''abstraction/**REPONSES**/Peut implementer des méthodes/**VALIDES**/2', 2, 7),
+(4, 'Une classe peut être ?', 'public/**REPONSES**/protected/**REPONSES**/private/**REPONSES**/static/**REPONSES**/final/**VALIDES**/1/2/3/4/5', 5, 7),
+(5, 'Cocher les réponses fausses', 'Le java a été présenté le 23 mai 1995/**REPONSES**/Il a été créer par James Gosling et Patrick Naughton/**REPONSES**/C''est un langage orienté objet/**REPONSES**/Spring est un framework écrit en Java/**REPONSES**/Sa dernière version est Java SE 8/**VALIDES**/', 5, 7);
+
+INSERT IGNORE INTO exercice_associe_competence (pourcentage, id_exercice, id_competence) VALUES (12, 1, 2),(27, 2, 2);
+
+INSERT INTO ressource (id, path, nom, type, date_publication, id_matiere) VALUES 
+(NULL, 'BDD.sql', 'BDD', 'sql', CURRENT_TIMESTAMP, '1'),
+(NULL, 'test.xml', 'test', 'xml', CURRENT_TIMESTAMP, '1');
+
+INSERT INTO eleve (id_utilisateur, id_promotion) VALUES  ('3', '2'), ('6', '2'), ('7', '2'), ('8', '1'), ('9', '1'), ('4', '2');
+	
+INSERT INTO notes (id_eleve, id_exercice, reponse, note, date_examen, auto_evaluation) VALUES
+('1', '1', 'ça va', '1', '2016-05-15', '0'),
+('1', '2', '...', '0', '2016-05-15', '0'),
+('3', '1', 'ça va', '1', '2016-05-15', '0'),
+('3', '2', '...', '0', '2016-05-15', '0'),
+('4', '1', 'ça va', '1', '2016-05-15', '0'),
+('4', '2', '...', '0', '2016-05-15', '0'),
+('1', '3', '1/2', NULL, '2016-05-20 15:05:49', '1'),
+('1', '4', '1/2/3/4/5', NULL, '2016-05-20 15:05:49', '1'),
+('1', '5', '', NULL, '2016-05-20 15:05:49', '1');
+
+INSERT INTO unite_enseignement_associe_competence (niveau, id_unite_enseignement, id_competence, valide) VALUES
+('2', '1', '1', '1'),
+('1', '1', '2', '1'),
+('4', '1', '3', '1'),
+('3', '1', '4', '1'),
+('1', '2', '3', '1'),
+('3', '1', '5', '0'),
+('1', '2', '6', '0');
+
+INSERT INTO matiere_associe_competence (niveau, id_matiere, id_competence, valide) VALUES
+('2', '1', '1', '1'),
+('1', '2', '2', '1'),
+('4', '3', '3', '1'),
+('3', '1', '4', '0'),
+('1', '3', '2', '1'),
+('3', '1', '5', '0'),
+('1', '2', '6', '0');
+
+INSERT INTO notification ( id_emetteur, id_destinataire, message, date_creation) VALUES
+( 2, 3, 'Coucou valentin', '2016-05-11 08:38:41'),
+( 4, 3, 'C''est un deuxième notification !', '2016-05-11 09:59:36'),
+( 1, 2, 'Notification 1', CURRENT_TIMESTAMP),
+( 5, 2, 'Notification 2', CURRENT_TIMESTAMP),
+( 3, 4, 'Notification 1', CURRENT_TIMESTAMP),
+( 7, 4, 'Notification 2', CURRENT_TIMESTAMP),
+( 2, 3, 'Coucou valentin',CURRENT_TIMESTAMP);
+
+UPDATE utilisateur SET frequence_notification_mail = '1' WHERE id = 2;
+UPDATE utilisateur SET frequence_notification_mail = '2' WHERE id = 3;
+
+COMMIT;

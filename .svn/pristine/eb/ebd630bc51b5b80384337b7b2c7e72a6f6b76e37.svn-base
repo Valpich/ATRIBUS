@@ -1,0 +1,136 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+	pageEncoding="UTF-8"%>
+<%@taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
+
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="apple-touch-icon" sizes="57x57"
+	href="<c:url value="/resources/images/apple-icon-57x57.png"/>">
+<link rel="apple-touch-icon" sizes="60x60"
+	href="<c:url value="/resources/images/apple-icon-60x60.png"/>">
+<link rel="apple-touch-icon" sizes="72x72"
+	href="<c:url value="/resources/images/apple-icon-72x72.png"/>">
+<link rel="apple-touch-icon" sizes="76x76"
+	href="<c:url value="/resources/images/apple-icon-76x76.png"/>">
+<link rel="apple-touch-icon" sizes="114x114"
+	href="<c:url value="/resources/images/apple-icon-114x114.png"/>">
+<link rel="apple-touch-icon" sizes="120x120"
+	href="<c:url value="/resources/images/apple-icon-120x120.png"/>">
+<link rel="apple-touch-icon" sizes="144x144"
+	href="<c:url value="/resources/images/apple-icon-144x144.png"/>">
+<link rel="apple-touch-icon" sizes="152x152"
+	href="<c:url value="/resources/images/apple-icon-152x152.png"/>">
+<link rel="apple-touch-icon" sizes="180x180"
+	href="<c:url value="/resources/images/apple-icon-180x180.png"/>">
+<link rel="icon" type="image/png" sizes="192x192"
+	href="<c:url value="/resources/images/android-icon-192x192.png"/>">
+<link rel="icon" type="image/png" sizes="32x32"
+	href="<c:url value="/resources/images/favicon-32x32.png"/>">
+<link rel="icon" type="image/png" sizes="96x96"
+	href="<c:url value="/resources/images/favicon-96x96.png"/>">
+<link rel="icon" type="image/png" sizes="16x16"
+	href="<c:url value="/resources/images/favicon-16x16.png"/>">
+<link rel="manifest"
+	href="<c:url value="/resources/images/manifest.json"/>">
+<meta name="msapplication-TileColor" content="#ffffff">
+<meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
+<meta name="theme-color" content="#ffffff">
+<link type="text/css" rel="stylesheet"
+	href="<c:url value="/resources/css/form.css"/>" />
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Page de correction des examens</title>
+</head>
+
+	<c:if test="${empty resultatModifications}">
+		<fieldset>
+			<legend>Corriger un examen</legend>
+			<p>Vous pouvez corriger un examen via ce formulaire.</p>
+			<c:if test="${ empty examens}">
+				<c:if test="${ empty examen}">
+						Aucun examen n'est actuellement dans la base de données ...
+			</c:if>
+			</c:if>
+			<c:if test="${empty examen}">
+				<c:if test="${not empty examens}">
+					<form method="post" action="CorrigerExamen">
+						<p>Merci de choisir un examen à corriger</p>
+						<select name="choixExamen" id="choixExamen">
+							<c:forEach var="examen" items="${ examens}">
+								<option value="<c:out value="${examen.nom}"/>"><c:out
+										value="${examen.nom} [${examen.matiere.nom}]" /></option>
+							</c:forEach>
+						</select>
+						<input type="submit" value="Valider" class="sansLabel" />
+					</form>
+				</c:if>
+			</c:if>
+			<c:if test="${not empty examen}">
+				<c:if test="${not empty examen.exercices}">
+					<form action="ValiderCorrigerExamen" method="post">
+						<p>
+							Merci de répondre de corriger les questions de l'examen
+							<c:out value="${examen.nom}" />
+
+						</p>
+						<input type='hidden' id='choixExamen' name='choixExamen'
+							value='<c:out value="${choixExamen}" />'>
+						<c:forEach var="exercice" items="${ examen.exercices}"
+							varStatus="loop">
+							Question N°${loop.index+1} <br />
+							Question : 
+							<c:out value="${exercice.question}" />
+							<br />
+							Reponse de
+								l'enseignant : 
+							<c:out value="${exercice.reponse}" />
+							<br />
+							<c:forEach var="evaluation" items="${evaluations}">
+								<c:if test="${evaluation.exercice.id == exercice.id }">
+							Reponse de
+								l'eleve <c:out
+										value="${evaluation.eleve.nom} ${evaluation.eleve.prenom}" /> :
+							<c:out value="${evaluation.reponse}" />
+									<br />
+									<label for="points">Points : </label>
+									<input type="number" id="points" name="points"
+										value="<c:out value="${evaluation.note}" />" size="20"
+										maxlength="30" step="0.01" min="0"
+										max="<c:out value="${exercice.nbPoints}" />" /> pour un maximum de <c:out
+										value="${exercice.nbPoints}" /> !
+							<br />
+									<br />
+								</c:if>
+							</c:forEach>
+						</c:forEach>
+						<br />
+						<input type="submit" value="Valider" class="sansLabel" />
+					</form>
+				</c:if>
+				<c:if test="${empty examen.exercices}">
+				L'examen ne comporte pas d'exercices ...
+			</c:if>
+			</c:if>
+			<br />
+			<br />
+		</fieldset>
+	</c:if>
+	<c:if test="${not empty resultatModifications}">
+		<c:forEach var="evaluation" items="${resultatModifications}">
+							Reponse de
+								l'eleve <c:out
+					value="${evaluation.eleve.nom} ${evaluation.eleve.prenom}" /> :
+							<c:out value="${evaluation.reponse}" />
+				<br />
+				<label for="points">Points : </label>
+				<c:out value="${evaluation.note}" /> pour un maximum de <c:out
+					value="${evaluation.exercice.nbPoints}" /> !
+							<br />
+				<br />
+		</c:forEach>
+		<p class="${empty form.erreurs ? 'succes' : 'erreur'}">${form.resultat}</p>
+	</c:if>
+	<br />
+	<a href="<c:url value="/"/>">Cliquer ici pour revenir à l'index</a>
+</body>
+</html>

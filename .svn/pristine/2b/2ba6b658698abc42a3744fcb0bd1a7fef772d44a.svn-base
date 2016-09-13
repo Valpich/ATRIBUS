@@ -1,0 +1,71 @@
+package fr.eseo.atribus.entities;
+
+import java.io.Serializable;
+import java.util.List;
+
+public class Matiere implements Serializable {
+
+  private static final long serialVersionUID = 2590416927567525328L;
+
+  private int id;
+  private String nom;
+  private float coefficient;
+  private UniteEnseignement ue;
+  private Semestre semestre;
+  private List<CompetenceValidable> competences;
+  
+  public int getId() {
+    return this.id;
+  }
+
+  public String getNom() {
+    return this.nom;
+  }
+
+  public float getCoefficient() {
+    return this.coefficient;
+  }
+
+
+  public void setId(int id) {
+    this.id = id;
+  }
+
+  public void setNom(String nom) {
+    this.nom = nom;
+  }
+
+  public void setCoefficient(float coefficient) {
+    this.coefficient = coefficient;
+  }
+
+  public UniteEnseignement getUe() {
+    return this.ue;
+  }
+
+  public void setUe(UniteEnseignement ue) {
+    this.ue = ue;
+  }
+
+  public Semestre getSemestre() {
+    return this.semestre;
+  }
+
+  public void setSemestre(Semestre semestre) {
+    this.semestre = semestre;
+  }
+
+  public List<CompetenceValidable> getCompetences() {
+    return competences;
+  }
+
+  public void setCompetences(List<CompetenceValidable> competences) {
+    this.competences = competences;
+  }
+  
+  @Override
+  public String toString() {
+    return "Matiere [id=" + id + ", nom=" + nom + ", coefficient=" + coefficient + ", ue=" + ue
+        + ", semestre=" + semestre + ", competences=" + competences + "]";
+  }
+}

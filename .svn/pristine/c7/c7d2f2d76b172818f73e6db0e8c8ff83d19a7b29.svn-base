@@ -1,0 +1,615 @@
+package fr.eseo.atribus.controller;
+
+import fr.eseo.atribus.dao.CompetenceDao;
+import fr.eseo.atribus.dao.DaoException;
+import fr.eseo.atribus.dao.EnseignantDao;
+import fr.eseo.atribus.dao.EnseignantRefMatiereDao;
+import fr.eseo.atribus.dao.MatiereDao;
+import fr.eseo.atribus.dao.SemestreDao;
+import fr.eseo.atribus.dao.UeDao;
+import fr.eseo.atribus.entities.CompetenceValidable;
+import fr.eseo.atribus.entities.Matiere;
+import fr.eseo.atribus.entities.UniteEnseignement;
+import fr.eseo.atribus.forms.AddUeForm;
+import fr.eseo.atribus.forms.ModifierMatiereUeForm;
+import fr.eseo.atribus.forms.ModifierUeForm;
+
+import org.springframework.beans.factory.access.BeanFactoryReference;
+import org.springframework.beans.factory.access.SingletonBeanFactoryLocator;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.ModelAndView;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.annotation.PostConstruct;
+import javax.servlet.http.HttpServletRequest;
+
+/**
+ * Servlet d'implementation de la classe UeController.
+ */
+@Controller
+public class UeController {
+
+  /** La constante LOGGER. */
+  private static final Logger LOGGER = Logger.getLogger(UeController.class.getName());
+
+  /** La constante CONF_BDD_FACTORY. */
+  public static final String CONF_BDD_FACTORY = "DaoFactory";
+
+  /** La constante ATT_UES. */
+  private static final String ATT_UES = "ues";
+
+  /** La constante LISTE_ENSEIGNANTS. */
+  private static final String LISTE_ENSEIGNANTS = "listeEnseignants";
+
+  /** La constante LISTE_SEMESTRES. */
+  private static final String LISTE_SEMESTRES = "listeSemestres";
+
+  /** La constante ATT_MATIERES. */
+  private static final String ATT_MATIERES = "matieres";
+
+  /** La constante VUE. */
+  private static final String VUE = "DirecteurProgrammes/ajoutUe";
+
+  /** La constante VUE_VALIDER_COMPETENCES. */
+  private static final String VUE_VALIDER_COMPETENCES = "DirecteurProgrammes/validerCompetences";
+
+  /** La constante VUE_MODIFIER_UE. */
+  private static final String VUE_MODIFIER_UE = "EnseignantRefUE/modifierMatieresUe";
+
+  /** La constante EXCEPTION. */
+  private static final String EXCEPTION = "Exception";
+
+  /** La variable competence dao. */
+  private CompetenceDao competenceDao;
+
+  /** La variable enseignant dao. */
+  private EnseignantDao enseignantDao;
+
+  /** La variable erm dao. */
+  private EnseignantRefMatiereDao ermDao;
+
+  /** La variable ue dao. */
+  private UeDao ueDao;
+
+  /** La variable matiere dao. */
+  private MatiereDao matiereDao;
+
+  /** La variable semestre dao. */
+  private SemestreDao semestreDao;
+
+  /** La variable ues. */
+  private List<UniteEnseignement> ues;
+
+  /** La variable matieres. */
+  private List<Matiere> matieres;
+
+  /**
+   * Inits the.
+   *
+   * @Autowired private ServletContext servletContext;
+   * @Autowired(required = true) private HttpServletRequest request;
+   * 
+   *                     private UtilisateurBdd utilisateurDao.
+   */
+  @PostConstruct
+  public void init() {
+    final BeanFactoryReference bf =
+        SingletonBeanFactoryLocator.getInstance().useBeanFactory("beansDao");
+    /**
+     * Recuperation d'une instance de notre DAO Utilisateur this.utilisateurDao = ((DaoFactory)
+     * servletContext.getAttribute(CONF_BDD_FACTORY)).getUtilisateurBdd(); }
+     */
+    /* Récupération d'une instance de notre DAO Competence */
+    this.competenceDao = (CompetenceDao) bf.getFactory().getBean("competenceDao");
+    /* Récupération d'une instance de notre DAO Enseignant */
+    this.enseignantDao = (EnseignantDao) bf.getFactory().getBean("enseignantDao");
+    /* Récupération d'une instance de notre DAO Ue */
+    this.ueDao = (UeDao) bf.getFactory().getBean("ueDao");
+    /* Récupération d'une instance de notre DAO Matiere */
+    this.matiereDao = (MatiereDao) bf.getFactory().getBean("matiereDao");
+    /* Récupération d'une instance de notre DAO Semestre */
+    this.semestreDao = (SemestreDao) bf.getFactory().getBean("semestreDao");
+    /* Récupération d'une instance de notre DAO EnseignantRefMatiere */
+    this.ermDao = (EnseignantRefMatiereDao) bf.getFactory().getBean("enseignantRefMatiereDao");
+  }
+
+
+  /**
+   * Afficher add ue.
+   *
+   * @return Le paramètre model and view
+   */
+  @RequestMapping(value = "/DirecteurProgrammes/AjouterUE", method = RequestMethod.GET)
+  protected ModelAndView afficherAddUe() {
+    final HashMap<String, Object> attributsRequete = new HashMap<>();
+    // On charge la liste des enseignants
+    attributsRequete.put(UeController.LISTE_ENSEIGNANTS, this.enseignantDao.recupererListe());
+    // On charge la liste des semestres
+    attributsRequete.put(UeController.LISTE_SEMESTRES, this.semestreDao.listerSemestre());
+    attributsRequete.put(UeController.LISTE_ENSEIGNANTS, this.enseignantDao.recupererListe());
+
+    return new ModelAndView(VUE, attributsRequete);
+  }
+
+  /**
+   * Ajouter une ue.
+   *
+   * @param request la requete
+   * @return Le paramètre model and view
+   */
+  @RequestMapping(value = "/DirecteurProgrammes/AjouterUE", method = RequestMethod.POST)
+  protected ModelAndView ajouterUe(HttpServletRequest request) {
+
+    final HashMap<String, Object> attributsRequete = new HashMap<>();
+
+    attributsRequete.put(UeController.LISTE_ENSEIGNANTS, this.enseignantDao.recupererListe());
+    attributsRequete.put(UeController.LISTE_SEMESTRES, this.semestreDao.listerSemestre());
+
+    final AddUeForm form = new AddUeForm();
+
+    form.addUe(request);
+
+    attributsRequete.put(ExamenController.ATT_FORM, form);
+
+    return new ModelAndView(VUE, attributsRequete);
+  }
+
+  /**
+   * Afficher valider competences ue.
+   *
+   * @return Le paramètre model and view
+   */
+  @RequestMapping(
+      value = { "/DirecteurProgrammes/ValiderCompetences", "/EnseignantRefUE/ValiderCompetences" },
+      method = RequestMethod.GET)
+  protected ModelAndView afficherValiderCompetencesUe() {
+    final HashMap<String, Object> attributsRequete = new HashMap<>();
+    this.ues = this.ueDao.listerUe();
+    // On charge la liste des competences
+    attributsRequete.put(UeController.ATT_UES, this.ues);
+    this.matieres = this.matiereDao.trouverToutesLesMatieres();
+    // On charge la liste des matieres
+    attributsRequete.put(UeController.ATT_MATIERES, this.matieres);
+    return new ModelAndView(VUE_VALIDER_COMPETENCES, attributsRequete);
+  }
+
+  /**
+   * Valider competences ue.
+   *
+   * @param coches les coches
+   * @return Le paramètre model and view
+   */
+  @RequestMapping(
+      value = { "/DirecteurProgrammes/ValiderCompetences", "/EnseignantRefUE/ValiderCompetences" },
+      method = RequestMethod.POST)
+  protected ModelAndView validerCompetencesUe(
+      @RequestParam(value = "table_records", required = false) List<String> coches) {
+    final HashMap<String, Object> attributsRequete = new HashMap<>();
+    if (this.ues == null) {
+      this.ues = this.ueDao.listerUe();
+    }
+    if (this.matieres == null) {
+      this.matieres = this.matiereDao.trouverToutesLesMatieres();
+    }
+    final Map<String, String> erreurs = new HashMap<>();
+    if (coches != null) {
+      for (final String coche : coches) {
+        this.validerUeEtMatieres(coche, erreurs);
+      }
+    }
+    if (erreurs.isEmpty() && coches != null) {
+      attributsRequete.put("succes", "true");
+    }
+    if (coches == null) {
+      attributsRequete.put("vide", "true");
+    }
+    if (!erreurs.isEmpty()) {
+      // On charge la liste des erreurs
+      attributsRequete.put("erreurs", erreurs);
+    }
+    // On charge la liste des competences
+    attributsRequete.put(UeController.ATT_UES, this.ues);
+    // On charge la liste des matieres
+    attributsRequete.put(UeController.ATT_MATIERES, this.matieres);
+    return new ModelAndView(VUE_VALIDER_COMPETENCES, attributsRequete);
+  }
+
+  /**
+   * Afficher matieres ue.
+   *
+   * @return Le paramètre model and view
+   */
+  @RequestMapping(value = "/EnseignantRefUE/AssocierMatiereUe", method = RequestMethod.GET)
+  protected ModelAndView afficherMatieresUe() {
+    final HashMap<String, Object> attributsRequete = new HashMap<>();
+    this.ues = this.ueDao.listerUe(); // On charge les ues
+    attributsRequete.put(UeController.ATT_UES, this.ues);
+    this.matieres = this.matiereDao.trouverToutesLesMatieres(); // On charge la liste des matières
+    attributsRequete.put(UeController.ATT_MATIERES, this.matieres);
+
+    return new ModelAndView(VUE_MODIFIER_UE, attributsRequete);
+  }
+
+  /**
+   * Modifier matiere ue affichage.
+   *
+   * @return Le paramètre model and view
+   */
+  @RequestMapping(value = "/EnseignantRefUE/ModifierMatiereUE", method = RequestMethod.GET)
+  protected ModelAndView modifierMatiereUeAffichage() {
+
+    final HashMap<String, Object> attributsRequete = new HashMap<>();
+
+    final List<UniteEnseignement> listeUesMatieres = new ArrayList<>();
+    final List<UniteEnseignement> listeTousLesUes = this.ueDao.listerUe();
+
+    // On parcourt la liste comprenant tous les UE pour ajouter
+    // seulement ceux qui sont présent dans la table matière
+    for (final UniteEnseignement ue : listeTousLesUes) {
+      if (this.matiereDao.trouverUneUeDansMatiere(ue)) {
+        listeUesMatieres.add(ue);
+      }
+    }
+
+    attributsRequete.put("listeUesMatieres", listeUesMatieres);
+
+    return new ModelAndView(VUE_MODIFIER_UE, attributsRequete);
+
+  }
+
+  /**
+   * Modifier matiere ue choix matiere.
+   *
+   * @param idUe l'id ue
+   * @return Le paramètre model and view
+   */
+  @RequestMapping(value = "/EnseignantRefUE/ModifierMatiereUE", params = "choixUe",
+      method = RequestMethod.POST)
+  protected ModelAndView modifierMatiereUeChoixMatiere(@RequestParam("ue") String idUe) {
+    final HashMap<String, Object> attributsRequete = new HashMap<>();
+
+    attributsRequete.put("form", null);
+    attributsRequete.put("idUe", idUe);
+    attributsRequete.put("listeDesMatieres", this.matiereDao.listerMatiereParUe(idUe));
+
+    attributsRequete.put("erms", this.ermDao.recupererListe());
+
+    return new ModelAndView(VUE_MODIFIER_UE, attributsRequete);
+
+  }
+
+  /**
+   * Supprimer matiere ue.
+   *
+   * @param idUe l'id ue
+   * @param idMatiere l'id matiere
+   * @return Le paramètre model and view
+   */
+  @RequestMapping(value = "/EnseignantRefUE/ModifierMatiereUE", params = "supprimer",
+      method = RequestMethod.POST)
+  protected ModelAndView supprimerMatiereUe(@RequestParam("idUe") String idUe,
+      @RequestParam("idMatiere") String idMatiere) {
+
+    final HashMap<String, Object> attributsRequete = new HashMap<>();
+
+    final Matiere matiere = new Matiere();
+
+    // On récupère l'ID de la matière a supprimer et on la supprime
+    matiere.setId(Integer.parseInt(idMatiere));
+
+    try {
+      this.matiereDao.supprimerMatiereParId(matiere);
+      attributsRequete.put("succesSupprimer", "La suppression a bien été effectuée");
+    } catch (final DaoException excpt) {
+      UeController.LOGGER.log(Level.INFO, EXCEPTION, excpt);
+      attributsRequete.put("echecSupprimer",
+          "La suppression n'a pas été effectuée suite à une erreur imprévue");
+    }
+
+    attributsRequete.put("form", null);
+    attributsRequete.put("idUe", idUe);
+    attributsRequete.put("listeDesMatieres", this.matiereDao.listerMatiereParUe(idUe));
+
+    return new ModelAndView(VUE_MODIFIER_UE, attributsRequete);
+
+  }
+
+  /**
+   * Modifier matiere ue.
+   *
+   * @param idMatiere l'id matiere
+   * @return Le paramètre model and view
+   */
+  @RequestMapping(value = "/EnseignantRefUE/ModifierMatiereUE", params = "modifier",
+      method = RequestMethod.POST)
+  protected ModelAndView modifierMatiereUe(@RequestParam("idMatiere") String idMatiere) {
+
+    final HashMap<String, Object> attributsRequete = new HashMap<>();
+
+    try {
+      final Matiere matiere = this.matiereDao.trouverParId(Integer.parseInt(idMatiere));
+      attributsRequete.put("matiereAModifier", matiere);
+    } catch (final NumberFormatException expct) {
+      UeController.LOGGER.log(Level.INFO, EXCEPTION, expct);
+    }
+
+    attributsRequete.put("listeUes", this.ueDao.listerUe());
+    attributsRequete.put(LISTE_ENSEIGNANTS, this.enseignantDao.recupererListe());
+    attributsRequete.put("idMatiere", idMatiere);
+
+    return new ModelAndView(VUE_MODIFIER_UE, attributsRequete);
+
+  }
+
+  /**
+   * Valider modifier matiere ue.
+   *
+   * @param request la requete
+   * @param idMatiere l'id matiere
+   * @return Le paramètre model and view
+   */
+  @RequestMapping(value = "/EnseignantRefUE/ModifierMatiereUE", params = "validerModifierMatiere",
+      method = RequestMethod.POST)
+  protected ModelAndView validerModifierMatiereUe(HttpServletRequest request,
+      @RequestParam("idMatiereAModifier") String idMatiere) {
+
+    final HashMap<String, Object> attributsRequete = new HashMap<>();
+
+    final ModifierMatiereUeForm form = new ModifierMatiereUeForm();
+
+    form.modifierMatiereUe(request);
+
+    final List<UniteEnseignement> listeUesMatieres = new ArrayList<>();
+    final List<UniteEnseignement> listeTousLesUes = this.ueDao.listerUe();
+    // On parcourt la liste comprenant tous les UE pour ajouter
+    // seulement ceux qui sont présent dans la table matière
+    for (final UniteEnseignement ue : listeTousLesUes) {
+      if (this.matiereDao.trouverUneUeDansMatiere(ue)) {
+        listeUesMatieres.add(ue);
+      }
+    }
+
+    // Si l'on a aucune erreur, on revient au début sinon
+    // on ré-affiche la form avec les erreurs
+    if (form.getErreurs().isEmpty()) {
+
+      attributsRequete.put("listeUesMatieres", listeUesMatieres);
+      attributsRequete.put("form", form);
+
+    } else {
+
+      try {
+        final Matiere matiere = this.matiereDao.trouverParId(Integer.parseInt(idMatiere));
+        attributsRequete.put("matiereAModifier", matiere);
+      } catch (final NumberFormatException expct) {
+        UeController.LOGGER.log(Level.INFO, EXCEPTION, expct);
+      }
+
+      attributsRequete.put("listeUes", this.ueDao.listerUe());
+      attributsRequete.put(LISTE_ENSEIGNANTS, this.enseignantDao.recupererListe());
+      attributsRequete.put("idMatiere", idMatiere);
+      attributsRequete.put("form", form);
+
+    }
+
+    return new ModelAndView(VUE_MODIFIER_UE, attributsRequete);
+
+  }
+
+  /**
+   * Valider ue et matieres.
+   *
+   * @param coche la coche
+   * @param erreurs les erreurs
+   */
+  private void validerUeEtMatieres(String coche, Map<String, String> erreurs) {
+    for (final Matiere matiere : this.matieres) {
+      if (matiere.getCompetences() != null) {
+        for (final CompetenceValidable competence : matiere.getCompetences()) {
+          validerCompMatiere(coche, erreurs, matiere, competence);
+        }
+      }
+    }
+    for (final UniteEnseignement ue : this.ues) {
+      if (ue.getCompetences() != null) {
+        for (final Entry<Long, CompetenceValidable> competence : ue.getCompetences().entrySet()) {
+          validerCompUe(coche, erreurs, ue, competence);
+        }
+      }
+    }
+  }
+
+  /**
+   * Valider comp ue.
+   *
+   * @param coche la coche
+   * @param erreurs les erreurs
+   * @param ue l'ue
+   * @param competence la competence
+   */
+  private void validerCompUe(String coche, Map<String, String> erreurs, final UniteEnseignement ue,
+      final Entry<Long, CompetenceValidable> competence) {
+    if (coche.equals(competence.getValue().getUniqueId().toString())) {
+      this.validerCompUe(ue, competence, erreurs);
+    }
+  }
+  
+  /**
+   * Valider comp ue.
+   *
+   * @param ue l'ue
+   * @param competence lacompetence
+   * @param erreurs les erreurs
+   */
+  private void validerCompUe(UniteEnseignement ue, Entry<Long, CompetenceValidable> competence,
+      Map<String, String> erreurs) {
+    try {
+      competence.getValue().setValide(true);
+      this.competenceDao.valider(ue, competence.getValue());
+    } catch (final DaoException daoe) {
+      competence.getValue().setValide(false);
+      erreurs.put("erreur", "Certaines compétences n'ont pas été validés.");
+      UeController.LOGGER.log(Level.INFO, EXCEPTION, daoe);
+    }
+  }
+
+  
+  /**
+   * Valider comp matiere.
+   *
+   * @param coche la coche
+   * @param erreurs les erreurs
+   * @param matiere la matiere
+   * @param competence la competence
+   */
+  private void validerCompMatiere(String coche, Map<String, String> erreurs, final Matiere matiere,
+      final CompetenceValidable competence) {
+    if (coche.equals(competence.getUniqueId().toString())) {
+      this.validerCompMatiere(matiere, competence, erreurs);
+    }
+  }
+
+  /**
+   * Valider comp matiere.
+   *
+   * @param matiere la matiere
+   * @param competence la competence
+   * @param erreurs les erreurs
+   */
+  private void validerCompMatiere(Matiere matiere, CompetenceValidable competence,
+      Map<String, String> erreurs) {
+    try {
+      competence.setValide(true);
+      this.competenceDao.valider(matiere, competence);
+    } catch (final DaoException daoe) {
+      competence.setValide(false);
+      erreurs.put("erreur", "Certaines compétences n'ont pas été validés.");
+      UeController.LOGGER.log(Level.INFO, EXCEPTION, daoe);
+    }
+  }
+  
+  /**
+   * Afficher competence ue.
+   *
+   * @return Le paramètre model and view
+   */
+  @RequestMapping(value = "/EnseignantRefMatiere/AfficherCompetenceUE", method = RequestMethod.GET)
+  protected ModelAndView afficherCompetenceUe() {
+
+    final HashMap<String, Object> attributsRequete = new HashMap<>();
+
+    this.ues = this.ueDao.listerUe();
+    attributsRequete.put(UeController.ATT_UES, this.ues);
+
+    return new ModelAndView("EnseignantRefMatiere/afficherCompetenceUe", attributsRequete);
+
+  }
+
+  /**
+   * Afficher competences liees ue.
+   *
+   * @param nomUe le nom de l'ue
+   * @return Le paramètre model and view
+   */
+  @RequestMapping(value = "/EnseignantRefMatiere/AfficherCompetenceUE", method = RequestMethod.POST)
+  protected ModelAndView afficherCompetencesLieesUe(@RequestParam("nomUe") String nomUe) {
+
+    final HashMap<String, Object> attributsRequete = new HashMap<>();
+
+    attributsRequete.put("listeCompetences",
+        this.competenceDao.listeCompetencesUe(this.ueDao.trouverUeParNom(nomUe)));
+
+    return new ModelAndView("EnseignantRefMatiere/afficherCompetenceUe", attributsRequete);
+
+  }
+
+  /**
+   * Afficher competence matiere.
+   *
+   * @return Le paramètre model and view
+   */
+  @RequestMapping(value = "/Enseignant/AfficherCompetenceMatiere", method = RequestMethod.GET)
+  protected ModelAndView afficherCompetenceMatiere() {
+
+    final HashMap<String, Object> attributsRequete = new HashMap<>();
+
+    this.matieres = this.matiereDao.trouverToutesLesMatieres();
+    attributsRequete.put("matieres", this.matieres);
+
+    return new ModelAndView("Enseignant/afficherCompetenceMatiere", attributsRequete);
+
+  }
+
+  /**
+   * Afficher competences liees matiere.
+   *
+   * @param nomMatiere le nom de la matiere
+   * @return Le paramètre model and view
+   */
+  @RequestMapping(value = "/Enseignant/AfficherCompetenceMatiere", method = RequestMethod.POST)
+  protected ModelAndView afficherCompetencesLieesMatiere(
+      @RequestParam("nomMatiere") String nomMatiere) {
+
+    final HashMap<String, Object> attributsRequete = new HashMap<>();
+
+    attributsRequete.put("listeCompetence",
+        this.competenceDao.listeCompetencesMatiere(this.matiereDao.trouverParNom(nomMatiere)));
+
+    return new ModelAndView("Enseignant/afficherCompetenceMatiere", attributsRequete);
+
+  }
+
+  /**
+   * Afficher modifier ue.
+   *
+   * @return Le paramètre model and view
+   */
+  @RequestMapping(value = "/DirecteurProgrammes/ModifierUE", method = RequestMethod.GET)
+  protected ModelAndView afficherModifierUe() {
+    final HashMap<String, Object> attributsRequete = new HashMap<>();
+    attributsRequete.put("listeUe", this.ueDao.listerUe());
+    return new ModelAndView("DirecteurProgrammes/modifierUe", attributsRequete);
+  }
+
+  /**
+   * Modifier ue selection ue.
+   *
+   * @param idUe l'id ue
+   * @param choixUe le choix d'ue
+   * @param request la requete
+   * @return Le paramètre model and view
+   */
+  @RequestMapping(value = "/DirecteurProgrammes/ModifierUE", method = RequestMethod.POST)
+  protected ModelAndView modifierUeSelectionUe(@RequestParam("idUe") Integer idUe,
+      @RequestParam(value = "choixUe", required = false) String choixUe,
+      HttpServletRequest request) {
+
+    final HashMap<String, Object> attributsRequete = new HashMap<>();
+
+    final UniteEnseignement ancienneUe = this.ueDao.trouverUeParId(idUe);
+
+    if (choixUe != null) {
+      attributsRequete.put("ancienneUe", ancienneUe);
+      attributsRequete.put(UeController.LISTE_SEMESTRES, this.semestreDao.listerSemestre());
+      attributsRequete.put(UeController.LISTE_ENSEIGNANTS, this.enseignantDao.recupererListe());
+    } else {
+      final ModifierUeForm form = new ModifierUeForm();
+      form.modifierUe(request);
+      attributsRequete.put("form", form);
+    }
+
+    return new ModelAndView("DirecteurProgrammes/modifierUe", attributsRequete);
+
+  }
+
+}

@@ -1,0 +1,27 @@
+package fr.eseo.atribus.dao;
+
+import fr.eseo.atribus.entities.Utilisateur;
+
+import java.util.List;
+
+public interface UtilisateurDao {
+  int trouverIdParLogin(String login);
+
+  Utilisateur ajouter(Utilisateur utilisateur);
+
+  Utilisateur modifier(String loginPrecedent, Utilisateur utilisateur);
+
+  Utilisateur trouverParLogin(String login);
+
+  Utilisateur trouverParLoginPassword(String login, String password);
+
+  Utilisateur trouverParNomPrenom(String nom, String prenom);
+
+  int supprimerParLogin(String email);
+
+  List<Utilisateur> recupererListe();
+
+  Utilisateur trouverParId(int id);
+
+  void update(Utilisateur utilisateur);
+}

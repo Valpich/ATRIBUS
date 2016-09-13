@@ -1,0 +1,225 @@
+package fr.eseo.atribus.forms;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.servlet.http.HttpServletRequest;
+
+// TODO: Auto-generated Javadoc
+/**
+ * The Class ExerciceFormMethods.
+ */
+public class ExerciceFormMethods {
+
+  /** La constante LOGGER. */
+  private static final Logger LOGGER = Logger.getLogger(ExerciceFormMethods.class.getName());
+
+  /** La variable data. */
+  protected ExerciceFormData data = new ExerciceFormData(new HashMap<>());
+
+  /**
+   * Instancie un nouveau exercice form methods.
+   */
+  public ExerciceFormMethods() {
+    super();
+  }
+
+  /**
+   * Accesseur en lecture sur le paramètre valeur champ.
+   *
+   * @param request le request
+   * @param nomChamp le nom champ
+   * @return le paramètre valeur champ
+   */
+  protected static String recupererValeurChamp(HttpServletRequest request, String nomChamp) {
+    final String valeur = request.getParameter(nomChamp);
+    if (valeur == null || valeur.trim().length() == 0) {
+      return null;
+    } else {
+      return valeur.trim();
+    }
+  }
+
+  /**
+   * Accesseur en lecture sur le paramètre resultat.
+   *
+   * @return le paramètre resultat
+   */
+  public String recupererResultat() {
+    return this.data.getResultat();
+  }
+
+  /**
+   * Accesseur en lecture sur le paramètre erreurs.
+   *
+   * @return le paramètre erreurs
+   */
+  public Map<String, String> getErreurs() {
+    return this.data.getErreurs();
+  }
+
+  /**
+   * Validation pourcentage.
+   *
+   * @param pourcentage le pourcentage
+   * @throws FormValidationException de type form validation exception
+   */
+  protected void validationPourcentage(String pourcentage) throws FormValidationException {
+    try {
+      final int test = Integer.parseInt(pourcentage);
+      if (test < 0 || test > 100) {
+        throw new FormValidationException("Le pourcentage doit être compris entre 0 et 100.");
+      }
+    } catch (final NumberFormatException nfe) {
+      this.setErreur(ExerciceFormData.CHAMP_POINTS, nfe.getMessage());
+      throw new FormValidationException("Le chiffre inscrit est invalide ...");
+    }
+  }
+
+  /**
+   * Validation question.
+   *
+   * @param question le question
+   * @throws FormValidationException de type form validation exception
+   */
+  protected void validationQuestion(String question) throws FormValidationException {
+    if (question == null || question.length() < 3) {
+      throw new FormValidationException("Le question de l'exercice au moins 3 caractères.");
+    }
+  }
+
+  /**
+   * Validation reponse qcm.
+   *
+   * @param reponse le reponse
+   * @param bonneReponses le bonne reponses
+   * @throws FormValidationException de type form validation exception
+   */
+  protected void validationReponseQcm(String reponse, String bonneReponses)
+      throws FormValidationException {
+    if (reponse == null || reponse.length() < 3) {
+      throw new FormValidationException(
+          "Les reponses de l'exercice doivent comporter au moins 3 caractères.");
+    }
+    final List<String> rep = this.testerNumeroDesBonnesReponses(reponse, bonneReponses);
+    for (final String repon : rep) {
+      if (repon == null || repon.length() < 3) {
+        throw new FormValidationException(
+            "Les reponses de l'exercice doivent comporter au moins 3 caractères.");
+      }
+    }
+  }
+
+  /**
+   * Tester numero des bonnes reponses.
+   *
+   * @param reponse le reponse
+   * @param bonneReponses le bonne reponses
+   * @return Le paramètre list
+   * @throws FormValidationException de type form validation exception
+   */
+  private List<String> testerNumeroDesBonnesReponses(String reponse, String bonneReponses)
+      throws FormValidationException {
+    final List<String> bonneRep = new ArrayList<>(Arrays.asList(bonneReponses.split("/")));
+    final List<String> rep = new ArrayList<>(Arrays.asList(reponse.split("/")));
+    try {
+      for (final String repNum : bonneRep) {
+        if (!"".equals(repNum)) {
+          rep.get(Integer.parseInt(repNum) - 1);
+        }
+      }
+    } catch (final Exception exc) {
+      ExerciceFormMethods.LOGGER.log(Level.INFO, ExerciceFormData.EXCEPTION, exc);
+      throw new FormValidationException("Une réponse n'a pas le bon le numéro.");
+    }
+    return rep;
+  }
+
+  /**
+   * Validation reponse.
+   *
+   * @param reponse le reponse
+   * @throws FormValidationException de type form validation exception
+   */
+  protected void validationReponse(String reponse) throws FormValidationException {
+    if (reponse == null || reponse.length() < 3) {
+      throw new FormValidationException("La reponse de l'exercice au moins 3 caractères.");
+    }
+  }
+
+  /**
+   * Validation points.
+   *
+   * @param nbPoints le nb points
+   * @throws FormValidationException de type form validation exception
+   */
+  protected void validationPoints(String nbPoints) throws FormValidationException {
+    try {
+      final float test = Float.parseFloat(nbPoints);
+      if (test < 0) {
+        throw new FormValidationException("Merci d'inscrire une valeur positive ou nulle.");
+      }
+    } catch (final NumberFormatException nfe) {
+      this.setErreur(ExerciceFormData.CHAMP_POINTS, nfe.getMessage());
+      throw new FormValidationException("Le chiffre inscrit est invalide ...");
+    }
+  }
+
+  /**
+   * Validation competence.
+   *
+   * @param competence le competence
+   * @throws FormValidationException de type form validation exception
+   */
+  protected void validationCompetence(String competence) throws FormValidationException {
+    if (this.data.getCompetenceBdd().trouverUniqueParNom(competence) == null) {
+      throw new FormValidationException("Cette compétence n'existe pas");
+    }
+  }
+
+  /**
+   * Validation examen.
+   *
+   * @param examen le examen
+   * @throws FormValidationException de type form validation exception
+   */
+  protected void validationExamen(String examen) throws FormValidationException {
+    if (this.data.getExamenBdd().trouverParNom(examen) == null) {
+      throw new FormValidationException("Cette examen n'existe pas");
+    }
+  }
+
+  /**
+   * Sets the erreur.
+   *
+   * @param champ le champ
+   * @param message le message
+   */
+  protected void setErreur(String champ, String message) {
+    this.getErreurs().put(champ, message);
+  }
+
+  /**
+   * Accesseur en lecture sur le paramètre data.
+   *
+   * @return le paramètre data
+   */
+  public ExerciceFormData getData() {
+    return data;
+  }
+
+  /**
+   * Accesseur en écriture sur le paramètre data.
+   *
+   * @param data le nouveau paramètre data
+   */
+  public void setData(ExerciceFormData data) {
+    this.data = data;
+  }
+
+}

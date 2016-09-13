@@ -1,0 +1,25 @@
+package fr.eseo.atribus.dao;
+
+import fr.eseo.atribus.entities.Examen;
+import fr.eseo.atribus.entities.Matiere;
+
+import java.util.Date;
+import java.util.List;
+
+public interface ExamenDao {
+
+  void ajouter(Examen examen, Matiere matiere);
+
+  Examen trouverParNom(String nom);
+
+  List<Examen> trouverTousLesExamens();
+
+  int trouverIdParNom(String nom);
+
+  void update(Examen examen, String ancienNom);
+
+  void supprimer(Examen examen);
+
+  int calculerHistorique(Examen examen, Date dateDebut, Date dateFin);
+
+}

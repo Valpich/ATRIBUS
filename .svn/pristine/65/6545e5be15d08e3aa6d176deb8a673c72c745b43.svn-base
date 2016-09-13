@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns="http://xmlns.jcp.org/xml/ns/fr.eseo" xmlns:jsp="http://java.sun.com/xml/ns/fr.eseo/jsp"
+	xmlns:jsp_1="http://java.sun.com/xml/ns/javaee/jsp" xmlns:web="http://xmlns.jcp.org/xml/ns/javaee"
+	xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd http://xmlns.jcp.org/xml/ns/fr.eseo http://xmlns.jcp.org/xml/ns/fr.eseo/web-app_3_1.xsd"
+	id="WebApp_ID" version="3.1">
+	<display-name>ATRIBUS</display-name>
+
+	<!-- Configuration du contexte -->
+	<context-param>
+		<param-name>contextConfigLocation</param-name>
+		<param-value>classpath*:spring-dao.xml,
+		</param-value>
+	</context-param>
+
+	<!-- Configuration TAGLIB -->
+	<jsp-config>
+		<jsp_1:jsp-property-group>
+			<jsp_1:url-pattern>*.jsp</jsp_1:url-pattern>
+			<jsp_1:include-prelude>/WEB-INF/taglib.jsp</jsp_1:include-prelude>
+		</jsp_1:jsp-property-group>
+	</jsp-config>
+
+	<!-- Configuration des filtres -->
+	<filter>
+		<filter-name>Filtre de controle de l'encodage</filter-name>
+		<filter-class>org.apache.catalina.filters.SetCharacterEncodingFilter
+		</filter-class>
+		<init-param>
+			<param-name>encoding</param-name>
+			<param-value>UTF-8</param-value>
+		</init-param>
+		<init-param>
+			<param-name>ignore</param-name>
+			<param-value>false</param-value>
+		</init-param>
+	</filter>
+	<filter-mapping>
+		<filter-name>Filtre de controle de l'encodage</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+	<filter>
+		<filter-name>FiltreLimiteurRequeteApplication</filter-name>
+		<filter-class>fr.eseo.atribus.filters.FiltreLimiteurRequeteApplication
+		</filter-class>
+	</filter>
+	<filter-mapping>
+		<filter-name>FiltreLimiteurRequeteApplication</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+	<filter>
+		<filter-name>FiltreLimiteurRequeteUtilisateur</filter-name>
+		<filter-class>fr.eseo.atribus.filters.FiltreLimiteurRequeteUtilisateur
+		</filter-class>
+	</filter>
+	<filter-mapping>
+		<filter-name>FiltreLimiteurRequeteUtilisateur</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+	<filter>
+		<filter-name>FiltreAdministrateurSysteme</filter-name>
+		<filter-class>fr.eseo.atribus.filters.FiltreAdminSyst
+		</filter-class>
+	</filter>
+	<filter-mapping>
+		<filter-name>FiltreAdministrateurSysteme</filter-name>
+		<url-pattern>/AdministrateurSysteme/*</url-pattern>
+	</filter-mapping>
+	<filter>
+		<filter-name>FiltreDirecteurEtudes</filter-name>
+		<filter-class>fr.eseo.atribus.filters.FiltreDirecteurEtudes
+		</filter-class>
+	</filter>
+	<filter-mapping>
+		<filter-name>FiltreDirecteurEtudes</filter-name>
+		<url-pattern>/DirecteurEtudes/*</url-pattern>
+	</filter-mapping>
+	<filter>
+		<filter-name>FiltreDirecteurProgrammes</filter-name>
+		<filter-class>fr.eseo.atribus.filters.FiltreDirecteurProgrammes
+		</filter-class>
+	</filter>
+	<filter-mapping>
+		<filter-name>FiltreDirecteurProgrammes</filter-name>
+		<url-pattern>/DirecteurProgrammes/*</url-pattern>
+	</filter-mapping>
+	<filter>
+		<filter-name>FiltreEleve</filter-name>
+		<filter-class>fr.eseo.atribus.filters.FiltreEleve</filter-class>
+	</filter>
+	<filter-mapping>
+		<filter-name>FiltreEleve</filter-name>
+		<url-pattern>/Eleve/*</url-pattern>
+	</filter-mapping>
+	<filter>
+		<filter-name>FiltreEnseignant</filter-name>
+		<filter-class>fr.eseo.atribus.filters.FiltreEnseignant</filter-class>
+	</filter>
+	<filter-mapping>
+		<filter-name>FiltreEnseignant</filter-name>
+		<url-pattern>/Enseignant/*</url-pattern>
+	</filter-mapping>
+	<filter>
+		<filter-name>FiltreEnseignantRefMatiere</filter-name>
+		<filter-class>fr.eseo.atribus.filters.FiltreEnseignantRefMatiere
+		</filter-class>
+	</filter>
+	<filter-mapping>
+		<filter-name>FiltreEnseignantRefMatiere</filter-name>
+		<url-pattern>/EnseignantRefMatiere/*</url-pattern>
+	</filter-mapping>
+	<filter>
+		<filter-name>FiltreEnseignantRefUE</filter-name>
+		<filter-class>fr.eseo.atribus.filters.FiltreEnseignantRefUE
+		</filter-class>
+	</filter>
+	<filter-mapping>
+		<filter-name>FiltreEnseignantRefUE</filter-name>
+		<url-pattern>/EnseignantRefUE/*</url-pattern>
+	</filter-mapping>
+	<filter>
+		<filter-name>FiltreUtilisateur</filter-name>
+		<filter-class>fr.eseo.atribus.filters.FiltreUtilisateur</filter-class>
+	</filter>
+	<filter-mapping>
+		<filter-name>FiltreUtilisateur</filter-name>
+		<url-pattern>/*</url-pattern>
+		<url-pattern>/*/*</url-pattern>
+	</filter-mapping>
+	<error-page>
+		<error-code>429</error-code>
+		<location>/erreur429.jsp</location>
+	</error-page>
+	<error-page>
+		<error-code>404</error-code>
+		<location>/erreur404.jsp</location>
+	</error-page>
+	<!--
+	<error-page>
+		<error-code>500</error-code>
+		<location>/erreur500.jsp</location>
+	</error-page>
+	-->
+	<filter>
+		<filter-name>FiltreErreurRequete</filter-name>
+		<filter-class>fr.eseo.atribus.filters.FiltreErreurRequete
+		</filter-class>
+	</filter>
+	<filter-mapping>
+		<filter-name>FiltreErreurRequete</filter-name>
+		<url-pattern>/*</url-pattern>
+		<dispatcher>REQUEST</dispatcher>
+		<dispatcher>ERROR</dispatcher>
+	</filter-mapping>
+
+	<!-- Configuration des servlets -->
+	<servlet>
+		<servlet-name>dispatcher</servlet-name>
+		<servlet-class>
+			org.springframework.web.servlet.DispatcherServlet
+		</servlet-class>
+		<init-param>
+			<param-name>contextConfigLocation</param-name>
+			<param-value>
+				classpath*:dispatcher-servlet.xml
+			</param-value>
+		</init-param>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>dispatcher</servlet-name>
+		<url-pattern>/</url-pattern>
+		<url-pattern>/*/</url-pattern>
+	</servlet-mapping>
+
+</web-app>

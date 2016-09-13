@@ -1,0 +1,551 @@
+package fr.eseo.atribus.controller;
+
+import fr.eseo.atribus.beans.ArbreCompetence;
+import fr.eseo.atribus.dao.CompetenceDao;
+import fr.eseo.atribus.dao.UeDao;
+import fr.eseo.atribus.entities.Competence;
+import fr.eseo.atribus.entities.Eleve;
+import fr.eseo.atribus.entities.Utilisateur;
+import fr.eseo.atribus.forms.AddCompetenceForm;
+import fr.eseo.atribus.forms.AssocierCompetenceUeForm;
+import fr.eseo.atribus.forms.ModifierAssocierCompetenceUeForm;
+import fr.eseo.atribus.forms.ModifierCompetenceForm;
+
+import org.springframework.beans.factory.access.BeanFactoryReference;
+import org.springframework.beans.factory.access.SingletonBeanFactoryLocator;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.servlet.ModelAndView;
+
+import com.google.gson.Gson;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
+import javax.annotation.PostConstruct;
+import javax.servlet.http.HttpServletRequest;
+
+// TODO: Auto-generated Javadoc
+/**
+ * Servlet implementation class CompetencesController.
+ */
+@Controller
+public class CompetencesController {
+
+  /** La constante CONF_BDD_FACTORY. */
+  public static final String CONF_BDD_FACTORY = "DaoFactory";
+
+  /** La constante REFERENTIEL. */
+  public static final String REFERENTIEL = "referentiel";
+
+  /** La constante VUE_AFFICHER_COMP. */
+  public static final String VUE_AFFICHER_COMP = "afficherCompetences";
+
+  /** La constante VUE_AFFICHER_ASSOCIER. */
+  public static final String VUE_AFFICHER_ASSOCIER = "EnseignantRefUE/associerCompetenceUe";
+
+  /** La constante VUE_AFFICHER_MODIFIER. */
+  public static final String VUE_AFFICHER_MODIFIER = "EnseignantRefUE/modifierAssocierCompetenceUe";
+
+  /** La constante ATT_LISTE_ASSOCIATION. */
+  public static final String ATT_LISTE_ASSOCIATION = "association";
+
+  /** La constante ATT_UE. */
+  public static final String ATT_UE = "ues";
+
+  /** La constante ATT_ASSOCIATION_COMPETENCE. */
+  public static final String ATT_ASSOCIATION_COMPETENCE = "listeDesCompetences";
+
+  /** La constante ATT_COMPETENCE. */
+  public static final String ATT_COMPETENCE = "competences";
+
+  /** La constante ATT_SESSION_USER. */
+  public static final String ATT_SESSION_USER = "sessionUtilisateur";
+
+  /** La constante ATT_FORM. */
+  public static final String ATT_FORM = "form";
+
+  /** La constante VUE_AJOUT_COMPETENCE. */
+  public static final String VUE_AJOUT_COMPETENCE = "DirecteurProgrammes/ajouterCompetence";
+
+  /** La constante VUE_ETAT_1. */
+  public static final String VUE_ETAT_1 = "DirecteurProgrammes/afficherListeCompetences";
+
+  /** La constante VUE_MODIFIER_COMPETENCE. */
+  public static final String VUE_MODIFIER_COMPETENCE = "DirecteurProgrammes/modifierCompetence";
+
+  /** La constante VUE_FINALE. */
+  public static final String VUE_FINALE = "index";
+
+  /** La constante LISTE_ASSOCIE_COMPETENCE_UE. */
+  public static final String LISTE_ASSOCIE_COMPETENCE_UE = "listeDesAssociations";
+
+  /** La constante ID_ANCIENNE_COMPETENCE. */
+  public static final String ID_ANCIENNE_COMPETENCE = "idAncienneCompetence";
+
+  /** La constante NOM_ANCIENNE_COMPETENCE. */
+  public static final String NOM_ANCIENNE_COMPETENCE = "nomAncienneCompetence";
+
+  /** La variable competence dao. */
+  private CompetenceDao competenceDao;
+
+  /** La variable ue dao. */
+  private UeDao ueDao;
+
+  /**
+   * Initialisation.
+   */
+  @PostConstruct
+  public void init() {
+    final BeanFactoryReference bf =
+        SingletonBeanFactoryLocator.getInstance().useBeanFactory("beansDao");
+    /* Récupération d'une instance de notre DAO Competence */
+    this.competenceDao = (CompetenceDao) bf.getFactory().getBean("competenceDao");
+    this.ueDao = (UeDao) bf.getFactory().getBean("ueDao");
+  }
+
+  /**
+   * Afficher ajouter une competence.
+   *
+   * @return Le paramètre model and view
+   */
+  @RequestMapping(value = "/AjouterCompetence", method = RequestMethod.GET)
+  protected ModelAndView afficherAjouterUneCompetence() {
+    return new ModelAndView(VUE_AJOUT_COMPETENCE);
+  }
+
+  /**
+   * Ajouter une competence.
+   *
+   * @param request le request
+   * @return Le paramètre model and view
+   */
+  @RequestMapping(value = "/AjouterCompetence", method = RequestMethod.POST)
+  protected ModelAndView ajouterUneCompetence(HttpServletRequest request) {
+
+    final HashMap<String, Object> attributsRequete = new HashMap<>();
+    final AddCompetenceForm form = new AddCompetenceForm();
+
+    form.ajouterCompetence(request);
+    attributsRequete.put(CompetencesController.ATT_FORM, form);
+
+    return new ModelAndView(VUE_AJOUT_COMPETENCE, attributsRequete);
+
+  }
+
+
+  /**
+   * Afficher competences.
+   *
+   * @return Le paramètre model and view
+   */
+  @RequestMapping(value = "/AfficherCompetences", method = RequestMethod.GET)
+  protected ModelAndView afficherCompetences() {
+    final HashMap<String, Object> attributsRequete = new HashMap<>();
+    // this.genererReferentielCompetence(attributsRequete);
+    this.genererReferentielCompetence2(attributsRequete);
+
+    return new ModelAndView(VUE_AFFICHER_COMP, attributsRequete);
+  }
+
+  /**
+   * Generer referentiel competence2.
+   *
+   * @param attributsRequete le attributs requete
+   */
+  private void genererReferentielCompetence2(final HashMap<String, Object> attributsRequete) {
+    final List<ArbreCompetence> arbreReferentiel = new ArrayList<>();
+
+    final List<Competence> listCompNiveau0 = this.competenceDao.trouverParProfondeur(1);
+    final List<Competence> listCompNiveau1 = this.competenceDao.trouverParProfondeur(2);
+    final List<Competence> listCompNiveau2 = this.competenceDao.trouverParProfondeur(3);
+    final List<Competence> listCompNiveau3 = this.competenceDao.trouverParProfondeur(4);
+
+
+
+    for (int i = 0; i < listCompNiveau0.size(); i++) {
+      final ArbreCompetence compNiveau0 = new ArbreCompetence(); // Niveau 0
+
+      compNiveau0.setNomCompetence(i + 1 + " - " + listCompNiveau0.get(i).getNom());
+
+      final List<ArbreCompetence> children0 = new ArrayList<>();
+      int compteur = 0;
+      for (int j = 0; j < listCompNiveau1.size(); j++) {
+        if (listCompNiveau1.get(j).getIdParent() == listCompNiveau0.get(i).getId()) {
+          compteur++;
+          final ArbreCompetence compNiveau1 = new ArbreCompetence(); // niveau 1
+          compNiveau1
+              .setNomCompetence(i + 1 + "." + compteur + " - " + listCompNiveau1.get(j).getNom());
+
+          final List<ArbreCompetence> children1 = new ArrayList<>();
+          int compteur2 = 0;
+          for (int k = 0; k < listCompNiveau2.size(); k++) {
+            if (listCompNiveau2.get(k).getIdParent() == listCompNiveau1.get(j).getId()) {
+              compteur2++;
+              final ArbreCompetence compNiveau2 = new ArbreCompetence(); // niveau 2
+              compNiveau2.setNomCompetence(i + 1 + "." + compteur + "." + compteur2 + " - "
+                  + listCompNiveau2.get(k).getNom());
+
+              final List<ArbreCompetence> children2 = new ArrayList<>();
+              int compteur3 = 0;
+              for (int l = 0; l < listCompNiveau3.size(); l++) {
+                if (listCompNiveau3.get(l).getIdParent() == listCompNiveau2.get(k).getId()) {
+                  compteur3++;
+                  final ArbreCompetence compNiveau3 = new ArbreCompetence(); // niveau 3
+                  compNiveau3.setNomCompetence(i + 1 + "." + compteur + "." + compteur2 + "."
+                      + compteur3 + " - " + listCompNiveau3.get(l).getNom());
+                  compNiveau3.setChildren(null);
+                  children2.add(compNiveau3);
+                }
+              }
+
+              compNiveau2.setChildren(children2);
+              children1.add(compNiveau2);
+            }
+          }
+
+          compNiveau1.setChildren(children1);
+          children0.add(compNiveau1);
+        }
+      }
+      compNiveau0.setChildren(children0);
+
+      arbreReferentiel.add(compNiveau0);
+    }
+
+
+
+    final Gson gson = new Gson();
+
+
+
+    final List<ArbreCompetence> referentiel2 = new ArrayList<>();
+    final List<ArbreCompetence> sousComp1 = new ArrayList<>();
+
+    final ArbreCompetence arbre11 = new ArbreCompetence();
+    arbre11.setNomCompetence("Nom Comp 1.1");
+    final ArbreCompetence arbre12 = new ArbreCompetence();
+    arbre12.setNomCompetence("Nom Comp 1.2");
+    sousComp1.add(arbre11);
+    sousComp1.add(arbre12);
+
+    final ArbreCompetence arbre1 = new ArbreCompetence();
+    arbre1.setNomCompetence("Nom Comp 1");
+    arbre1.setChildren(sousComp1);
+    final ArbreCompetence arbre2 = new ArbreCompetence();
+    arbre2.setNomCompetence("Nom Comp 2");
+
+    referentiel2.add(arbre1);
+    referentiel2.add(arbre2);
+
+    final String referentielJSON = gson.toJson(arbreReferentiel);
+    System.out.println(referentielJSON);
+    // String referentielJSON = "[ { \"nomComp\" : \"Comp1\", \"children\" : [] } ]";
+    attributsRequete.put(REFERENTIEL, referentielJSON);
+  }
+
+
+  /**
+   * Simplification.
+   *
+   * @param referentiel le referentiel
+   * @param listeComp3 le liste comp3
+   * @param listeComp4 le liste comp4
+   * @param comp1 le comp1
+   * @param comp2 le comp2
+   */
+  private void simplification(List<Competence> referentiel, List<Competence> listeComp3,
+      List<Competence> listeComp4, Competence comp1, Competence comp2) {
+    if (comp2.getIdParent() == comp1.getId()) {
+      referentiel.add(comp2);
+      for (final Competence comp3 : listeComp3) {
+        if (comp3.getIdParent() == comp2.getId()) {
+          referentiel.add(comp3);
+          this.simplificationDeux(referentiel, listeComp4, comp3);
+        }
+      }
+    }
+  }
+
+
+  /**
+   * Simplification deux.
+   *
+   * @param referentiel le referentiel
+   * @param listeComp4 le liste comp4
+   * @param comp3 le comp3
+   */
+  private void simplificationDeux(List<Competence> referentiel, List<Competence> listeComp4,
+      Competence comp3) {
+    for (final Competence comp4 : listeComp4) {
+      if (comp4.getIdParent() == comp3.getId()) {
+        referentiel.add(comp4);
+      }
+    }
+  }
+
+  /**
+   * Afficher modifier competence.
+   *
+   * @return Le paramètre model and view
+   */
+  @RequestMapping(value = "/DirecteurProgrammes/ModifierCompetences", method = RequestMethod.GET)
+  protected ModelAndView afficherModifierCompetence() {
+
+    final HashMap<String, Object> attributsRequete = new HashMap<>();
+
+    attributsRequete.put("listeCompetences", this.competenceDao.trouverToutesLesCompetences());
+
+    return new ModelAndView(CompetencesController.VUE_MODIFIER_COMPETENCE, attributsRequete);
+
+  }
+
+  /**
+   * Modifier competence.
+   *
+   * @param request le request
+   * @return Le paramètre model and view
+   */
+  @RequestMapping(value = "/DirecteurProgrammes/ModifierCompetences", params = "modifier",
+      method = RequestMethod.POST)
+  protected ModelAndView modifierCompetence(HttpServletRequest request) {
+
+    final HashMap<String, Object> attributsRequete = new HashMap<>();
+    final String idAncienneCompetence = request.getParameter("idCompetence");
+    final String nomAncienneCompetence = request.getParameter("nomCompetence");
+
+    attributsRequete.put(CompetencesController.ID_ANCIENNE_COMPETENCE, idAncienneCompetence);
+    attributsRequete.put(CompetencesController.NOM_ANCIENNE_COMPETENCE, nomAncienneCompetence);
+
+    return new ModelAndView(CompetencesController.VUE_MODIFIER_COMPETENCE, attributsRequete);
+
+  }
+
+  /**
+   * Valider modifier competence.
+   *
+   * @param request le request
+   * @return Le paramètre model and view
+   */
+  @RequestMapping(value = "/DirecteurProgrammes/ModifierCompetences",
+      params = "validerModification", method = RequestMethod.POST)
+  protected ModelAndView validerModifierCompetence(HttpServletRequest request) {
+
+    final HashMap<String, Object> attributsRequete = new HashMap<>();
+    final String idAncienneCompetence =
+        request.getParameter(CompetencesController.ID_ANCIENNE_COMPETENCE);
+    final String nomAncienneCompetence =
+        request.getParameter(CompetencesController.NOM_ANCIENNE_COMPETENCE);
+    final ModifierCompetenceForm form = new ModifierCompetenceForm();
+
+    form.modifierCompetence(request);
+
+    attributsRequete.put(CompetencesController.ID_ANCIENNE_COMPETENCE, idAncienneCompetence);
+    attributsRequete.put(CompetencesController.NOM_ANCIENNE_COMPETENCE, nomAncienneCompetence);
+    attributsRequete.put("form", form);
+
+    return new ModelAndView(CompetencesController.VUE_MODIFIER_COMPETENCE, attributsRequete);
+
+  }
+
+  /**
+   * Supprimer competence.
+   *
+   * @param request le request
+   * @return Le paramètre model and view
+   */
+  @RequestMapping(value = "/DirecteurProgrammes/ModifierCompetences", params = "supprimer",
+      method = RequestMethod.POST)
+  protected ModelAndView supprimerCompetence(HttpServletRequest request) {
+
+    final HashMap<String, Object> attributsRequete = new HashMap<>();
+
+    final String nomCompetence = request.getParameter("nomCompetence");
+
+    this.competenceDao.supprimerCompetenceParNom(nomCompetence);
+    attributsRequete.put("delete", "La suppression a été effectuée avec succès");
+    attributsRequete.put("listeCompetences", this.competenceDao.trouverToutesLesCompetences());
+
+    return new ModelAndView(CompetencesController.VUE_MODIFIER_COMPETENCE, attributsRequete);
+
+  }
+
+  /**
+   * Generer referentiel competence.
+   *
+   * @param attributsRequete le attributs requete
+   */
+  private void genererReferentielCompetence(final HashMap<String, Object> attributsRequete) {
+    final List<Competence> referentiel = new ArrayList<>();
+    // Remplissage des listes de compétences en fonction du niveau
+    final List<Competence> listeComp1 = this.competenceDao.trouverParProfondeur(1);
+    final List<Competence> listeComp2 = this.competenceDao.trouverParProfondeur(2);
+    final List<Competence> listeComp3 = this.competenceDao.trouverParProfondeur(3);
+    final List<Competence> listeComp4 = this.competenceDao.trouverParProfondeur(4);
+    // Remplissage du referentiel total (ceci est completement foireux)
+    for (final Competence comp1 : listeComp1) {
+      if (comp1.getIdParent() == 0) {
+        referentiel.add(comp1);
+        for (final Competence comp2 : listeComp2) {
+          this.simplification(referentiel, listeComp3, listeComp4, comp1, comp2);
+        }
+      }
+    }
+    // On charge la liste des competences
+    attributsRequete.put(REFERENTIEL, referentiel);
+  }
+
+  /**
+   * Méthode qui affiche la liste des UE, la liste des compétences lorsque la vue
+   * associercompetenceue est appelée.
+   * 
+   * @return La page jsp associerCompetenceUe
+   */
+  @RequestMapping(value = { "/EnseignantRefUE/AssocierCompetenceUE",
+      "/DirecteurProgrammes/AssocierCompetenceUE" }, method = RequestMethod.GET)
+  protected ModelAndView afficherAssocierCompetencesUe() {
+
+    final HashMap<String, Object> attributsRequete = new HashMap<>();
+    final AssocierCompetenceUeForm form = new AssocierCompetenceUeForm();
+
+    attributsRequete.put(CompetencesController.ATT_UE, form.getListUe());
+    attributsRequete.put(CompetencesController.ATT_COMPETENCE, form.getListCompetences());
+
+    return new ModelAndView(VUE_AFFICHER_ASSOCIER, attributsRequete);
+
+  }
+
+  /**
+   * Associer competence ue.
+   *
+   * @param request le request
+   * @return Le paramètre model and view
+   */
+  @RequestMapping(value = { "/EnseignantRefUE/AssocierCompetenceUE",
+      "/DirecteurProgrammes/AssocierCompetenceUE" }, method = RequestMethod.POST)
+  protected ModelAndView associerCompetenceUe(HttpServletRequest request) {
+
+    final HashMap<String, Object> attributsRequete = new HashMap<>();
+
+    final AssocierCompetenceUeForm form = new AssocierCompetenceUeForm();
+
+    form.associerUeCompetence(request);
+    attributsRequete.put(CompetencesController.ATT_FORM, form);
+    attributsRequete.put(CompetencesController.ATT_UE, form.getListUe());
+    attributsRequete.put(CompetencesController.ATT_COMPETENCE, form.getListCompetences());
+
+    return new ModelAndView(VUE_AFFICHER_ASSOCIER, attributsRequete);
+  }
+
+  /**
+   * Afficher modifier associer competences ue.
+   *
+   * @return Le paramètre model and view
+   */
+  @RequestMapping(value = { "/EnseignantRefUE/ModifierAssocierCompetenceUE",
+      "/DirecteurProgrammes/ModifierAssocierCompetenceUE" }, method = RequestMethod.GET)
+  protected ModelAndView afficherModifierAssocierCompetencesUe() {
+
+    final HashMap<String, Object> attributsRequete = new HashMap<>();
+    final ModifierAssocierCompetenceUeForm form = new ModifierAssocierCompetenceUeForm();
+
+    form.setListeDesUes(this.ueDao.listerUeAssociationCompetenceUe());
+
+    attributsRequete.put(CompetencesController.LISTE_ASSOCIE_COMPETENCE_UE, form);
+
+    return new ModelAndView(VUE_AFFICHER_MODIFIER, attributsRequete);
+
+  }
+
+  /**
+   * Supprimer associer competences ue.
+   *
+   * @param request le request
+   * @return Le paramètre model and view
+   */
+  @RequestMapping(
+      value = { "/EnseignantRefUE/ModifierAssocierCompetenceUE",
+          "/DirecteurProgrammes/ModifierAssocierCompetenceUE" },
+      method = RequestMethod.POST, params = "supprimer")
+  protected ModelAndView supprimerAssocierCompetencesUe(HttpServletRequest request) {
+
+    final ModifierAssocierCompetenceUeForm form = new ModifierAssocierCompetenceUeForm();
+
+    form.supprimerAssociationCompetenceUe(request);
+
+    form.setListeDesUes(this.ueDao.listerUeAssociationCompetenceUe());
+
+    return new ModelAndView(VUE_AFFICHER_MODIFIER, LISTE_ASSOCIE_COMPETENCE_UE, form);
+
+  }
+
+  /**
+   * Modifier associer competences ue.
+   *
+   * @param request le request
+   * @return Le paramètre model and view
+   */
+  @RequestMapping(
+      value = { "/EnseignantRefUE/ModifierAssocierCompetenceUE",
+          "/DirecteurProgrammes/ModifierAssocierCompetenceUE" },
+      method = RequestMethod.POST, params = "modifier")
+  protected ModelAndView modifierAssocierCompetencesUe(HttpServletRequest request) {
+
+    final AssocierCompetenceUeForm associerForm = new AssocierCompetenceUeForm();
+    final HashMap<String, Object> attributsRequete = new HashMap<>();
+
+    attributsRequete.put("nomAncienUe", request.getParameter("ue"));
+    attributsRequete.put("nomAncienneCompetence", request.getParameter("comp"));
+    attributsRequete.put(CompetencesController.ATT_UE, associerForm.getListUe());
+    attributsRequete.put(CompetencesController.ATT_COMPETENCE, associerForm.getListCompetences());
+
+    return new ModelAndView(VUE_AFFICHER_MODIFIER, "modifierForm", attributsRequete);
+
+  }
+
+  /**
+   * Valider modifier associer competences ue.
+   *
+   * @param request le request
+   * @return Le paramètre model and view
+   */
+  @RequestMapping(
+      value = { "/EnseignantRefUE/ModifierAssocierCompetenceUE",
+          "/DirecteurProgrammes/ModifierAssocierCompetenceUE" },
+      method = RequestMethod.POST, params = "validerModification")
+  protected ModelAndView validerModifierAssocierCompetencesUe(HttpServletRequest request) {
+
+    final ModifierAssocierCompetenceUeForm form = new ModifierAssocierCompetenceUeForm();
+
+    form.modifierAssociationCompetenceUe(request);
+    form.setListeDesUes(this.ueDao.listerUeAssociationCompetenceUe());
+
+    return new ModelAndView(VUE_AFFICHER_MODIFIER, LISTE_ASSOCIE_COMPETENCE_UE, form);
+
+  }
+
+  /**
+   * Afficher ajouter competences.
+   *
+   * @param request le request
+   * @return Le paramètre model and view
+   */
+  @RequestMapping(value = "/Eleve/AfficherMesCompetences", method = RequestMethod.GET)
+  protected ModelAndView afficherAjouterCompetences(HttpServletRequest request) {
+    final HashMap<String, Object> attributsRequete = new HashMap<>();
+    @SuppressWarnings("unchecked")
+    final List<Utilisateur> listeUtilisateur =
+        (List<Utilisateur>) request.getSession().getAttribute(ATT_SESSION_USER);
+    Eleve eleve = null;
+    for (final Utilisateur utilisateur : listeUtilisateur) {
+      if (utilisateur.getClass().equals(Eleve.class)) {
+        eleve = (Eleve) utilisateur;
+      }
+    }
+    attributsRequete.put("compEleve", this.competenceDao.recupererProfilEleve(eleve));
+    return new ModelAndView("Eleve/afficherMesCompetences", attributsRequete);
+  }
+
+}

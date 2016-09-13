@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>AddExamenForm.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Atribus</a> &gt; <a href="index.source.html" class="el_package">fr.eseo.atribus.forms</a> &gt; <span class="el_source">AddExamenForm.java</span></div><h1>AddExamenForm.java</h1><pre class="source lang-java linenums">package fr.eseo.atribus.forms;
+
+import fr.eseo.atribus.dao.DaoException;
+import fr.eseo.atribus.dao.ExamenDao;
+import fr.eseo.atribus.dao.MatiereDao;
+import fr.eseo.atribus.entities.Examen;
+import fr.eseo.atribus.entities.Matiere;
+
+import org.springframework.beans.factory.access.BeanFactoryReference;
+import org.springframework.beans.factory.access.SingletonBeanFactoryLocator;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.servlet.http.HttpServletRequest;
+
+public class AddExamenForm {
+  private static final String CHAMP_MATIERE = &quot;choixMatiere&quot;;
+  private static final String CHAMP_NOM = &quot;nom&quot;;
+  private static final String CHAMP_AUTO = &quot;autoEvaluation&quot;;
+<span class="nc" id="L23">  private static final Logger LOGGER = Logger.getLogger(AddExamenForm.class.getName());</span>
+  private static final String EXCEPTION = &quot;Exception&quot;;
+
+  private String resultat;
+<span class="nc" id="L27">  private final Map&lt;String, String&gt; erreurs = new HashMap&lt;&gt;();</span>
+  private final ExamenDao examenDao;
+  private final MatiereDao matiereDao;
+
+  /**
+   * Méthode d'instantiation.
+   */
+<span class="nc" id="L34">  public AddExamenForm() {</span>
+    final BeanFactoryReference bf =
+<span class="nc" id="L36">        SingletonBeanFactoryLocator.getInstance().useBeanFactory(&quot;beansDao&quot;);</span>
+    /* Récupération d'une instance de notre DAO Examen */
+<span class="nc" id="L38">    this.examenDao = (ExamenDao) bf.getFactory().getBean(&quot;examenDao&quot;);</span>
+    /* Récupération d'une instance de notre DAO Matiere */
+<span class="nc" id="L40">    this.matiereDao = (MatiereDao) bf.getFactory().getBean(&quot;matiereDao&quot;);</span>
+<span class="nc" id="L41">  }</span>
+
+  public String getResultat() {
+<span class="nc" id="L44">    return this.resultat;</span>
+  }
+
+  public Map&lt;String, String&gt; getErreurs() {
+<span class="nc" id="L48">    return this.erreurs;</span>
+  }
+
+  /**
+   * Ajout d'un examen dans la DAO en fonction du formulaire.
+   * 
+   * @param request request
+   * @return Examen
+   */
+  public Examen addExamen(HttpServletRequest request) {
+<span class="nc" id="L58">    final String nom = AddExamenForm.getValeurChamp(request, AddExamenForm.CHAMP_NOM);</span>
+<span class="nc" id="L59">    final Examen examen = new Examen();</span>
+<span class="nc" id="L60">    final String matiere = AddExamenForm.getValeurChamp(request, AddExamenForm.CHAMP_MATIERE);</span>
+<span class="nc" id="L61">    final Matiere mat = new Matiere();</span>
+<span class="nc" id="L62">    mat.setNom(matiere);</span>
+<span class="nc" id="L63">    final String autoEvaluation = AddExamenForm.getValeurChamp(request, AddExamenForm.CHAMP_AUTO);</span>
+<span class="nc bnc" id="L64" title="All 2 branches missed.">    if (&quot;on&quot;.equals(autoEvaluation)) {</span>
+<span class="nc" id="L65">      examen.setAutoEvaluation(true);</span>
+    } else {
+<span class="nc" id="L67">      examen.setAutoEvaluation(false);</span>
+    }
+    try {
+<span class="nc" id="L70">      this.traiterDonnees(nom, matiere, examen);</span>
+<span class="nc bnc" id="L71" title="All 2 branches missed.">      if (this.erreurs.isEmpty()) {</span>
+<span class="nc" id="L72">        this.examenDao.ajouter(examen, mat);</span>
+<span class="nc" id="L73">        this.resultat = &quot;success&quot;;</span>
+      } else {
+<span class="nc" id="L75">        this.resultat = &quot;error&quot;;</span>
+      }
+<span class="nc" id="L77">    } catch (final DaoException ebdd) {</span>
+<span class="nc" id="L78">      this.resultat = &quot;errorDao&quot;;</span>
+<span class="nc" id="L79">      AddExamenForm.LOGGER.log(Level.INFO, EXCEPTION, ebdd);</span>
+<span class="nc" id="L80">    }</span>
+<span class="nc" id="L81">    return examen;</span>
+  }
+
+  private void traiterDonnees(String nom, String matiere, Examen examen) {
+<span class="nc" id="L85">    this.traiterNomMatiere(nom, matiere);</span>
+<span class="nc" id="L86">    examen.setMatiere(this.matiereDao.trouverParNom(matiere));</span>
+<span class="nc" id="L87">    examen.setNom(nom);</span>
+<span class="nc" id="L88">  }</span>
+
+  private void validationNom(String nom) throws FormValidationException {
+<span class="nc bnc" id="L91" title="All 4 branches missed.">    if (nom == null || nom.length() &lt; 3) {</span>
+<span class="nc" id="L92">      throw new FormValidationException(&quot;Le nom de l'examen au moins 3 caractères.&quot;);</span>
+    }
+<span class="nc bnc" id="L94" title="All 2 branches missed.">    if (this.examenDao.trouverParNom(nom) != null) {</span>
+<span class="nc" id="L95">      throw new FormValidationException(&quot;Cet examen existe déjà, merci d'en créer un autre.&quot;);</span>
+    }
+<span class="nc" id="L97">  }</span>
+
+  private void validationMatiere(String matiere) throws FormValidationException {
+<span class="nc bnc" id="L100" title="All 2 branches missed.">    if (this.matiereDao.trouverParNom(matiere) == null) {</span>
+<span class="nc" id="L101">      throw new FormValidationException(&quot;Cette matière n'existe pas&quot;);</span>
+    }
+<span class="nc" id="L103">  }</span>
+
+  private void traiterNomMatiere(String nom, String matiere) {
+    try {
+<span class="nc" id="L107">      this.validationMatiere(matiere);</span>
+<span class="nc" id="L108">    } catch (final FormValidationException fve) {</span>
+<span class="nc" id="L109">      AddExamenForm.LOGGER.log(Level.INFO, EXCEPTION, fve);</span>
+<span class="nc" id="L110">      this.setErreur(&quot;choixMatiere&quot;, &quot;Choix de matière invalide ou inexistant.&quot;);</span>
+<span class="nc" id="L111">    }</span>
+    try {
+<span class="nc" id="L113">      this.validationNom(nom);</span>
+<span class="nc" id="L114">    } catch (final FormValidationException fve) {</span>
+<span class="nc" id="L115">      AddExamenForm.LOGGER.log(Level.INFO, EXCEPTION, fve);</span>
+<span class="nc" id="L116">      this.setErreur(&quot;nom&quot;, &quot;Nom invalide ou inexistant.&quot;);</span>
+<span class="nc" id="L117">    }</span>
+<span class="nc" id="L118">  }</span>
+
+  /*
+   * Ajoute un message correspondant au champ spécifié à la map des erreurs.
+   */
+  private void setErreur(String champ, String message) {
+<span class="nc" id="L124">    this.erreurs.put(champ, message);</span>
+<span class="nc" id="L125">  }</span>
+
+  /*
+   * Méthode utilitaire qui retourne null si un champ est vide, et son contenu sinon.
+   */
+  private static String getValeurChamp(HttpServletRequest request, String nomChamp) {
+<span class="nc" id="L131">    final String valeur = request.getParameter(nomChamp);</span>
+<span class="nc bnc" id="L132" title="All 4 branches missed.">    if (valeur == null || valeur.trim().length() == 0) {</span>
+<span class="nc" id="L133">      return null;</span>
+    } else {
+<span class="nc" id="L135">      return valeur.trim();</span>
+    }
+  }
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.6.201602180812</span></div></body></html>

@@ -1,0 +1,83 @@
+package fr.eseo.atribus.forms;
+
+import fr.eseo.atribus.dao.AdminSystDao;
+import fr.eseo.atribus.dao.DirecteurEtudesDao;
+import fr.eseo.atribus.dao.DirecteurProgrammesDao;
+import fr.eseo.atribus.dao.EleveDao;
+import fr.eseo.atribus.dao.EnseignantDao;
+import fr.eseo.atribus.dao.EnseignantRefMatiereDao;
+import fr.eseo.atribus.dao.EnseignantRefUeDao;
+import fr.eseo.atribus.dao.UtilisateurDao;
+
+import org.springframework.beans.factory.access.BeanFactoryReference;
+import org.springframework.beans.factory.access.SingletonBeanFactoryLocator;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+
+public class UtilisateurForm {
+  protected static final String NOM_BOUTON_SUPPRIMER = "modifier";
+  protected static final String NOM_BOUTON_SUPPRIMER2 = "supprimer"; /** TODO : voir **/
+  protected static final String CHAMP_LOGIN = "login";
+  protected static final String CHAMP_PASS = "password";
+  protected static final String CHAMP_NOM = "nom";
+  protected static final String CHAMP_PRENOM = "prenom";
+  protected static final String CHAMP_EMAIL = "email";
+  protected static final String CB_AS = "cbAS"; // CheckBox Admin système
+  protected static final String CB_DE = "cbDE"; // CheckBox Directeur études
+  protected static final String CB_DP = "cbDP"; // CheckBox Directeur programmes
+  protected static final String CB_EN = "cbEN"; // CheckBox Enseignant
+  protected static final String CB_EURE = "cbERUE"; // CheckBox Enseignant
+  protected static final String CB_ERM = "cbERM"; // CheckBox Enseignant
+  protected static final String CB_EL = "cbEL"; // CheckBox élève
+  protected static final String EXCEPTION = "Exception";
+
+  protected String resultat;
+  protected Map<String, String> erreurs = new HashMap<>();
+
+  protected UtilisateurDao utilisateurDao;
+  protected final AdminSystDao adminSystDao;
+  protected final DirecteurEtudesDao directeurEtudesDao;
+  protected final DirecteurProgrammesDao directeurProgrammesDao;
+  protected final EnseignantDao enseignantDao;
+  protected final EnseignantRefMatiereDao enseignantRefMatiereDao;
+  protected final EnseignantRefUeDao enseignantRefUeDao;
+  protected final EleveDao eleveDao;
+
+  public UtilisateurForm() {
+    super();
+    final BeanFactoryReference bf =
+        SingletonBeanFactoryLocator.getInstance().useBeanFactory("beansDao");
+    this.utilisateurDao = (UtilisateurDao) bf.getFactory().getBean("utilisateurDao");
+    this.adminSystDao = (AdminSystDao) bf.getFactory().getBean("adminSystDao");
+    this.directeurEtudesDao = (DirecteurEtudesDao) bf.getFactory().getBean("directeurEtudesDao");
+    this.directeurProgrammesDao =
+        (DirecteurProgrammesDao) bf.getFactory().getBean("directeurProgrammesDao");
+    this.enseignantDao = (EnseignantDao) bf.getFactory().getBean("enseignantDao");
+    this.enseignantRefMatiereDao = (EnseignantRefMatiereDao) bf.getFactory().getBean("enseignantRefMatiereDao");
+    this.enseignantRefUeDao = (EnseignantRefUeDao) bf.getFactory().getBean("enseignantRefUeDao");
+    this.eleveDao = (EleveDao) bf.getFactory().getBean("eleveDao");
+  }
+
+  /**
+   * Ajoute un message correspondant au champ spécifié à la map des erreurs.
+   */
+  protected void setErreur(String champ, String message) {
+    this.erreurs.put(champ, message);
+  }
+
+  /**
+   * Méthode utilitaire qui retourne null si un champ est vide, et son contenu sinon.
+   */
+  protected static String getValeurChamp(HttpServletRequest request, String nomChamp) {
+    final String valeur = request.getParameter(nomChamp);
+    if (valeur == null || valeur.trim().length() == 0) {
+      return null;
+    } else {
+      return valeur.trim();
+    }
+  }
+
+}

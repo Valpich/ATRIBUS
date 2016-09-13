@@ -1,0 +1,44 @@
+package fr.eseo.atribus.entities;
+
+import org.joda.time.DateTime;
+
+import java.io.Serializable;
+
+public class Promotion implements Serializable {
+
+  private static final long serialVersionUID = -6984430899839938911L;
+
+  private int id;
+  private String nom;
+  private DateTime anneeDiplome;
+
+  public int getId() {
+    return this.id;
+  }
+
+  public void setId(int id) {
+    this.id = id;
+  }
+
+  public String getNom() {
+    return this.nom;
+  }
+
+  public DateTime getAnneeDiplome() {
+    return this.anneeDiplome;
+  }
+
+  public void setNom(String nom) {
+    this.nom = nom;
+  }
+
+  public void setAnneeDiplome(DateTime anneeDiplome) {
+    this.anneeDiplome = anneeDiplome;
+  }
+
+  @Override
+  public String toString() {
+    return "Promotion [semestre=" + ", nom=" + this.nom
+        + ", anneeDiplome=" + this.anneeDiplome + "]";
+  }
+}

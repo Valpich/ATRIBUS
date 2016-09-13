@@ -1,0 +1,215 @@
+package fr.eseo.atribus.controller;
+
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.request;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
+import static org.testng.Assert.assertEquals;
+
+import fr.eseo.atribus.dao.EnseignantDao;
+import fr.eseo.atribus.dao.EnseignantRefMatiereDao;
+import fr.eseo.atribus.dao.EnseignantRefUeDao;
+import fr.eseo.atribus.dao.UtilisateurDao;
+import fr.eseo.atribus.entities.Enseignant;
+import fr.eseo.atribus.entities.EnseignantRefMatiere;
+import fr.eseo.atribus.entities.EnseignantRefUe;
+import fr.eseo.atribus.entities.Utilisateur;
+
+import org.mockito.MockitoAnnotations;
+import org.springframework.beans.factory.access.BeanFactoryReference;
+import org.springframework.beans.factory.access.SingletonBeanFactoryLocator;
+import org.springframework.mock.web.MockHttpSession;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.web.WebAppConfiguration;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.servlet.view.InternalResourceViewResolver;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+
+@Test
+@ContextConfiguration({ "classpath:spring-dao.xml", "classpath:spring-daoBeans.xml",
+    "classpath:beanRefFactory.xml", "classpath:dispatcher-servlet.xml" })
+@WebAppConfiguration
+public class UtilisateurControllerTest {
+  private MockMvc mockMvc;
+
+  @BeforeClass
+  public void setup() {
+    final InternalResourceViewResolver viewResolver = new InternalResourceViewResolver();
+    viewResolver.setPrefix("/WEB-INF/");
+    viewResolver.setSuffix(".jsp");
+    MockitoAnnotations.initMocks(this);
+    this.mockMvc = MockMvcBuilders.standaloneSetup(new UtilisateurController())
+        .setViewResolvers(viewResolver).build();
+  }
+
+  @Test
+  public void testConnexion() throws Exception {
+    this.mockMvc.perform(get("/connexion")).andExpect(status().isOk())
+        .andExpect(view().name("connexion"));
+  }
+
+  @Test
+  public void testTenterConnexion() throws Exception {
+    this.mockMvc.perform(post("/connexion").with(request -> {
+      request.setParameter("login", "pichavval");
+      request.setParameter("password", "password");
+      request.setRequestURI("ATRIBUS/connexion");
+      request.getServletContext().setAttribute("utilisateurs", new HashSet<>());
+      request.setContextPath("ATRIBUS");
+      return request;
+    })).andExpect(status().is(302))
+        .andExpect(request().sessionAttribute("sessionUtilisateur", notNullValue()))
+        .andExpect(view().name("redirect:/"));
+  }
+
+  @Test
+  public void testTenterMauvaiseConnexion() throws Exception {
+    this.mockMvc.perform(post("/connexion").with(request -> {
+      request.setParameter("login", "pichavval");
+      request.setParameter("password", "pasword");
+      request.setSession(new MockHttpSession());
+      return request;
+    })).andExpect(status().isOk())
+        .andExpect(request().sessionAttribute("sessionUtilisateur", nullValue()))
+        .andExpect(view().name("connexion"));
+  }
+
+  @Test
+  public void testGestionUtilisateur() throws Exception {
+    this.mockMvc.perform(get("/AdministrateurSysteme/GestionUtilisateurs"))
+        .andExpect(status().isOk())
+        .andExpect(view().name("AdministrateurSysteme/gestionUtilisateurs"));
+  }
+
+  @Test
+  public void testAjouterUtilisateur() throws Exception {
+    this.mockMvc.perform(post("/AdministrateurSysteme/GestionUtilisateurs").with(request -> {
+      request.setParameter("ajouter", "");
+      return request;
+    })).andDo(print()).andExpect(status().isOk())
+        .andExpect(view().name("AdministrateurSysteme/gestionUtilisateurs"));
+    boolean exception2 = false;
+    try {
+      this.mockMvc.perform(post("/AdministrateurSysteme/GestionUtilisateurs").with(request -> {
+        request.setParameter("supprimer", "");
+        return request;
+      })).andDo(print()).andExpect(status().isOk())
+          .andExpect(view().name("/AdministrateurSysteme/gestionUtilisateurs"));
+    } catch (final AssertionError assertion) {
+      exception2 = false;
+    }
+    assertEquals(exception2, false);
+    boolean exception = false;
+    try {
+      this.mockMvc.perform(post("/AdministrateurSysteme/GestionUtilisateurs").with(request -> {
+        request.setParameter("modifier", "");
+        return request;
+      }));
+    } catch (final Exception exc) {
+      exception = true;
+    }
+    assertEquals(exception, false);
+  }
+
+  @Test
+  public void testDeconnexion() throws Exception {
+    this.mockMvc.perform(get("/deconnexion")).andExpect(status().is(302))
+        .andExpect(view().name("redirect:/connexion"));
+  }
+  
+  @Test
+  public void afficherMonProfil() throws Exception {
+    this.mockMvc.perform(get("/MonProfil").with(request -> {
+      request.setSession(new MockHttpSession());
+      /* Récupération de la lise des utilisateurs */
+      final BeanFactoryReference bf =
+          SingletonBeanFactoryLocator.getInstance().useBeanFactory("beansDao");
+      final Utilisateur utilisateur =
+          ((UtilisateurDao) bf.getFactory().getBean("utilisateurDao")).trouverParId(3);
+      List<Utilisateur> user = new ArrayList<>();
+      user.add(utilisateur);
+      request.getSession().setAttribute("sessionUtilisateur",user);
+      return request;
+    })).andExpect(status().isOk())
+        .andExpect(view().name("profilUtilisateur"));
+  }
+  
+  @Test
+  public void modifierMonProfil() throws Exception {
+    this.mockMvc.perform(post("/MonProfil").with(request -> {
+      request.setSession(new MockHttpSession());
+      /* Récupération de la lise des utilisateurs */
+      final BeanFactoryReference bf =
+          SingletonBeanFactoryLocator.getInstance().useBeanFactory("beansDao");
+      final Utilisateur utilisateur =
+          ((UtilisateurDao) bf.getFactory().getBean("utilisateurDao")).trouverParId(3);
+      final List<Enseignant> listeEnseignant =
+          ((EnseignantDao) bf.getFactory().getBean("enseignantDao")).recupererListe();
+      final List<EnseignantRefUe> listeEnseignantRefUe =
+          ((EnseignantRefUeDao) bf.getFactory().getBean("enseignantRefUeDao")).recupererListe();
+      final List<EnseignantRefMatiere> erms =
+          ((EnseignantRefMatiereDao) bf.getFactory().getBean("enseignantRefMatiereDao")).recupererListe();
+      List<Utilisateur> user = new ArrayList<>();
+      user.add(utilisateur);
+      for(Enseignant prof: listeEnseignant){
+        if(prof.getId() == user.get(0).getId()){
+          user.add(1, prof);
+        }
+      }
+      for(EnseignantRefUe erue : listeEnseignantRefUe){
+        if(erue.getIdEnseignant() == ((Enseignant)user.get(1)).getIdEnseignant()){
+         user.add(2,erue); 
+        }
+      }
+      for(EnseignantRefMatiere erm : erms){
+        if(erm.getIdEnseignant() == ((Enseignant)user.get(1)).getIdEnseignant()){
+         user.add(3,erm); 
+        }
+      }
+      request.getSession().setAttribute("sessionUtilisateur",user);
+      return request;
+    })).andExpect(status().isOk())
+        .andExpect(view().name("profilUtilisateur"));
+  }
+  
+  @Test
+  public void afficherContactAdmin() throws Exception {
+    this.mockMvc.perform(get("/ContacterAdministrateur")).andExpect(status().isOk())
+        .andExpect(view().name("contacterAdministrateur"));
+  }
+  
+  @Test
+  public void contactAdmin() throws Exception {
+    this.mockMvc.perform(post("/ContacterAdministrateur").param("message", "le site bug")).andExpect(status().isOk())
+        .andExpect(view().name("contacterAdministrateur"));
+  }
+  
+  @Test
+  public void contactAdminConnecte() throws Exception {
+    this.mockMvc.perform(post("/ContacterAdministrateur").param("message", "le site bug").with(request -> {
+      request.setSession(new MockHttpSession());
+      /* Récupération de la lise des utilisateurs */
+      final BeanFactoryReference bf =
+          SingletonBeanFactoryLocator.getInstance().useBeanFactory("beansDao");
+      final Utilisateur utilisateur =
+          ((UtilisateurDao) bf.getFactory().getBean("utilisateurDao")).trouverParId(3);
+    
+      List<Utilisateur> user = new ArrayList<>();
+      user.add(utilisateur);
+      request.getSession().setAttribute("sessionUtilisateur",user);
+      return request;
+    })).andExpect(status().isOk())
+        .andExpect(view().name("contacterAdministrateur"));
+  }
+  
+}

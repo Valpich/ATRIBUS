@@ -1,0 +1,238 @@
+package fr.eseo.atribus.beans;
+
+/** Classe destinnée à encapsuler les messages par défaut. */
+public class MessagesParDefaut {
+  private String convocationDePartieUn;
+  private String convocationDePartieDeux;
+  private String convocationDePartieTrois;
+
+  private String enseignantSuggereCompetenceUn;
+  private String enseignantSuggereCompetenceDeux;
+  private String enseignantSuggereCompetenceTrois;
+  private String enseignantSuggereCompetenceQuatre;
+
+  private String eureSuggereCompetenceUn;
+  private String eureSuggereCompetenceDeux;
+  private String eureSuggereCompetenceTrois;
+  private String eureSuggereCompetenceQuatre;
+
+  private String ermSuggereCompetenceUn;
+  private String ermSuggereCompetenceDeux;
+  private String ermSuggereCompetenceTrois;
+  private String ermSuggereCompetenceQuatre;
+
+  private String eleveSuggereCompetenceUn;
+  private String eleveSuggereCompetenceDeux;
+  private String eleveSuggereCompetenceTrois;
+  private String eleveSuggereCompetenceQuatre;
+
+  private String adminSystProblemeUn;
+  private String adminSystProblemeDeux;
+  private String adminSystProblemeTrois;
+
+  public MessagesParDefaut() {
+    super();
+  }
+
+  public String getConvocationDePartieUn() {
+    return this.convocationDePartieUn;
+  }
+
+  public void setConvocationDePartieUn(String convocationDePartieUn) {
+    this.convocationDePartieUn = convocationDePartieUn;
+  }
+
+  public String getConvocationDePartieDeux() {
+    return this.convocationDePartieDeux;
+  }
+
+  public void setConvocationDePartieDeux(String convocationDePartieDeux) {
+    this.convocationDePartieDeux = convocationDePartieDeux;
+  }
+
+  public String getConvocationDePartieTrois() {
+    return this.convocationDePartieTrois;
+  }
+
+  public void setConvocationDePartieTrois(String convocationDePartieTrois) {
+    this.convocationDePartieTrois = convocationDePartieTrois;
+  }
+
+  public String getEnseignantSuggereCompetenceUn() {
+    return this.enseignantSuggereCompetenceUn;
+  }
+
+  public void setEnseignantSuggereCompetenceUn(String enseignantSuggereCompetenceUn) {
+    this.enseignantSuggereCompetenceUn = enseignantSuggereCompetenceUn;
+  }
+
+  public String getEnseignantSuggereCompetenceDeux() {
+    return this.enseignantSuggereCompetenceDeux;
+  }
+
+  public void setEnseignantSuggereCompetenceDeux(String enseignantSuggereCompetenceDeux) {
+    this.enseignantSuggereCompetenceDeux = enseignantSuggereCompetenceDeux;
+  }
+
+  public String getEnseignantSuggereCompetenceTrois() {
+    return this.enseignantSuggereCompetenceTrois;
+  }
+
+  public void setEnseignantSuggereCompetenceTrois(String enseignantSuggereCompetenceTrois) {
+    this.enseignantSuggereCompetenceTrois = enseignantSuggereCompetenceTrois;
+  }
+
+  public String getEnseignantSuggereCompetenceQuatre() {
+    return this.enseignantSuggereCompetenceQuatre;
+  }
+
+  public void setEnseignantSuggereCompetenceQuatre(String enseignantSuggereCompetenceQuatre) {
+    this.enseignantSuggereCompetenceQuatre = enseignantSuggereCompetenceQuatre;
+  }
+
+  public String getEureSuggereCompetenceUn() {
+    return this.eureSuggereCompetenceUn;
+  }
+
+  public void setEureSuggereCompetenceUn(String eureSuggereCompetenceUn) {
+    this.eureSuggereCompetenceUn = eureSuggereCompetenceUn;
+  }
+
+  public String getEureSuggereCompetenceDeux() {
+    return this.eureSuggereCompetenceDeux;
+  }
+
+  public void setEureSuggereCompetenceDeux(String eureSuggereCompetenceDeux) {
+    this.eureSuggereCompetenceDeux = eureSuggereCompetenceDeux;
+  }
+
+  public String getEureSuggereCompetenceTrois() {
+    return this.eureSuggereCompetenceTrois;
+  }
+
+  public void setEureSuggereCompetenceTrois(String eureSuggereCompetenceTrois) {
+    this.eureSuggereCompetenceTrois = eureSuggereCompetenceTrois;
+  }
+
+  public String getEureSuggereCompetenceQuatre() {
+    return this.eureSuggereCompetenceQuatre;
+  }
+
+  public void setEureSuggereCompetenceQuatre(String eureSuggereCompetenceQuatre) {
+    this.eureSuggereCompetenceQuatre = eureSuggereCompetenceQuatre;
+  }
+
+  public String getErmSuggereCompetenceUn() {
+    return this.ermSuggereCompetenceUn;
+  }
+
+  public void setErmSuggereCompetenceUn(String ermSuggereCompetenceUn) {
+    this.ermSuggereCompetenceUn = ermSuggereCompetenceUn;
+  }
+
+  public String getErmSuggereCompetenceDeux() {
+    return this.ermSuggereCompetenceDeux;
+  }
+
+  public void setErmSuggereCompetenceDeux(String ermSuggereCompetenceDeux) {
+    this.ermSuggereCompetenceDeux = ermSuggereCompetenceDeux;
+  }
+
+  public String getErmSuggereCompetenceTrois() {
+    return this.ermSuggereCompetenceTrois;
+  }
+
+  public void setErmSuggereCompetenceTrois(String ermSuggereCompetenceTrois) {
+    this.ermSuggereCompetenceTrois = ermSuggereCompetenceTrois;
+  }
+
+  public String getErmSuggereCompetenceQuatre() {
+    return this.ermSuggereCompetenceQuatre;
+  }
+
+  public void setErmSuggereCompetenceQuatre(String ermSuggereCompetenceQuatre) {
+    this.ermSuggereCompetenceQuatre = ermSuggereCompetenceQuatre;
+  }
+
+  public String getEleveSuggereCompetenceUn() {
+    return this.eleveSuggereCompetenceUn;
+  }
+
+  public void setEleveSuggereCompetenceUn(String eleveSuggereCompetenceUn) {
+    this.eleveSuggereCompetenceUn = eleveSuggereCompetenceUn;
+  }
+
+  public String getEleveSuggereCompetenceDeux() {
+    return this.eleveSuggereCompetenceDeux;
+  }
+
+  public void setEleveSuggereCompetenceDeux(String eleveSuggereCompetenceDeux) {
+    this.eleveSuggereCompetenceDeux = eleveSuggereCompetenceDeux;
+  }
+
+  public String getEleveSuggereCompetenceTrois() {
+    return this.eleveSuggereCompetenceTrois;
+  }
+
+  public void setEleveSuggereCompetenceTrois(String eleveSuggereCompetenceTrois) {
+    this.eleveSuggereCompetenceTrois = eleveSuggereCompetenceTrois;
+  }
+
+  public String getEleveSuggereCompetenceQuatre() {
+    return this.eleveSuggereCompetenceQuatre;
+  }
+
+  public void setEleveSuggereCompetenceQuatre(String eleveSuggereCompetenceQuatre) {
+    this.eleveSuggereCompetenceQuatre = eleveSuggereCompetenceQuatre;
+  }
+
+  public String getAdminSystProblemeUn() {
+    return this.adminSystProblemeUn;
+  }
+
+  public void setAdminSystProblemeUn(String adminSystProblemeUn) {
+    this.adminSystProblemeUn = adminSystProblemeUn;
+  }
+
+  public String getAdminSystProblemeDeux() {
+    return this.adminSystProblemeDeux;
+  }
+
+  public void setAdminSystProblemeDeux(String adminSystProblemeDeux) {
+    this.adminSystProblemeDeux = adminSystProblemeDeux;
+  }
+
+  public String getAdminSystProblemeTrois() {
+    return this.adminSystProblemeTrois;
+  }
+
+  public void setAdminSystProblemeTrois(String adminSystProblemeTrois) {
+    this.adminSystProblemeTrois = adminSystProblemeTrois;
+  }
+
+  @Override
+  public String toString() {
+    return "MessagesParDefaut [convocationDePartieUn=" + this.convocationDePartieUn
+        + ", convocationDePartieDeux=" + this.convocationDePartieDeux
+        + ", convocationDePartieTrois=" + this.convocationDePartieTrois
+        + ", enseignantSuggereCompetenceUn=" + this.enseignantSuggereCompetenceUn
+        + ", enseignantSuggereCompetenceDeux=" + this.enseignantSuggereCompetenceDeux
+        + ", enseignantSuggereCompetenceTrois=" + this.enseignantSuggereCompetenceTrois
+        + ", enseignantSuggereCompetenceQuatre=" + this.enseignantSuggereCompetenceQuatre
+        + ", eureSuggereCompetenceUn=" + this.eureSuggereCompetenceUn
+        + ", eureSuggereCompetenceDeux=" + this.eureSuggereCompetenceDeux
+        + ", eureSuggereCompetenceTrois=" + this.eureSuggereCompetenceTrois
+        + ", eureSuggereCompetenceQuatre=" + this.eureSuggereCompetenceQuatre
+        + ", ermSuggereCompetenceUn=" + this.ermSuggereCompetenceUn + ", ermSuggereCompetenceDeux="
+        + this.ermSuggereCompetenceDeux + ", ermSuggereCompetenceTrois="
+        + this.ermSuggereCompetenceTrois + ", ermSuggereCompetenceQuatre="
+        + this.ermSuggereCompetenceQuatre + ", eleveSuggereCompetenceUn="
+        + this.eleveSuggereCompetenceUn + ", eleveSuggereCompetenceDeux="
+        + this.eleveSuggereCompetenceDeux + ", eleveSuggereCompetenceTrois="
+        + this.eleveSuggereCompetenceTrois + ", eleveSuggereCompetenceQuatre="
+        + this.eleveSuggereCompetenceQuatre + ", adminSystProblemeUn=" + this.adminSystProblemeUn
+        + ", adminSystProblemeDeux=" + this.adminSystProblemeDeux + ", adminSystProblemeTrois="
+        + this.adminSystProblemeTrois + "]";
+  }
+
+}

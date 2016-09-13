@@ -1,0 +1,222 @@
+package fr.eseo.atribus.forms;
+
+import fr.eseo.atribus.dao.CompetenceDao;
+import fr.eseo.atribus.dao.DaoException;
+import fr.eseo.atribus.dao.MatiereDao;
+import fr.eseo.atribus.dao.RessourceDao;
+import fr.eseo.atribus.entities.Competence;
+import fr.eseo.atribus.entities.Ressource;
+
+import org.joda.time.DateTime;
+import org.springframework.beans.factory.access.BeanFactoryReference;
+import org.springframework.beans.factory.access.SingletonBeanFactoryLocator;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+// TODO: Auto-generated Javadoc
+/**
+ * The Class AddRessourceForm.
+ */
+public class AddRessourceForm {
+
+  /** La constante CHAMP_MATIERE. */
+  private static final String CHAMP_MATIERE = "matiere";
+
+  /** La constante CHAMP_FILE. */
+  private static final String CHAMP_FILE = "file";
+
+  /** La constante LOGGER. */
+  private static final Logger LOGGER = Logger.getLogger(AddRessourceForm.class.getName());
+
+  /** La constante EXCEPTION. */
+  private static final String EXCEPTION = "Exception";
+
+  /** La variable resultat. */
+  private String resultat;
+
+  /** La variable erreurs. */
+  private final Map<String, String> erreurs = new HashMap<>();
+
+  /** La variable ressource dao. */
+  private final RessourceDao ressourceDao;
+
+  /** La variable matiere dao. */
+  private final MatiereDao matiereDao;
+
+  /** La variable competence dao. */
+  private final CompetenceDao competenceDao;
+
+  /**
+   * Instancie un nouveau adds the ressource form.
+   */
+  public AddRessourceForm() {
+    final BeanFactoryReference bf =
+        SingletonBeanFactoryLocator.getInstance().useBeanFactory("beansDao");
+    /* Récupération d'une instance de notre DAO Ressource */
+    this.ressourceDao = (RessourceDao) bf.getFactory().getBean("ressourceDao");
+    /* Récupération d'une instance de notre DAO Matiere */
+    this.matiereDao = (MatiereDao) bf.getFactory().getBean("matiereDao");
+    /* Récupération d'une instance de notre DAO Competence */
+    this.competenceDao = (CompetenceDao) bf.getFactory().getBean("competenceDao");
+  }
+
+  /**
+   * Accesseur en lecture sur le paramètre resultat.
+   *
+   * @return le paramètre resultat
+   */
+  public String getResultat() {
+    return this.resultat;
+  }
+
+  /**
+   * Accesseur en lecture sur le paramètre erreurs.
+   *
+   * @return le paramètre erreurs
+   */
+  public Map<String, String> getErreurs() {
+    return this.erreurs;
+  }
+
+  /**
+   * Adds the ressource.
+   *
+   * @param fileName le file name
+   * @param path le chemin du fichier
+   * @param matiere la matiere
+   * @param competences le competences
+   * @return Le paramètre ressource
+   */
+  public Ressource addRessource(String fileName, String path, String matiere, List<String> competences) {
+    final Ressource ressource = new Ressource();
+    this.traiterFile(fileName, ressource);
+    this.traiterCompetences(competences, ressource);
+    this.traiterMatiere(matiere, ressource);
+    try {
+      if (this.erreurs.isEmpty()) {
+        ressource.setDatePublication(DateTime.now().toDateTime());
+        this.ressourceDao.ajouter(ressource, path);
+        this.resultat = "Succès de l'ajout de la ressource.";
+      } else {
+        this.resultat = "Échec de l'ajout de la ressource.";
+      }
+    } catch (final DaoException ebdd) {
+      /** Supprimer le fichier */
+      this.resultat = "Échec de l'ajout de la ressource : une erreur imprévue est survenue,"
+          + " merci de réessayer dans quelques instants.";
+      AddRessourceForm.LOGGER.log(Level.INFO, EXCEPTION, ebdd);
+    }
+
+    return ressource;
+  }
+
+  /**
+   * Traiter competences.
+   *
+   * @param competences le competences
+   * @param ressource le ressource
+   */
+  private void traiterCompetences(List<String> competences, Ressource ressource) {
+    final List<Competence> competencesLister = new ArrayList<>();
+    try {
+      this.validationCompetences(competences);
+    } catch (final FormValidationException fve) {
+      this.setErreur(AddRessourceForm.CHAMP_FILE, fve.getMessage());
+      AddRessourceForm.LOGGER.log(Level.INFO, EXCEPTION, fve);
+    }
+    for (final String competence : competences) {
+      competencesLister.addAll(this.competenceDao.trouverParNom(competence));
+    }
+    ressource.setCompetences(competencesLister);
+  }
+
+  /**
+   * Traiter file.
+   *
+   * @param fileName le file name
+   * @param ressource le ressource
+   */
+  private void traiterFile(String fileName, Ressource ressource) {
+    try {
+      this.validationFile(fileName);
+    } catch (final FormValidationException fve) {
+      this.setErreur(AddRessourceForm.CHAMP_FILE, fve.getMessage());
+      AddRessourceForm.LOGGER.log(Level.INFO, EXCEPTION, fve);
+    }
+    ressource.setNom(fileName.substring(0, fileName.lastIndexOf(".")));
+    ressource.setType(fileName.substring(fileName.lastIndexOf(".") + 1));
+  }
+
+  /**
+   * Validation file.
+   *
+   * @param file le file
+   * @throws FormValidationException de type form validation exception
+   */
+  private void validationFile(String file) throws FormValidationException {
+    if (file == null) {
+      throw new FormValidationException("Le fichier n'existe pas.");
+    }
+  }
+
+  /**
+   * Traiter matiere.
+   *
+   * @param matiere le matiere
+   * @param ressource le ressource
+   */
+  private void traiterMatiere(String matiere, Ressource ressource) {
+    try {
+      this.validationMatiere(matiere);
+    } catch (final FormValidationException fve) {
+      this.setErreur(AddRessourceForm.CHAMP_MATIERE, fve.getMessage());
+      AddRessourceForm.LOGGER.log(Level.INFO, EXCEPTION, fve);
+    }
+    ressource.setMatiere(this.matiereDao.trouverParNom(matiere));
+  }
+
+  /**
+   * Validation matiere.
+   *
+   * @param matiere le matiere
+   * @throws FormValidationException de type form validation exception
+   */
+  private void validationMatiere(String matiere) throws FormValidationException {
+    if (this.matiereDao.trouverParNom(matiere) == null) {
+      throw new FormValidationException("Cette matière n'existe pas");
+    }
+  }
+
+  /**
+   * Validation competences.
+   *
+   * @param competences le competences
+   * @throws FormValidationException de type form validation exception
+   */
+  private void validationCompetences(List<String> competences) throws FormValidationException {
+    for (final String competence : competences) {
+      if (this.competenceDao.trouverParNom(competence) == null) {
+        throw new FormValidationException("Cette matière n'existe pas");
+      }
+    }
+  }
+
+  /**
+   * Sets the erreur.
+   *
+   * @param champ le champ
+   * @param message le message
+   */
+  /*
+   * Ajoute un message correspondant au champ spécifié à la map des erreurs.
+   */
+  private void setErreur(String champ, String message) {
+    this.erreurs.put(champ, message);
+  }
+
+}

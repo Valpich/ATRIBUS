@@ -1,0 +1,149 @@
+package fr.eseo.atribus.listeners;
+
+
+import fr.eseo.atribus.beans.Mail;
+import fr.eseo.atribus.beans.MessagesParDefaut;
+import fr.eseo.atribus.dao.AdminSystDao;
+import fr.eseo.atribus.entities.AdminSyst;
+import fr.eseo.atribus.entities.Utilisateur;
+
+import org.springframework.beans.factory.access.BeanFactoryReference;
+import org.springframework.beans.factory.access.SingletonBeanFactoryLocator;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.event.ContextClosedEvent;
+import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.context.event.EventListener;
+import org.springframework.stereotype.Component;
+
+import java.sql.Driver;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.mail.MessagingException;
+import javax.servlet.ServletContext;
+
+// TODO: Auto-generated Javadoc
+/**
+ * The Class StartupSpring.
+ */
+@Component
+class StartupSpring {
+
+  /** La constante LOGGER. */
+  private static final Logger LOGGER = Logger.getLogger(StartupSpring.class.getName());
+
+  /** La variable mail. */
+  @Autowired
+  private Mail mail;
+
+  /** La variable messages. */
+  @Autowired
+  private MessagesParDefaut messages;
+
+  /** La variable context. */
+  @Autowired
+  ServletContext context;
+
+  /**
+   * Chargement du contexte.
+   */
+  @EventListener({ ContextRefreshedEvent.class })
+  void chargementDuContexte() {
+    this.context.setAttribute("utilisateurs", new HashSet<Utilisateur>());
+    StartupSpring.LOGGER.info("Application ATRIBUS online !");
+  }
+
+  /**
+   * Desturction du contexte.
+   */
+  @EventListener({ ContextClosedEvent.class })
+  void desturctionDuContexte() {
+    StartupSpring.LOGGER.info("Début de la destruction du contexte d'ATRIBUS");
+    /** new Thread(() -> prevenirLesAdministrateursArretAtribus()).start(); */
+    try {
+      StartupSpring.LOGGER
+          .info("Appel de la fonction permettant l'arrêt des connections sur MySQL.");
+      com.mysql.jdbc.AbandonedConnectionCleanupThread.shutdown();
+    } catch (final InterruptedException ie) {
+      StartupSpring.LOGGER.info(
+          "Erreur lors de l'appel de la fonction permettant l'arrêt des connections sur MySQL.");
+      Thread.currentThread().interrupt();
+    }
+    final ClassLoader cl = Thread.currentThread().getContextClassLoader();
+    final Enumeration<Driver> drivers = DriverManager.getDrivers();
+    while (drivers.hasMoreElements()) {
+      final Driver driver = drivers.nextElement();
+      if (driver.getClass().getClassLoader() == cl) {
+        try {
+          StartupSpring.LOGGER.info("Suppresion du driver JDBC");
+          DriverManager.deregisterDriver(driver);
+        } catch (final SQLException sqle) {
+          StartupSpring.LOGGER.log(Level.INFO, "Exception", sqle);
+        }
+      } else {
+        StartupSpring.LOGGER.info("Pas de driver à supprimer dans l'application.");
+      }
+    }
+    StartupSpring.LOGGER.info("Application ATRIBUS offline !");
+  }
+
+  /**
+   * Prevenir les administrateurs arret atribus.
+   */
+  @SuppressWarnings("unused")
+  private void prevenirLesAdministrateursArretAtribus() {
+    final BeanFactoryReference bf =
+        SingletonBeanFactoryLocator.getInstance().useBeanFactory("beansDao");
+    final List<AdminSyst> adminSyst =
+        ((AdminSystDao) bf.getFactory().getBean("adminSystDao")).recupererListe();
+    for (final AdminSyst admin : adminSyst) {
+      try {
+        this.mail.mailAutomatiqueSsl(admin.getEmail(), "Avertissement !",
+            this.messages.getAdminSystProblemeTrois());
+      } catch (final MessagingException me) {
+        StartupSpring.LOGGER.log(Level.INFO, "Exception", me);
+      }
+    }
+  }
+
+  /**
+   * Accesseur en lecture sur le paramètre mail.
+   *
+   * @return le paramètre mail
+   */
+  public Mail getMail() {
+    return this.mail;
+  }
+
+  /**
+   * Accesseur en écriture sur le paramètre mail.
+   *
+   * @param mail le nouveau paramètre mail
+   */
+  public void setMail(Mail mail) {
+    this.mail = mail;
+  }
+
+  /**
+   * Accesseur en lecture sur le paramètre messages.
+   *
+   * @return le paramètre messages
+   */
+  public MessagesParDefaut getMessages() {
+    return this.messages;
+  }
+
+  /**
+   * Accesseur en écriture sur le paramètre messages.
+   *
+   * @param messages le nouveau paramètre messages
+   */
+  public void setMessages(MessagesParDefaut messages) {
+    this.messages = messages;
+  }
+}

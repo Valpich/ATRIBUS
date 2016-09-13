@@ -1,0 +1,9 @@
+<suite name="Atribus Test Suite">
+	<test name="tests">
+		<classes>
+
+			<class name="fr.eseo.atribus.integration.Test49" />
+
+		</classes>
+	</test> <!-- tests -->
+</suite>

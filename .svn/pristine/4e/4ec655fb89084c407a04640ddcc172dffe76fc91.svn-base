@@ -1,0 +1,171 @@
+package fr.eseo.atribus.forms;
+
+import fr.eseo.atribus.dao.DaoException;
+import fr.eseo.atribus.dao.EnseignantDao;
+import fr.eseo.atribus.dao.EnseignantRefUeDao;
+import fr.eseo.atribus.dao.SemestreDao;
+import fr.eseo.atribus.dao.UeDao;
+import fr.eseo.atribus.entities.EnseignantRefUe;
+import fr.eseo.atribus.entities.UniteEnseignement;
+
+import org.springframework.beans.factory.access.BeanFactoryReference;
+import org.springframework.beans.factory.access.SingletonBeanFactoryLocator;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.servlet.http.HttpServletRequest;
+
+public class AddUeForm extends UeFormMethods {
+
+  private static final Logger LOGGER = Logger.getLogger(AddUeForm.class.getName());
+
+  private static final String EXCEPTION = "Exception";
+  private static final String CHAMP_NOMUE = "nomUe";
+  private static final String CHAMP_ECTS = "nbCreditsEcts";
+  private static final String CHAMP_NBHEURES = "nbHeures";
+  private static final String CHAMP_SEMESTRE = "semestres";
+  private static final String CHAMP_ENSEIGNANT_REF = "enseignantsRef";
+  public static final String ATT_SESSION_USER = "sessionUtilisateur";
+  private String resultat;
+  private final Map<String, String> erreurs = new HashMap<>();
+
+  private final UeDao ueDao;
+  private final SemestreDao semestreDao;
+  private final EnseignantDao enseignantDao;
+  private final EnseignantRefUeDao enseignantRefUeDao;
+
+  /**
+   * Instatiation de AddUeForm.
+   */
+  public AddUeForm() {
+    final BeanFactoryReference bf =
+        SingletonBeanFactoryLocator.getInstance().useBeanFactory("beansDao");
+    this.ueDao = (UeDao) bf.getFactory().getBean("ueDao");
+    /* Récupération d'une instance de notre DAO EnseignantRefUe */
+    this.enseignantRefUeDao = (EnseignantRefUeDao) bf.getFactory().getBean("enseignantRefUeDao");
+    /* Récupération d'une instance de notre DAO Enseignant */
+    this.enseignantDao = (EnseignantDao) bf.getFactory().getBean("enseignantDao");
+    /* Récupération d'une instance de notre DAO Semestre */
+    this.semestreDao = (SemestreDao) bf.getFactory().getBean("semestreDao");
+  }
+
+  public String getResultat() {
+    return this.resultat;
+  }
+
+  public Map<String, String> getErreurs() {
+    return this.erreurs;
+  }
+
+  /**
+   * Méthode pour l'ajout d'un UE.
+   * 
+   * @param request requête HTML
+   * @return retourne un UE
+   */
+  public UniteEnseignement addUe(HttpServletRequest request) {
+
+    final String nom = UeFormMethods.getValeurChamp(request, AddUeForm.CHAMP_NOMUE);
+    final String ects = UeFormMethods.getValeurChamp(request, AddUeForm.CHAMP_ECTS);
+    final String nbHeures = UeFormMethods.getValeurChamp(request, AddUeForm.CHAMP_NBHEURES);
+    final String semestre = UeFormMethods.getValeurChamp(request, AddUeForm.CHAMP_SEMESTRE);
+    final String enseignant =
+        UeFormMethods.getValeurChamp(request, AddUeForm.CHAMP_ENSEIGNANT_REF);
+
+    final UniteEnseignement ue = new UniteEnseignement();
+    final EnseignantRefUe enseignantRefUe = new EnseignantRefUe(
+        this.enseignantDao.trouverParIdUtilisateur(Integer.parseInt(enseignant)));
+    
+    try {
+
+      this.traiterRequete(nom, ects, nbHeures);
+
+      if (this.data.getErreurs().isEmpty()) {
+        ue.setNom(nom);
+        ue.setNbCreditsEcts(Integer.parseInt(ects));
+        ue.setNbHeures(Integer.parseInt(nbHeures));
+        ue.setSemestre(this.semestreDao.trouverParNumero(Integer.parseInt(semestre)));
+        
+        // Passer l'enseignant au statut enseignant référent
+        this.enseignantRefUeDao.ajouter(enseignantRefUe);
+        
+        // réccuperer l'id et l'ajouter à l'ue
+        int idErue = this.enseignantDao.trouverParIdUtilisateur(enseignantRefUe.getId())
+            .getIdEnseignant();
+        enseignantRefUe.setIdEnseignantRefUe(idErue);
+        ue.setEnseignantRefUe(enseignantRefUe);
+        
+        this.ueDao.ajouterUe(ue);
+
+        this.data.setResultat("Succes de l'ajout d'une ue");
+
+      } else {
+
+        this.data.setResultat("Echec de l'ajout d'une ue.");
+      }
+
+    } catch (final DaoException bdde) {
+      this.data.setResultat("Echec de l'ajout d'une ue : une erreur imprevue est survenue,"
+          + " merci de réessayer dans quelques instants.");
+      AddUeForm.LOGGER.log(Level.INFO, EXCEPTION, bdde);
+    }
+    return ue;
+  }
+
+  private void traiterRequete(String nom, String ects, String nbHeures) {
+
+    try {
+      this.validationNom(nom);
+    } catch (final FormValidationException fve) {
+      AddUeForm.LOGGER.log(Level.INFO, EXCEPTION, fve);
+      this.setErreur("nom", fve.getMessage());
+    }
+
+    try {
+      this.validationEcts(ects);
+    } catch (final FormValidationException fve) {
+      AddUeForm.LOGGER.log(Level.INFO, EXCEPTION, fve);
+      this.setErreur("ects", fve.getMessage());
+    }
+
+    try {
+      this.validationNbHeures(nbHeures);
+    } catch (final FormValidationException fve) {
+      AddUeForm.LOGGER.log(Level.INFO, EXCEPTION, fve);
+      this.setErreur("nbHeures", fve.getMessage());
+    }
+
+  }
+
+  private void validationNom(String nom) throws FormValidationException {
+    if (nom == null || nom.length() < 3) {
+      throw new FormValidationException("Veuillez remplir un UE avec plus de 3 caractères.");
+    }
+  }
+
+  private void validationEcts(String ects) throws FormValidationException {
+    try {
+      if (Integer.parseInt(ects) < 0) {
+        throw new FormValidationException("Merci d'inscrire un nombre de point ECTS supérieur à 0");
+      }
+    } catch (final NumberFormatException nfe) {
+      this.setErreur(AddUeForm.CHAMP_ECTS, nfe.getMessage());
+      throw new FormValidationException("Le chiffre inscrit est invalide.");
+    }
+  }
+
+  private void validationNbHeures(String nbHeures) throws FormValidationException {
+    try {
+      if (Integer.parseInt(nbHeures) < 0) {
+        throw new FormValidationException("Merci d'inscrire un nombre d'heures supérieur à 0");
+      }
+    } catch (final NumberFormatException nfe) {
+      this.setErreur(AddUeForm.CHAMP_NBHEURES, nfe.getMessage());
+      throw new FormValidationException("Le chiffre inscrit est invalide.");
+    }
+  }
+
+}

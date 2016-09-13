@@ -1,0 +1,652 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>CompetenceDaoImpl.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Atribus</a> &gt; <a href="index.source.html" class="el_package">fr.eseo.atribus.dao</a> &gt; <span class="el_source">CompetenceDaoImpl.java</span></div><h1>CompetenceDaoImpl.java</h1><pre class="source lang-java linenums">package fr.eseo.atribus.dao;
+
+import fr.eseo.atribus.entities.Competence;
+import fr.eseo.atribus.entities.CompetenceValidable;
+import fr.eseo.atribus.entities.Eleve;
+import fr.eseo.atribus.entities.Matiere;
+import fr.eseo.atribus.entities.UniteEnseignement;
+
+import org.springframework.beans.factory.access.BeanFactoryReference;
+import org.springframework.beans.factory.access.SingletonBeanFactoryLocator;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+
+public class CompetenceDaoImpl implements CompetenceDao {
+<span class="nc" id="L25">  private static final Logger LOGGER = Logger.getLogger(CompetenceDaoImpl.class.getName());</span>
+  private final DaoFactory daoFactory;
+  private static final String SQL_SELECT_PAR_ID = &quot;SELECT * FROM competence WHERE id = ?&quot;;
+  private static final String SQL_SELECT_ALL = &quot;SELECT * FROM competence &quot;;
+  private static final String SQL_UPDATE_COMPETENCE =
+      &quot;UPDATE competence SET nom=?, parent_id=?, profondeur=? WHERE id=?&quot;;
+  private static final String SQL_UPDATE_COMPETENCE_NOM = &quot;UPDATE competence SET nom=? WHERE id=?&quot;;
+
+  private static final String SQL_UPDATE_COMPETENCE_PROFONDEUR =
+      &quot;UPDATE competence SET profondeur=? WHERE id=?&quot;;
+
+  private static final String SQL_SELECT_PAR_NOM = &quot;SELECT * FROM competence WHERE nom = ?&quot;;
+  private static final String EXCEPTION = &quot;Exception&quot;;
+
+  private static final String SQL_INSERT_ASSOCIER =
+      &quot;INSERT INTO unite_enseignement_associe_competence &quot;
+          + &quot;(niveau, id_unite_enseignement, id_competence) VALUES (?,?,?)&quot;;
+
+  private static final String SQL_RECUPERER_ASSOCIER =
+      &quot;SELECT * FROM unite_enseignement_associe_competence WHERE id_unite_enseignement = ?&quot;;
+
+  private static final String SQL_RECUPERER_COMP_ELEVE =
+      &quot;SELECT * FROM eleve_associe_competence WHERE id_eleve = ?&quot;;
+
+  private static final String SQL_TROUVER_PAR_PROFONDEUR =
+      &quot;SELECT * FROM competence WHERE profondeur=?&quot;;
+  private static final String SQL_SUPPRIMER = &quot;DELETE FROM competence WHERE nom=?&quot;;
+  private static final String SQL_AJOUTER =
+      &quot;INSERT INTO competence (nom, profondeur, parent_id) VALUES (?, ?, ?)&quot;;
+  private static final String SQL_VALIDER_MATIERE =
+      &quot;UPDATE matiere_associe_competence SET valide = ? &quot;
+      + &quot;WHERE id_matiere = ? AND id_competence = ?;&quot;;
+  private static final String SQL_VALIDER_UE =
+      &quot;UPDATE unite_enseignement_associe_competence SET valide = ? &quot;
+      + &quot;WHERE id_unite_enseignement = ? AND id_competence = ?;&quot;;
+
+  private static final String BEANSDAO = &quot;beansDao&quot;;
+  private static final String IDCOMP = &quot;id_competence&quot;;
+  private static final String PARENTID = &quot;parent_id&quot;;
+  private static final String COMPETENCE_DAO = &quot;competenceDao&quot;;
+
+  /**
+   * Instance de la classe CompetenceDaoImpl.
+   */
+<span class="nc" id="L69">  public CompetenceDaoImpl() {</span>
+    final BeanFactoryReference bf =
+<span class="nc" id="L71">        SingletonBeanFactoryLocator.getInstance().useBeanFactory(&quot;contextDao&quot;);</span>
+<span class="nc" id="L72">    this.daoFactory = (DaoFactory) bf.getFactory().getBean(&quot;daoFactory&quot;);</span>
+<span class="nc" id="L73">  }</span>
+
+  @Override
+  public Competence trouverParId(int idComp) {
+<span class="nc" id="L77">    return this.trouverCompetence(CompetenceDaoImpl.SQL_SELECT_PAR_ID, idComp);</span>
+  }
+
+  @Override
+  public List&lt;Competence&gt; trouverParNom(String nom) {
+<span class="nc" id="L82">    return this.trouverParNomRequete(CompetenceDaoImpl.SQL_SELECT_PAR_NOM, nom);</span>
+  }
+
+
+  @Override
+  public Competence trouverUniqueParNom(String nom) {
+<span class="nc" id="L88">    return this.trouverCompetence(CompetenceDaoImpl.SQL_SELECT_PAR_NOM, nom);</span>
+  }
+
+  @Override
+  public List&lt;Competence&gt; trouverToutesLesCompetences() {
+<span class="nc" id="L93">    return this.trouverToutes(CompetenceDaoImpl.SQL_SELECT_ALL);</span>
+  }
+
+  @Override
+  public void modifierCompetence(Competence competence, Competence ancienneCompetence) {
+<span class="nc" id="L98">    this.update(CompetenceDaoImpl.SQL_UPDATE_COMPETENCE, competence.getNom(),</span>
+<span class="nc" id="L99">        competence.getIdParent(), competence.getProfondeur(), ancienneCompetence.getId());</span>
+<span class="nc" id="L100">  }</span>
+
+  @Override
+  public void modifierCompetence(Competence competence, String nouveauNom) {
+<span class="nc" id="L104">    this.update(CompetenceDaoImpl.SQL_UPDATE_COMPETENCE_NOM, nouveauNom, competence.getId());</span>
+<span class="nc" id="L105">  }</span>
+
+  @Override
+  public void modifierCompetence(Competence competence, int nouvelleProfondeur) {
+    /** System.out.println(&quot;avant appel à update&quot;); */
+<span class="nc" id="L110">    this.update(CompetenceDaoImpl.SQL_UPDATE_COMPETENCE_PROFONDEUR, nouvelleProfondeur,</span>
+<span class="nc" id="L111">        competence.getId());</span>
+    /** System.out.println(&quot;apres appel à update&quot;); */
+<span class="nc" id="L113">  }</span>
+
+  /** Implémentation de la méthode trouverParProfondeur() définie dans l'interface CompetenceBdd. */
+  @Override
+  public List&lt;Competence&gt; trouverParProfondeur(int profondeur) {
+<span class="nc" id="L118">    return this.trouverListe(CompetenceDaoImpl.SQL_TROUVER_PAR_PROFONDEUR, profondeur);</span>
+  }
+
+  /** Implémentation de la méthode supprimerCompetence() A FAIRE dans l'interface CompetenceBdd. */
+  @Override
+  public void ajouterCompetence(Competence competence) {
+<span class="nc" id="L124">    this.ajouter(competence);</span>
+<span class="nc" id="L125">  }</span>
+
+  /** Implémentation de la méthode pour supprimer une compétence. */
+  @Override
+  public void supprimerCompetenceParNom(String nom) {
+
+<span class="nc" id="L131">    Connection connexion = null;</span>
+<span class="nc" id="L132">    PreparedStatement preparedStatement = null;</span>
+
+    try {
+
+<span class="nc" id="L136">      connexion = this.daoFactory.getConnection();</span>
+<span class="nc" id="L137">      preparedStatement = DaoUtilitaire.initialisationRequetePreparee(connexion,</span>
+          CompetenceDaoImpl.SQL_SUPPRIMER, false, nom);
+
+<span class="nc" id="L140">      preparedStatement.executeUpdate();</span>
+
+<span class="nc" id="L142">    } catch (final SQLException sqle) {</span>
+<span class="nc" id="L143">      CompetenceDaoImpl.LOGGER.log(Level.INFO, CompetenceDaoImpl.EXCEPTION, sqle);</span>
+<span class="nc" id="L144">      throw new DaoException(sqle);</span>
+    } finally {
+<span class="nc" id="L146">      DaoUtilitaire.fermeturesSilencieuses(preparedStatement, connexion);</span>
+<span class="nc" id="L147">    }</span>
+<span class="nc" id="L148">  }</span>
+
+
+
+  /**
+   * Méthode générique utilisée pour retourner une liste de compétence depuis la base de données,
+   * correspondant à la requête SQL donnée prenant en paramètres les objets passés en argument.
+   */
+  private List&lt;Competence&gt; trouverListe(String sql, Object... objets) {
+<span class="nc" id="L157">    final List&lt;Competence&gt; listeComp = new ArrayList&lt;&gt;();</span>
+
+<span class="nc" id="L159">    Connection connexion = null;</span>
+<span class="nc" id="L160">    PreparedStatement preparedStatement = null;</span>
+<span class="nc" id="L161">    ResultSet resultSet = null;</span>
+<span class="nc" id="L162">    Competence competence = null;</span>
+
+    try {
+      /** Récupération d'une connexion depuis la Factory. */
+<span class="nc" id="L166">      connexion = this.daoFactory.getConnection();</span>
+      /** System.out.println(&quot;Connexion ok&quot; + connexion); */
+
+      /**
+       * Préparation de la requête avec les objets passés en arguments (ici, uniquement un id) et
+       * exécution.
+       */
+<span class="nc" id="L173">      preparedStatement =</span>
+<span class="nc" id="L174">          DaoUtilitaire.initialisationRequetePreparee(connexion, sql, false, objets);</span>
+      /** System.out.println(&quot;PreparedStatement ok&quot; + preparedStatement); */
+<span class="nc" id="L176">      resultSet = preparedStatement.executeQuery();</span>
+      /** System.out.println(&quot;Résultat ok&quot; + resultSet); */
+
+      /**
+       * Parcours de la ligne de données retournée dans le ResultSet. int ii = 0;
+       */
+<span class="nc bnc" id="L182" title="All 2 branches missed.">      while (resultSet.next()) {</span>
+<span class="nc" id="L183">        competence = CompetenceDaoImpl.map(resultSet);</span>
+<span class="nc" id="L184">        listeComp.add(competence);</span>
+        /** ii++;. */
+        /** System.out.println(&quot;Compétence n°&quot; + ii + &quot; récupérée&quot;); */
+      }
+<span class="nc bnc" id="L188" title="All 2 branches missed.">      for (int j = 0; j &lt; listeComp.size(); j++) {</span>
+        /** System.out.println(&quot;Liste créée&quot; + listeComp.get(j).toString()); */
+      }
+<span class="nc" id="L191">    } catch (final SQLException sqle) {</span>
+<span class="nc" id="L192">      CompetenceDaoImpl.LOGGER.log(Level.INFO, EXCEPTION, sqle);</span>
+<span class="nc" id="L193">      throw new DaoException(sqle);</span>
+    } finally {
+<span class="nc" id="L195">      DaoUtilitaire.fermeturesSilencieuses(resultSet, preparedStatement, connexion);</span>
+<span class="nc" id="L196">    }</span>
+<span class="nc" id="L197">    return listeComp;</span>
+  }
+
+
+  /**
+   * Méthode générique utilisée pour ajouter une compétence dans la base de données, correspondant à
+   * la requête SQL donnée prenant en paramètres les objets passés en argument.
+   */
+  private void ajouter(Competence competence) {
+<span class="nc" id="L206">    Connection connexion = null;</span>
+<span class="nc" id="L207">    PreparedStatement preparedStatement = null;</span>
+<span class="nc" id="L208">    ResultSet valeursAutoGenerees = null;</span>
+
+
+    try {
+      /** Récupération d'une connexion depuis la Factory. */
+<span class="nc" id="L213">      connexion = this.daoFactory.getConnection();</span>
+<span class="nc" id="L214">      preparedStatement =</span>
+<span class="nc" id="L215">          DaoUtilitaire.initialisationRequetePreparee(connexion, CompetenceDaoImpl.SQL_AJOUTER,</span>
+<span class="nc" id="L216">              true, competence.getNom(), competence.getProfondeur(), competence.getIdParent());</span>
+<span class="nc" id="L217">      final int statut = preparedStatement.executeUpdate();</span>
+
+      /** Analyse du statut retourné par la requête d'insertion. */
+<span class="nc bnc" id="L220" title="All 2 branches missed.">      if (statut == 0) {</span>
+<span class="nc" id="L221">        throw new DaoException(</span>
+            &quot;Échec d'ajout de la compétence, aucune ligne ajoutée dans la table.&quot;);
+      }
+
+      /** Récupération de l'id auto-généré par la requête d'insertion. */
+<span class="nc" id="L226">      valeursAutoGenerees = preparedStatement.getGeneratedKeys();</span>
+
+<span class="nc bnc" id="L228" title="All 2 branches missed.">      if (valeursAutoGenerees.next()) {</span>
+        /** Puis initialisation de la propriété id du bean Utilisateur avec sa valeur. */
+<span class="nc" id="L230">        competence.setId(valeursAutoGenerees.getInt(1));</span>
+      } else {
+<span class="nc" id="L232">        throw new DaoException(</span>
+            &quot;Échec de la création de la compétence en base, aucun ID auto-généré retourné.&quot;);
+      }
+<span class="nc" id="L235">    } catch (final SQLException sqle) {</span>
+<span class="nc" id="L236">      throw new DaoException(sqle);</span>
+    } finally {
+<span class="nc" id="L238">      DaoUtilitaire.fermeturesSilencieuses(valeursAutoGenerees, preparedStatement, connexion);</span>
+<span class="nc" id="L239">    }</span>
+<span class="nc" id="L240">  }</span>
+
+
+
+  /** Implémentation de la méthode trouverParNom() définie dans l'interface CompetenceBdd. */
+  @Override
+  public int trouverIdParNom(String nom) {
+<span class="nc" id="L247">    return DaoUtilitaire.trouverId(this.daoFactory, CompetenceDaoImpl.SQL_SELECT_PAR_NOM, nom);</span>
+  }
+
+  /**
+   * Methode générique pour trouver une compétence.
+   * @param sql Requête SQL
+   * @param objets Objets de cette requette SQL
+   * @return la compétence trouvée
+   */
+  public Competence trouverCompetence(String sql, Object... objets) {
+<span class="nc" id="L257">    Connection connexion = null;</span>
+<span class="nc" id="L258">    PreparedStatement preparedStatement = null;</span>
+<span class="nc" id="L259">    ResultSet resultSet = null;</span>
+<span class="nc" id="L260">    Competence competence = null;</span>
+
+    try {
+      /** Récupération d'une connexion depuis la Factory. */
+<span class="nc" id="L264">      connexion = this.daoFactory.getConnection();</span>
+      /**
+       * Préparation de la requête avec les objets passés en arguments (ici, uniquement un id) et
+       * exécution.
+       */
+<span class="nc" id="L269">      preparedStatement =</span>
+<span class="nc" id="L270">          DaoUtilitaire.initialisationRequetePreparee(connexion, sql, false, objets);</span>
+<span class="nc" id="L271">      resultSet = preparedStatement.executeQuery();</span>
+      /** Parcours de la ligne de données retournée dans le ResultSet. */
+<span class="nc bnc" id="L273" title="All 2 branches missed.">      if (resultSet.next()) {</span>
+<span class="nc" id="L274">        competence = CompetenceDaoImpl.map(resultSet);</span>
+      }
+<span class="nc" id="L276">    } catch (final SQLException sqle) {</span>
+<span class="nc" id="L277">      CompetenceDaoImpl.LOGGER.log(Level.INFO, EXCEPTION, sqle);</span>
+<span class="nc" id="L278">      throw new DaoException(sqle);</span>
+    } finally {
+<span class="nc" id="L280">      DaoUtilitaire.fermeturesSilencieuses(resultSet, preparedStatement, connexion);</span>
+<span class="nc" id="L281">    }</span>
+<span class="nc" id="L282">    return competence;</span>
+  }
+
+  private void update(String sql, Object... objets) {
+<span class="nc" id="L286">    Connection connexion = null;</span>
+<span class="nc" id="L287">    PreparedStatement preparedStatement = null;</span>
+<span class="nc" id="L288">    final ResultSet resultSet = null;</span>
+    try {
+      /** Récupération d'une connexion depuis la Factory */
+<span class="nc" id="L291">      connexion = this.daoFactory.getConnection();</span>
+      /**
+       * Préparation de la requête avec les objets passés en arguments (ici, uniquement un id) et
+       * exécution.
+       */
+<span class="nc" id="L296">      preparedStatement =</span>
+<span class="nc" id="L297">          DaoUtilitaire.initialisationRequetePreparee(connexion, sql, false, objets);</span>
+<span class="nc" id="L298">      preparedStatement.executeUpdate();</span>
+
+<span class="nc" id="L300">    } catch (final SQLException sqle) {</span>
+<span class="nc" id="L301">      CompetenceDaoImpl.LOGGER.log(Level.INFO, EXCEPTION, sqle);</span>
+<span class="nc" id="L302">      throw new DaoException(sqle);</span>
+    } finally {
+<span class="nc" id="L304">      DaoUtilitaire.fermeturesSilencieuses(resultSet, preparedStatement, connexion);</span>
+<span class="nc" id="L305">    }</span>
+<span class="nc" id="L306">  }</span>
+
+
+
+  @Override
+  public List&lt;Competence&gt; trouverParNomRequete(String sql, String nom) {
+
+<span class="nc" id="L313">    Connection connexion = null;</span>
+<span class="nc" id="L314">    PreparedStatement preparedStatement = null;</span>
+<span class="nc" id="L315">    ResultSet rset = null;</span>
+<span class="nc" id="L316">    final List&lt;Competence&gt; listeCompetences = new ArrayList&lt;&gt;();</span>
+
+    try {
+      /** Récupération d'une connexion depuis la Factory. */
+<span class="nc" id="L320">      connexion = this.daoFactory.getConnection();</span>
+      /**
+       * Préparation de la requête avec les objets passés en arguments (ici, uniquement un id) et
+       * exécution.
+       */
+<span class="nc" id="L325">      preparedStatement = DaoUtilitaire.initialisationRequetePreparee(connexion, sql, false, nom);</span>
+<span class="nc" id="L326">      rset = preparedStatement.executeQuery();</span>
+      /** Parcours de la ligne de données retournée dans le ResultSet */
+<span class="nc bnc" id="L328" title="All 2 branches missed.">      while (rset.next()) {</span>
+<span class="nc" id="L329">        final Competence comp = new Competence();</span>
+<span class="nc" id="L330">        comp.setNom(rset.getString(&quot;nom&quot;));</span>
+<span class="nc" id="L331">        comp.setId(rset.getInt(&quot;id&quot;));</span>
+<span class="nc" id="L332">        comp.setIdParent(rset.getInt(CompetenceDaoImpl.PARENTID));</span>
+<span class="nc" id="L333">        listeCompetences.add(comp);</span>
+<span class="nc" id="L334">      }</span>
+<span class="nc" id="L335">    } catch (final SQLException sqle) {</span>
+<span class="nc" id="L336">      CompetenceDaoImpl.LOGGER.log(Level.INFO, EXCEPTION, sqle);</span>
+<span class="nc" id="L337">      throw new DaoException(sqle);</span>
+    } finally {
+<span class="nc" id="L339">      DaoUtilitaire.fermeturesSilencieuses(rset, preparedStatement, connexion);</span>
+<span class="nc" id="L340">    }</span>
+<span class="nc" id="L341">    return listeCompetences;</span>
+  }
+
+  /**
+   * Méthode générique qui renvoie une liste de compétence.
+   * @param sql requête SQL
+   * @param objets objets de la requête
+   * @return une liste de compétence
+   */
+  public List&lt;Competence&gt; trouverToutes(String sql, Object... objets) {
+<span class="nc" id="L351">    Connection connexion = null;</span>
+<span class="nc" id="L352">    PreparedStatement preparedStatement = null;</span>
+<span class="nc" id="L353">    ResultSet resultSet = null;</span>
+<span class="nc" id="L354">    List&lt;Competence&gt; competences = null;</span>
+
+    try {
+      /** Récupération d'une connexion depuis la Factory. */
+<span class="nc" id="L358">      connexion = this.daoFactory.getConnection();</span>
+      /**
+       * Préparation de la requête avec les objets passés en arguments (ici, uniquement un id) et
+       * exécution.
+       */
+<span class="nc" id="L363">      preparedStatement =</span>
+<span class="nc" id="L364">          DaoUtilitaire.initialisationRequetePreparee(connexion, sql, false, objets);</span>
+<span class="nc" id="L365">      resultSet = preparedStatement.executeQuery();</span>
+<span class="nc" id="L366">      competences = new ArrayList&lt;&gt;();</span>
+      /** Parcours de la ligne de données retournée dans le ResultSet. */
+<span class="nc bnc" id="L368" title="All 2 branches missed.">      while (resultSet.next()) {</span>
+<span class="nc" id="L369">        competences.add(CompetenceDaoImpl.mapDebug(resultSet));</span>
+      }
+<span class="nc" id="L371">    } catch (final SQLException sqle) {</span>
+<span class="nc" id="L372">      CompetenceDaoImpl.LOGGER.log(Level.INFO, EXCEPTION, sqle);</span>
+<span class="nc" id="L373">      throw new DaoException(sqle);</span>
+    } finally {
+<span class="nc" id="L375">      DaoUtilitaire.fermeturesSilencieuses(resultSet, preparedStatement, connexion);</span>
+<span class="nc" id="L376">    }</span>
+<span class="nc" id="L377">    return competences;</span>
+  }
+
+  /**
+   * Simple méthode utilitaire permettant de faire la correspondance (le mapping) entre une ligne
+   * issue de la table des utilisateurs (un ResultSet) et un bean Competence.
+   */
+  private static Competence map(ResultSet resultSet) throws SQLException {
+<span class="nc" id="L385">    final Competence competence = new Competence();</span>
+<span class="nc" id="L386">    competence.setId(resultSet.getInt(&quot;id&quot;));</span>
+<span class="nc" id="L387">    competence.setNom(resultSet.getString(&quot;nom&quot;));</span>
+<span class="nc" id="L388">    competence.setIdParent(resultSet.getInt(CompetenceDaoImpl.PARENTID));</span>
+<span class="nc" id="L389">    competence.setProfondeur(resultSet.getInt(&quot;profondeur&quot;));</span>
+<span class="nc" id="L390">    return competence;</span>
+  }
+
+
+  /*
+   * Simple méthode utilitaire permettant de faire la correspondance (le mapping) entre une ligne
+   * issue de la table des utilisateurs (un ResultSet) et un bean Competence.
+   */
+  private static Competence mapDebug(ResultSet resultSet) throws SQLException {
+<span class="nc" id="L399">    final Competence competence = new Competence();</span>
+<span class="nc" id="L400">    competence.setId(resultSet.getInt(&quot;id&quot;));</span>
+<span class="nc" id="L401">    competence.setNom(resultSet.getString(&quot;nom&quot;));</span>
+<span class="nc" id="L402">    competence.setIdParent(resultSet.getInt(CompetenceDaoImpl.PARENTID));</span>
+<span class="nc" id="L403">    competence.setProfondeur(resultSet.getInt(&quot;profondeur&quot;));</span>
+<span class="nc" id="L404">    return competence;</span>
+  }
+
+  /**
+   * Méthode pour associer à un UE, une compétence et un niveau.
+   */
+  @Override
+  public void associerCompetenceNiveauUe(Competence competence, UniteEnseignement ue) {
+<span class="nc" id="L412">    Connection connexion = null;</span>
+<span class="nc" id="L413">    PreparedStatement preparedStatement = null;</span>
+<span class="nc" id="L414">    final PreparedStatement preparedStatementDeux = null;</span>
+    try {
+
+<span class="nc" id="L417">      connexion = this.daoFactory.getConnection();</span>
+
+<span class="nc" id="L419">      final int idCompetence = this.trouverIdParNom(competence.getNom());</span>
+<span class="nc" id="L420">      final int idUe = this.getIdUe(ue);</span>
+
+<span class="nc" id="L422">      preparedStatement = DaoUtilitaire.initialisationRequetePreparee(connexion,</span>
+<span class="nc" id="L423">          CompetenceDaoImpl.SQL_INSERT_ASSOCIER, true, competence.getNiveau(), idUe, idCompetence);</span>
+
+<span class="nc" id="L425">      final int statut = preparedStatement.executeUpdate();</span>
+<span class="nc bnc" id="L426" title="All 2 branches missed.">      if (statut == 0) {</span>
+<span class="nc" id="L427">        throw new DaoException(</span>
+            &quot;Échec de l'association à l'UE, aucune ligne ajoutée dans la table.&quot;);
+      }
+
+<span class="nc" id="L431">    } catch (final SQLException sqle) {</span>
+<span class="nc" id="L432">      CompetenceDaoImpl.LOGGER.log(Level.INFO, EXCEPTION, sqle);</span>
+<span class="nc" id="L433">      throw new DaoException(sqle);</span>
+    } finally {
+<span class="nc" id="L435">      DaoUtilitaire.fermetureSilencieuse(preparedStatementDeux);</span>
+<span class="nc" id="L436">      DaoUtilitaire.fermeturesSilencieuses(preparedStatement, connexion);</span>
+<span class="nc" id="L437">    }</span>
+
+<span class="nc" id="L439">  }</span>
+
+  private int getIdUe(UniteEnseignement ue) {
+    final BeanFactoryReference bf =
+<span class="nc" id="L443">        SingletonBeanFactoryLocator.getInstance().useBeanFactory(BEANSDAO);</span>
+<span class="nc" id="L444">    final UeDao ueDao = (UeDao) bf.getFactory().getBean(&quot;ueDao&quot;);</span>
+<span class="nc" id="L445">    final int idUe = ueDao.trouverIdParNom(ue.getNom());</span>
+<span class="nc bnc" id="L446" title="All 2 branches missed.">    if (idUe &lt; 0) {</span>
+<span class="nc" id="L447">      throw new DaoException(&quot;Impossible de récupérer l'ID d'un UE.&quot;);</span>
+    }
+<span class="nc" id="L449">    return idUe;</span>
+  }
+
+  @Override
+  public Map&lt;Long, CompetenceValidable&gt; recupererAssociationCompetenceUe(int idUe) {
+<span class="nc" id="L454">    final Map&lt;Long, CompetenceValidable&gt; competences = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L455">    Connection connexion = null;</span>
+<span class="nc" id="L456">    PreparedStatement preparedStatement = null;</span>
+<span class="nc" id="L457">    final PreparedStatement preparedStatementDeux = null;</span>
+<span class="nc" id="L458">    ResultSet resultSet = null;</span>
+
+    try {
+<span class="nc" id="L461">      connexion = this.daoFactory.getConnection();</span>
+<span class="nc" id="L462">      preparedStatement = DaoUtilitaire.initialisationRequetePreparee(connexion,</span>
+<span class="nc" id="L463">          CompetenceDaoImpl.SQL_RECUPERER_ASSOCIER, true, idUe);</span>
+<span class="nc" id="L464">      resultSet = preparedStatement.executeQuery();</span>
+      final BeanFactoryReference bf =
+<span class="nc" id="L466">          SingletonBeanFactoryLocator.getInstance().useBeanFactory(BEANSDAO);</span>
+      /* Récupération d'une instance de notre DAO Competence */
+<span class="nc" id="L468">      final CompetenceDao competenceDao =</span>
+<span class="nc" id="L469">          (CompetenceDao) bf.getFactory().getBean(CompetenceDaoImpl.COMPETENCE_DAO);</span>
+      /** Parcours de la ligne de données retournée dans le ResultSet. */
+<span class="nc bnc" id="L471" title="All 2 branches missed.">      while (resultSet.next()) {</span>
+<span class="nc" id="L472">        CompetenceValidable comp =</span>
+<span class="nc" id="L473">            new CompetenceValidable(competenceDao.trouverParId(resultSet.getInt(IDCOMP)));</span>
+<span class="nc" id="L474">        comp.setValide(resultSet.getBoolean(&quot;valide&quot;));</span>
+<span class="nc" id="L475">        competences.put(resultSet.getLong(IDCOMP), comp);</span>
+<span class="nc" id="L476">      }</span>
+<span class="nc" id="L477">    } catch (final SQLException sqle) {</span>
+<span class="nc" id="L478">      CompetenceDaoImpl.LOGGER.log(Level.INFO, EXCEPTION, sqle);</span>
+<span class="nc" id="L479">      throw new DaoException(sqle);</span>
+    } finally {
+<span class="nc" id="L481">      DaoUtilitaire.fermetureSilencieuse(preparedStatementDeux);</span>
+<span class="nc" id="L482">      DaoUtilitaire.fermeturesSilencieuses(preparedStatement, connexion);</span>
+<span class="nc" id="L483">    }</span>
+<span class="nc" id="L484">    return competences;</span>
+  }
+
+  @Override
+  public Map&lt;Competence, Integer&gt; recupererProfilEleve(Eleve eleve) {
+<span class="nc" id="L489">    final Map&lt;Competence, Integer&gt; competences = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L490">    Connection connexion = null;</span>
+<span class="nc" id="L491">    PreparedStatement preparedStatement = null;</span>
+<span class="nc" id="L492">    final PreparedStatement preparedStatementDeux = null;</span>
+<span class="nc" id="L493">    ResultSet resultSet = null;</span>
+    try {
+<span class="nc" id="L495">      connexion = this.daoFactory.getConnection();</span>
+<span class="nc" id="L496">      preparedStatement = DaoUtilitaire.initialisationRequetePreparee(connexion,</span>
+<span class="nc" id="L497">          CompetenceDaoImpl.SQL_RECUPERER_COMP_ELEVE, true, eleve.getIdEleve());</span>
+<span class="nc" id="L498">      resultSet = preparedStatement.executeQuery();</span>
+      final BeanFactoryReference bf =
+<span class="nc" id="L500">          SingletonBeanFactoryLocator.getInstance().useBeanFactory(BEANSDAO);</span>
+      /* Récupération d'une instance de notre DAO Competence */
+<span class="nc" id="L502">      final CompetenceDao competenceDao =</span>
+<span class="nc" id="L503">          (CompetenceDao) bf.getFactory().getBean(CompetenceDaoImpl.COMPETENCE_DAO);</span>
+      /** Parcours de la ligne de données retournée dans le ResultSet. */
+<span class="nc bnc" id="L505" title="All 2 branches missed.">      while (resultSet.next()) {</span>
+<span class="nc" id="L506">        competences.put(competenceDao.trouverParId(resultSet.getInt(IDCOMP)),</span>
+<span class="nc" id="L507">            resultSet.getInt(&quot;niveau&quot;));</span>
+      }
+<span class="nc" id="L509">    } catch (final SQLException sqle) {</span>
+<span class="nc" id="L510">      CompetenceDaoImpl.LOGGER.log(Level.INFO, EXCEPTION, sqle);</span>
+<span class="nc" id="L511">      throw new DaoException(sqle);</span>
+    } finally {
+<span class="nc" id="L513">      DaoUtilitaire.fermetureSilencieuse(preparedStatementDeux);</span>
+<span class="nc" id="L514">      DaoUtilitaire.fermeturesSilencieuses(preparedStatement, connexion);</span>
+<span class="nc" id="L515">    }</span>
+<span class="nc" id="L516">    return competences;</span>
+  }
+
+  @Override
+  public void valider(UniteEnseignement ue, CompetenceValidable competence) {
+<span class="nc" id="L521">    Connection connexion = null;</span>
+<span class="nc" id="L522">    PreparedStatement preparedStatement = null;</span>
+<span class="nc" id="L523">    final PreparedStatement preparedStatementDeux = null;</span>
+    try {
+<span class="nc" id="L525">      connexion = this.daoFactory.getConnection();</span>
+<span class="nc" id="L526">      preparedStatement =</span>
+<span class="nc" id="L527">          DaoUtilitaire.initialisationRequetePreparee(connexion, CompetenceDaoImpl.SQL_VALIDER_UE,</span>
+<span class="nc" id="L528">              true, competence.getValide(), ue.getId(), competence.getId());</span>
+<span class="nc" id="L529">      final int statut = preparedStatement.executeUpdate();</span>
+<span class="nc bnc" id="L530" title="All 2 branches missed.">      if (statut == 0) {</span>
+<span class="nc" id="L531">        throw new DaoException(&quot;Échec de la validation de la compétence.&quot;);</span>
+      }
+<span class="nc" id="L533">    } catch (final SQLException sqle) {</span>
+<span class="nc" id="L534">      CompetenceDaoImpl.LOGGER.log(Level.INFO, EXCEPTION, sqle);</span>
+<span class="nc" id="L535">      throw new DaoException(sqle);</span>
+    } finally {
+<span class="nc" id="L537">      DaoUtilitaire.fermetureSilencieuse(preparedStatementDeux);</span>
+<span class="nc" id="L538">      DaoUtilitaire.fermeturesSilencieuses(preparedStatement, connexion);</span>
+<span class="nc" id="L539">    }</span>
+<span class="nc" id="L540">  }</span>
+
+  @Override
+  public void valider(Matiere matiere, CompetenceValidable competence) {
+<span class="nc" id="L544">    Connection connexion = null;</span>
+<span class="nc" id="L545">    PreparedStatement preparedStatement = null;</span>
+<span class="nc" id="L546">    final PreparedStatement preparedStatementDeux = null;</span>
+    try {
+<span class="nc" id="L548">      connexion = this.daoFactory.getConnection();</span>
+<span class="nc" id="L549">      preparedStatement = DaoUtilitaire.initialisationRequetePreparee(connexion,</span>
+<span class="nc" id="L550">          CompetenceDaoImpl.SQL_VALIDER_MATIERE, true, competence.getValide(), matiere.getId(),</span>
+<span class="nc" id="L551">          competence.getId());</span>
+<span class="nc" id="L552">      final int statut = preparedStatement.executeUpdate();</span>
+<span class="nc bnc" id="L553" title="All 2 branches missed.">      if (statut == 0) {</span>
+<span class="nc" id="L554">        throw new DaoException(&quot;Échec de la validation de la compétence.&quot;);</span>
+      }
+<span class="nc" id="L556">    } catch (final SQLException sqle) {</span>
+<span class="nc" id="L557">      CompetenceDaoImpl.LOGGER.log(Level.INFO, EXCEPTION, sqle);</span>
+<span class="nc" id="L558">      throw new DaoException(sqle);</span>
+    } finally {
+<span class="nc" id="L560">      DaoUtilitaire.fermetureSilencieuse(preparedStatementDeux);</span>
+<span class="nc" id="L561">      DaoUtilitaire.fermeturesSilencieuses(preparedStatement, connexion);</span>
+<span class="nc" id="L562">    }</span>
+<span class="nc" id="L563">  }</span>
+  
+  /**
+   * Liste les compétences d'un UE.
+   */
+  @Override
+  public List&lt;Competence&gt; listeCompetencesUe(UniteEnseignement ue) {
+    
+<span class="nc" id="L571">    final String requete =</span>
+        &quot;SELECT * FROM unite_enseignement_associe_competence WHERE id_unite_enseignement=?;&quot;;
+
+<span class="nc" id="L574">    List&lt;Competence&gt; listeCompetences = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L575">    Connection connexion = null;</span>
+<span class="nc" id="L576">    PreparedStatement preparedStatement = null;</span>
+<span class="nc" id="L577">    ResultSet resultSet = null;</span>
+
+    try {
+      
+<span class="nc" id="L581">      connexion = this.daoFactory.getConnection();</span>
+<span class="nc" id="L582">      preparedStatement =</span>
+<span class="nc" id="L583">          DaoUtilitaire.initialisationRequetePreparee(connexion, requete, false, ue.getId());</span>
+<span class="nc" id="L584">      resultSet = preparedStatement.executeQuery();</span>
+      
+      final BeanFactoryReference bf =
+<span class="nc" id="L587">          SingletonBeanFactoryLocator.getInstance().useBeanFactory(BEANSDAO);</span>
+      
+<span class="nc" id="L589">      final CompetenceDao competenceDao =</span>
+<span class="nc" id="L590">          (CompetenceDao) bf.getFactory().getBean(CompetenceDaoImpl.COMPETENCE_DAO);</span>
+      
+<span class="nc bnc" id="L592" title="All 2 branches missed.">      while (resultSet.next()) {</span>
+<span class="nc" id="L593">        listeCompetences</span>
+<span class="nc" id="L594">            .add(competenceDao.trouverParId(resultSet.getInt(CompetenceDaoImpl.IDCOMP)));</span>
+      }
+      
+<span class="nc" id="L597">    } catch (final SQLException sqle) {</span>
+<span class="nc" id="L598">      CompetenceDaoImpl.LOGGER.log(Level.INFO, EXCEPTION, sqle);</span>
+<span class="nc" id="L599">      throw new DaoException(sqle);</span>
+    } finally {
+<span class="nc" id="L601">      DaoUtilitaire.fermeturesSilencieuses(preparedStatement, connexion);</span>
+<span class="nc" id="L602">    }</span>
+    
+<span class="nc" id="L604">    return listeCompetences;</span>
+    
+  }
+  
+  /**
+   * Liste les compétences d'une matiere.
+   */
+  @Override
+  public List&lt;Competence&gt; listeCompetencesMatiere(Matiere matiere) {
+    
+<span class="nc" id="L614">    final String requete = &quot;SELECT * FROM matiere_associe_competence WHERE id_matiere=?;&quot;;</span>
+
+<span class="nc" id="L616">    List&lt;Competence&gt; listeCompetences = new ArrayList&lt;&gt;();</span>
+    
+<span class="nc" id="L618">    Connection connexion = null;</span>
+<span class="nc" id="L619">    PreparedStatement preparedStatement = null;</span>
+<span class="nc" id="L620">    ResultSet resultSet = null;</span>
+
+    try {
+      
+<span class="nc" id="L624">      connexion = this.daoFactory.getConnection();</span>
+<span class="nc" id="L625">      preparedStatement =</span>
+<span class="nc" id="L626">          DaoUtilitaire.initialisationRequetePreparee(connexion, requete, false, matiere.getId());</span>
+<span class="nc" id="L627">      resultSet = preparedStatement.executeQuery();</span>
+      
+      final BeanFactoryReference bf =
+<span class="nc" id="L630">          SingletonBeanFactoryLocator.getInstance().useBeanFactory(BEANSDAO);</span>
+      
+<span class="nc" id="L632">      final CompetenceDao competenceDao =</span>
+<span class="nc" id="L633">          (CompetenceDao) bf.getFactory().getBean(CompetenceDaoImpl.COMPETENCE_DAO);</span>
+      
+<span class="nc bnc" id="L635" title="All 2 branches missed.">      while (resultSet.next()) {</span>
+<span class="nc" id="L636">        listeCompetences</span>
+<span class="nc" id="L637">            .add(competenceDao.trouverParId(resultSet.getInt(CompetenceDaoImpl.IDCOMP)));</span>
+      }
+      
+<span class="nc" id="L640">    } catch (final SQLException sqle) {</span>
+<span class="nc" id="L641">      CompetenceDaoImpl.LOGGER.log(Level.INFO, EXCEPTION, sqle);</span>
+<span class="nc" id="L642">      throw new DaoException(sqle);</span>
+    } finally {
+<span class="nc" id="L644">      DaoUtilitaire.fermeturesSilencieuses(preparedStatement, connexion);</span>
+<span class="nc" id="L645">    }</span>
+    
+<span class="nc" id="L647">    return listeCompetences;</span>
+    
+  }
+  
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.6.201602180812</span></div></body></html>

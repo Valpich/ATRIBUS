@@ -1,0 +1,60 @@
+package fr.eseo.atribus.entities;
+
+import org.testng.annotations.Test;
+
+import static org.testng.Assert.*;
+
+import fr.eseo.atribus.entities.Matiere;
+
+
+
+// TODO = questions à poser
+public class MatiereTest {
+  Matiere matiere = new Matiere();
+  private float coef = 1;
+  private String nom = "nom";
+
+
+
+  @Test
+  public void getCoefficiant() {
+    matiere.setCoefficient(coef);
+    assertEquals(matiere.getCoefficient(), coef);
+  }
+
+  @Test
+  public void getId() {
+    matiere.setId(2);
+    assertEquals(matiere.getId(), 2);
+  }
+
+
+  @Test
+  public void getIdUniteEnseignement() {
+    UniteEnseignement uniteEnseignement = new UniteEnseignement();
+    uniteEnseignement.setId(0);
+    matiere.setUe(uniteEnseignement);
+    assertEquals(matiere.getUe().getId(), 0);
+  }
+
+  @Test
+  public void getNom() {
+    matiere.setNom(nom);
+    assertEquals(matiere.getNom(), nom);
+  }
+
+  @Test
+  public void getSemestre() {
+    Semestre semestre = new Semestre();
+    matiere.setSemestre(semestre);
+    assertEquals(matiere.getSemestre(), semestre);
+  }
+  
+  @Test
+  public void getUe() { 
+    UniteEnseignement ue = new UniteEnseignement(); 
+    matiere.setUe(ue);
+    assertEquals(matiere.getUe(), ue);
+  }
+
+}

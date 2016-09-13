@@ -1,0 +1,265 @@
+package fr.eseo.atribus.forms;
+
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotEquals;
+
+import fr.eseo.atribus.dao.UtilisateurDao;
+
+import org.mockito.Mockito;
+import org.springframework.beans.factory.access.BeanFactoryReference;
+import org.springframework.beans.factory.access.SingletonBeanFactoryLocator;
+import org.testng.annotations.BeforeTest;
+import org.testng.annotations.Test;
+
+import javax.servlet.http.HttpServletRequest;
+
+public class ModifierUtilisateurFormTest {
+
+  ModifierUtilisateurForm form;
+  UtilisateurDao utilisateurDao;
+
+  /**
+   * Initialisation.
+   */
+  @BeforeTest
+  public void beforeTest() {
+    final BeanFactoryReference bf =
+        SingletonBeanFactoryLocator.getInstance().useBeanFactory("beansDao");
+    this.form = new ModifierUtilisateurForm();
+    this.utilisateurDao = (UtilisateurDao) bf.getFactory().getBean("utilisateurDao");
+  }
+
+  @Test
+  public void setGetResultErreur() {
+    this.form.setErreur("test", "Message test");
+    this.form.setResultat("Test Resultat");
+    assertEquals(this.form.getErreurs().get("test"), "Message test");
+    assertEquals(this.form.getResultat(), "Test Resultat");
+  }
+
+  @Test
+  public void modifierUtilisateur() {
+
+    final HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
+    final String loginPrecedent = "demayale";
+    final String nouveauLogin = "demayalex";
+    final String password = "password";
+    final String nom = "DEMAY";
+    final String prenom = "Alexis";
+    final String email = "alexis.demay@reseau.eseo.fr";
+
+    Mockito.when(request.getParameter(UtilisateurForm.NOM_BOUTON_SUPPRIMER))
+        .thenReturn(loginPrecedent);
+    Mockito.when(request.getParameter(UtilisateurForm.CHAMP_LOGIN)).thenReturn(nouveauLogin);
+    Mockito.when(request.getParameter(UtilisateurForm.CHAMP_PASS)).thenReturn(password);
+    Mockito.when(request.getParameter(UtilisateurForm.CHAMP_NOM)).thenReturn(nom);
+    Mockito.when(request.getParameter(UtilisateurForm.CHAMP_PRENOM)).thenReturn(prenom);
+    Mockito.when(request.getParameter(UtilisateurForm.CHAMP_EMAIL)).thenReturn(email);
+
+    this.form.modifierUtilisateur(request);
+
+    assertEquals(this.utilisateurDao.trouverParLogin(nouveauLogin).getLogin(), nouveauLogin);
+
+  }
+
+  @Test
+  public void modifierUtilisateurBon() {
+
+    final HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
+    final String loginPrecedent = "demayalex";
+    final String nouveauLogin = "demayale";
+    final String password = "password";
+    final String nom = "DEMAY";
+    final String prenom = "Alexis";
+    final String email = "alexis.demay@reseau.eseo.fr";
+
+    Mockito.when(request.getParameter(UtilisateurForm.NOM_BOUTON_SUPPRIMER))
+        .thenReturn(loginPrecedent);
+    Mockito.when(request.getParameter(UtilisateurForm.CHAMP_LOGIN)).thenReturn(nouveauLogin);
+    Mockito.when(request.getParameter(UtilisateurForm.CHAMP_PASS)).thenReturn(password);
+    Mockito.when(request.getParameter(UtilisateurForm.CHAMP_NOM)).thenReturn(nom);
+    Mockito.when(request.getParameter(UtilisateurForm.CHAMP_PRENOM)).thenReturn(prenom);
+    Mockito.when(request.getParameter(UtilisateurForm.CHAMP_EMAIL)).thenReturn(email);
+
+    this.form.modifierUtilisateur(request);
+
+    assertEquals(this.utilisateurDao.trouverParLogin(nouveauLogin).getLogin(), nouveauLogin);
+
+  }
+
+  @Test
+  public void modifierUtilisateurLoginEquals() {
+
+    final HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
+    final String loginPrecedent = "demayale";
+    final String nouveauLogin = "demayale";
+    final String password = "password";
+    final String nom = "DEMAY";
+    final String prenom = "Alexis";
+    final String email = "alexis.demay@reseau.eseo.fr";
+
+    Mockito.when(request.getParameter(UtilisateurForm.NOM_BOUTON_SUPPRIMER))
+        .thenReturn(loginPrecedent);
+    Mockito.when(request.getParameter(UtilisateurForm.CHAMP_LOGIN)).thenReturn(nouveauLogin);
+    Mockito.when(request.getParameter(UtilisateurForm.CHAMP_PASS)).thenReturn(password);
+    Mockito.when(request.getParameter(UtilisateurForm.CHAMP_NOM)).thenReturn(nom);
+    Mockito.when(request.getParameter(UtilisateurForm.CHAMP_PRENOM)).thenReturn(prenom);
+    Mockito.when(request.getParameter(UtilisateurForm.CHAMP_EMAIL)).thenReturn(email);
+
+    this.form.modifierUtilisateur(request);
+
+    assertNotEquals(this.utilisateurDao.trouverParLogin("demayale").getLogin(), null);
+
+  }
+
+  @Test
+  public void modifierUtilisateurErreurNouveauLogin() {
+
+    final HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
+    final String loginPrecedent = "demayalex";
+    final String nouveauLogin = "dem";
+    final String password = "password";
+    final String nom = "DEMAY";
+    final String prenom = "Alexis";
+    final String email = "alexis.demay@reseau.eseo.fr";
+
+    Mockito.when(request.getParameter(UtilisateurForm.NOM_BOUTON_SUPPRIMER))
+        .thenReturn(loginPrecedent);
+    Mockito.when(request.getParameter(UtilisateurForm.CHAMP_LOGIN)).thenReturn(nouveauLogin);
+    Mockito.when(request.getParameter(UtilisateurForm.CHAMP_PASS)).thenReturn(password);
+    Mockito.when(request.getParameter(UtilisateurForm.CHAMP_NOM)).thenReturn(nom);
+    Mockito.when(request.getParameter(UtilisateurForm.CHAMP_PRENOM)).thenReturn(prenom);
+    Mockito.when(request.getParameter(UtilisateurForm.CHAMP_EMAIL)).thenReturn(email);
+
+    this.form.modifierUtilisateur(request);
+
+    assertNotEquals(this.utilisateurDao.trouverParLogin("demayale").getLogin(), nouveauLogin);
+
+  }
+
+  @Test
+  public void modifierUtilisateurPrecedentLogin() {
+
+    final HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
+    final String loginPrecedent = "dem";
+    final String nouveauLogin = "demayalex";
+    final String password = "password";
+    final String nom = "DEMAY";
+    final String prenom = "Alexis";
+    final String email = "alexis.demay@reseau.eseo.fr";
+
+    Mockito.when(request.getParameter(UtilisateurForm.NOM_BOUTON_SUPPRIMER))
+        .thenReturn(loginPrecedent);
+    Mockito.when(request.getParameter(UtilisateurForm.CHAMP_LOGIN)).thenReturn(nouveauLogin);
+    Mockito.when(request.getParameter(UtilisateurForm.CHAMP_PASS)).thenReturn(password);
+    Mockito.when(request.getParameter(UtilisateurForm.CHAMP_NOM)).thenReturn(nom);
+    Mockito.when(request.getParameter(UtilisateurForm.CHAMP_PRENOM)).thenReturn(prenom);
+    Mockito.when(request.getParameter(UtilisateurForm.CHAMP_EMAIL)).thenReturn(email);
+
+    this.form.modifierUtilisateur(request);
+
+    assertNotEquals(this.utilisateurDao.trouverParLogin("demayale").getLogin(), loginPrecedent);
+
+  }
+
+  @Test
+  public void modifierUtilisateurErreurPassword1() {
+
+    final HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
+    final String loginPrecedent = "demayale";
+    final String nouveauLogin = "demayalex";
+    final String password = "pass";
+    final String nom = "DEMAY";
+    final String prenom = "Alexis";
+    final String email = "alexis.demay@reseau.eseo.fr";
+
+    Mockito.when(request.getParameter(UtilisateurForm.NOM_BOUTON_SUPPRIMER))
+        .thenReturn(loginPrecedent);
+    Mockito.when(request.getParameter(UtilisateurForm.CHAMP_LOGIN)).thenReturn(nouveauLogin);
+    Mockito.when(request.getParameter(UtilisateurForm.CHAMP_PASS)).thenReturn(password);
+    Mockito.when(request.getParameter(UtilisateurForm.CHAMP_NOM)).thenReturn(nom);
+    Mockito.when(request.getParameter(UtilisateurForm.CHAMP_PRENOM)).thenReturn(prenom);
+    Mockito.when(request.getParameter(UtilisateurForm.CHAMP_EMAIL)).thenReturn(email);
+
+    this.form.modifierUtilisateur(request);
+
+    assertNotEquals(this.utilisateurDao.trouverParLogin("demayale").getLogin(), nouveauLogin);
+
+  }
+
+  @Test
+  public void modifierUtilisateurErreurPassword2() {
+
+    final HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
+    final String loginPrecedent = "demayale";
+    final String nouveauLogin = "demayalex";
+    final String password = null;
+    final String nom = "DEMAY";
+    final String prenom = "Alexis";
+    final String email = "alexis.demay@reseau.eseo.fr";
+
+    Mockito.when(request.getParameter(UtilisateurForm.NOM_BOUTON_SUPPRIMER))
+        .thenReturn(loginPrecedent);
+    Mockito.when(request.getParameter(UtilisateurForm.CHAMP_LOGIN)).thenReturn(nouveauLogin);
+    Mockito.when(request.getParameter(UtilisateurForm.CHAMP_PASS)).thenReturn(password);
+    Mockito.when(request.getParameter(UtilisateurForm.CHAMP_NOM)).thenReturn(nom);
+    Mockito.when(request.getParameter(UtilisateurForm.CHAMP_PRENOM)).thenReturn(prenom);
+    Mockito.when(request.getParameter(UtilisateurForm.CHAMP_EMAIL)).thenReturn(email);
+
+    this.form.modifierUtilisateur(request);
+
+    assertNotEquals(this.utilisateurDao.trouverParLogin("demayale").getLogin(), nouveauLogin);
+
+  }
+
+  @Test
+  public void modifierUtilisateurErreurEmail1() {
+
+    final HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
+    final String loginPrecedent = "demayale";
+    final String nouveauLogin = "demayalex";
+    final String password = "pass";
+    final String nom = "DEMAY";
+    final String prenom = "Alexis";
+    final String email = null;
+
+    Mockito.when(request.getParameter(UtilisateurForm.NOM_BOUTON_SUPPRIMER))
+        .thenReturn(loginPrecedent);
+    Mockito.when(request.getParameter(UtilisateurForm.CHAMP_LOGIN)).thenReturn(nouveauLogin);
+    Mockito.when(request.getParameter(UtilisateurForm.CHAMP_PASS)).thenReturn(password);
+    Mockito.when(request.getParameter(UtilisateurForm.CHAMP_NOM)).thenReturn(nom);
+    Mockito.when(request.getParameter(UtilisateurForm.CHAMP_PRENOM)).thenReturn(prenom);
+    Mockito.when(request.getParameter(UtilisateurForm.CHAMP_EMAIL)).thenReturn(email);
+
+    this.form.modifierUtilisateur(request);
+
+    assertNotEquals(this.utilisateurDao.trouverParLogin("demayale").getLogin(), nouveauLogin);
+
+  }
+
+  @Test
+  public void modifierUtilisateurErreurEmail2() {
+
+    final HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
+    final String loginPrecedent = "demayale";
+    final String nouveauLogin = "demayalex";
+    final String password = "pass";
+    final String nom = "DEMAY";
+    final String prenom = "Alexis";
+    final String email = "alexis.demay";
+
+    Mockito.when(request.getParameter(UtilisateurForm.NOM_BOUTON_SUPPRIMER))
+        .thenReturn(loginPrecedent);
+    Mockito.when(request.getParameter(UtilisateurForm.CHAMP_LOGIN)).thenReturn(nouveauLogin);
+    Mockito.when(request.getParameter(UtilisateurForm.CHAMP_PASS)).thenReturn(password);
+    Mockito.when(request.getParameter(UtilisateurForm.CHAMP_NOM)).thenReturn(nom);
+    Mockito.when(request.getParameter(UtilisateurForm.CHAMP_PRENOM)).thenReturn(prenom);
+    Mockito.when(request.getParameter(UtilisateurForm.CHAMP_EMAIL)).thenReturn(email);
+
+    this.form.modifierUtilisateur(request);
+
+    assertNotEquals(this.utilisateurDao.trouverParLogin("demayale").getLogin(), nouveauLogin);
+
+  }
+
+}

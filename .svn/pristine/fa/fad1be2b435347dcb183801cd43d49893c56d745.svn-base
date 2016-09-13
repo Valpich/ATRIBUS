@@ -1,0 +1,326 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+	pageEncoding="UTF-8"%>
+<%@taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
+<%@taglib uri="http://www.springframework.org/tags/form" prefix="form"%>
+
+<!DOCTYPE html>
+<html>
+<head>
+
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<title>Modifier association Ue</title>
+<link rel="apple-touch-icon" sizes="57x57"
+	href="<c:url value="/resources/images/apple-icon-57x57.png"/>">
+<link rel="apple-touch-icon" sizes="60x60"
+	href="<c:url value="/resources/images/apple-icon-60x60.png"/>">
+<link rel="apple-touch-icon" sizes="72x72"
+	href="<c:url value="/resources/images/apple-icon-72x72.png"/>">
+<link rel="apple-touch-icon" sizes="76x76"
+	href="<c:url value="/resources/images/apple-icon-76x76.png"/>">
+<link rel="apple-touch-icon" sizes="114x114"
+	href="<c:url value="/resources/images/apple-icon-114x114.png"/>">
+<link rel="apple-touch-icon" sizes="120x120"
+	href="<c:url value="/resources/images/apple-icon-120x120.png"/>">
+<link rel="apple-touch-icon" sizes="144x144"
+	href="<c:url value="/resources/images/apple-icon-144x144.png"/>">
+<link rel="apple-touch-icon" sizes="152x152"
+	href="<c:url value="/resources/images/apple-icon-152x152.png"/>">
+<link rel="apple-touch-icon" sizes="180x180"
+	href="<c:url value="/resources/images/apple-icon-180x180.png"/>">
+<link rel="icon" type="image/png" sizes="192x192"
+	href="<c:url value="/resources/images/android-icon-192x192.png"/>">
+<link rel="icon" type="image/png" sizes="32x32"
+	href="<c:url value="/resources/images/favicon-32x32.png"/>">
+<link rel="icon" type="image/png" sizes="96x96"
+	href="<c:url value="/resources/images/favicon-96x96.png"/>">
+<link rel="icon" type="image/png" sizes="16x16"
+	href="<c:url value="/resources/images/favicon-16x16.png"/>">
+<link rel="manifest"
+	href="<c:url value="/resources/images/manifest.json"/>">
+<meta name="msapplication-TileColor" content="#ffffff">
+<meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
+<meta name="theme-color" content="#ffffff">
+	<link href="<c:url value="/resources/css/bootstrap.min.css"/>" rel="stylesheet">
+	<link href="<c:url value="/resources/css/animate.min.css"/>" rel="stylesheet">
+	<link href="<c:url value="/resources/fonts/css/font-awesome.min.css"/>" rel="stylesheet">	
+	<link href="<c:url value="/resources/css/custom.css"/>" rel="stylesheet">
+
+	<script src="<c:url value="/resources/js/jquery.min.js"/>"></script>
+	<script src="<c:url value="/resources/js/nprogress.js"/>"></script>
+	<script src="<c:url value="/resources/js/form/bootstrap-formhelpers.js"/>"></script>
+	
+</head>
+
+<body class="nav-md">
+
+	<div class="container body">
+		<div class="main_container">
+
+			<!-- sidebar gauche -->
+			<jsp:include page="../sidebar-gauche.jsp" />
+			
+			<jsp:include page="../topbar-navigation.jsp" />
+
+			<!-- page content -->
+			<div class="right_col" role="main">
+				<div class="row">
+					<div class="col-md-12 col-sm-12 col-xs-12">
+						<div class="x_panel tile">
+							<div class="x_title">
+							
+								<h2>Modifier l'association d'une compétence et d'un niveau à un UE</h2>
+								<ul class="nav navbar-right panel_toolbox"
+									style="min-width: 0px;">
+									<li><a class="collapse-link"><i
+											class="fa fa-chevron-up"></i></a></li>
+									<li><a class="close-link"><i class="fa fa-close"></i></a>
+									</li>
+								</ul>
+								<div class="clearfix"></div>
+								
+							</div>
+							
+							<div class="x_content">
+								<br>
+							
+									<c:if test="${empty modifierForm}">
+										<c:choose>
+											<c:when test="${listeDesAssociations.resultat == 'successUpdate'}">
+												<div class="alert alert-success alert-dismissible fade in" style="text-shadow: 0 0px 0 #fff;" role="alert">
+													<button type="button" class="close" data-dismiss="alert" aria-label="Close">
+														<span aria-hidden="true">×</span>
+													</button>
+													<c:out value="La modification a bien été effectuée."/>
+												</div>
+											</c:when>
+											<c:when test="${listeDesAssociations.resultat == 'echecUpdate'}">
+												<div class="alert alert-danger alert-dismissible fade in" style="text-shadow: 0 0px 0 #fff;" role="alert">
+													<button type="button" class="close" data-dismiss="alert" aria-label="Close">
+														<span aria-hidden="true">×</span>
+													</button>
+													<c:out value="Une erreur est survenue, la modification n'a pas été effectuée."/>
+												</div>
+											</c:when>
+											<c:when test="${listeDesAssociations.resultat == 'erreurDao' }">
+												<div class="alert alert-danger alert-dismissible fade in" style="text-shadow: 0 0px 0 #fff;" role="alert">
+													<button type="button" class="close" data-dismiss="alert" aria-label="Close">
+														<span aria-hidden="true">×</span>
+													</button>
+													<c:out value="Une erreur en base de donnée est survenue, veuillez réessayer."/>
+												</div>
+											</c:when>
+											<c:when test="${listeDesAssociations.resultat == 'success'}">
+												<div class="alert alert-success alert-dismissible fade in" style="text-shadow: 0 0px 0 #fff;" role="alert">
+													<button type="button" class="close" data-dismiss="alert" aria-label="Close">
+														<span aria-hidden="true">×</span>
+													</button>
+													<c:out value="Succès de la suppression de l'association."/>
+												</div>
+											</c:when>
+										</c:choose>
+								
+										<c:if test="${not empty listeDesAssociations.listeDesUes}">
+											<div class="row">
+												<div class="col-md-11">
+													<div class="input-group"> 
+														<span class="input-group-addon">Recherche</span>
+														<input id="filter" type="text" class="form-control">
+													</div>
+												</div>
+												
+												<div class="row">
+													<a class="btn btn-primary" type="button" data-toggle="tooltip" data-placement="top" title="Nouvelle association" href="<c:url value="AssocierCompetenceUE"/>">
+														<span class="glyphicon glyphicon-plus"></span>
+													</a>
+										
+													<a class="btn btn-success" type="button" data-toggle="tooltip" data-placement="top" title="Valider des compétences" href="<c:url value="ValiderCompetences"/>">
+														<span class="glyphicon glyphicon-ok"></span>
+													</a>
+												</div>
+								
+
+											</div>
+
+											<div class="form-group">
+				
+												<table id="datatable" class="table table-striped responsive-utilities jambo_table bulk_action">
+											
+													<thead>	
+														<tr>
+															<th>N°</th>
+															<th>Unité d'enseignement</th>
+															<th>Compétence</th>
+															<th>Niveau</th>
+															<th></th>
+														</tr>
+													</thead>
+												
+													<tbody class="searchable">
+												
+														<c:set var="index" value="1"/>
+		
+														<c:forEach var="ue" items="${listeDesAssociations.listeDesUes}">
+															<tr>		
+																<form method="post" action="ModifierAssocierCompetenceUE">
+																					
+																	<td><input class="form-control" name="index" type="hidden" value="<c:out value="${index}"/>"/><c:out value="${index}"/></td>
+																	<td><input class="form-control" name="ue" type="hidden" value="<c:out value="${ue.nom}"/>"/><c:out value="${ue.nom}"/></td>
+																
+																	<c:if test="${not empty ue.competences}">
+																		<c:forEach var="competence" items="${ue.competences}">
+																			<td><input class="form-control" name="comp" type="hidden" value="<c:out value="${competence.value.nom}"/>"/><c:out value="${competence.value.nom}"/></td>
+																			<td><input class="form-control" name="niveau" type="hidden" value="<c:out value="${competence.value.niveau}"/>"/><c:out value="${competence.value.niveau}"/></td>
+																		</c:forEach>
+																	</c:if>
+															
+																	<td class="text-center">
+																		<div>							
+																			<button type="submit" class="btn btn-warning btn-xs" name="modifier" data-toggle="tooltip" data-placement="top" title="Modifier">
+																				<span class="glyphicon glyphicon-edit"></span>
+																			</button>
+																			<button type="submit" class="btn btn-danger btn-xs" name="supprimer" data-toggle="tooltip" data-placement="top" title="Supprimer">
+																				<span class="glyphicon glyphicon-trash"></span>
+																			</button>
+																		</div>
+																	</td>
+																</form>
+																<c:set var="index" value="${index+1}"/>	
+															</tr>	
+	
+														</c:forEach>
+													</tbody>
+												</table>
+											</div>
+											<!-- fin form-group -->
+										</c:if>
+								
+										<c:if test="${empty listeDesAssociations.listeDesUes}">
+											<div class="alert alert-danger alert-dismissible fade in" style="text-shadow: 0 0px 0 #fff;" role="alert">
+												<button type="button" class="close" data-dismiss="alert" aria-label="Close">
+													<span aria-hidden="true">×</span>
+												</button>
+												<c:out value="La liste des associations est vide."/>
+											</div>
+											<form method="get" action="AssocierCompetenceUE">
+												<div class="form-group">
+													<button type="submit" class="btn btn-success btn-block">Effectuer une association</button>
+												</div>
+											</form>
+										</c:if>
+										
+										<ul class="nav nav-list">
+											<li class="divider"></li>
+										</ul>
+
+										<div class="text-center">
+											<span class="glyphicon glyphicon-home"></span> <a href="<c:url value="/"/>"> Revenir à l'index</a>
+										</div>
+	
+									</c:if>
+
+	
+								<c:if test="${not empty modifierForm}">
+									<div class="col-md-6">
+									<form method="post" action="ModifierAssocierCompetenceUE">
+										<div class="form-group">
+										
+											<input class="form-control" name="nomAncienUe" type="hidden" value="<c:out value="${modifierForm.nomAncienUe}"/>"/>
+											<input class="form-control" name="nomAncienneCompetence" type="hidden" value="<c:out value="${modifierForm.nomAncienneCompetence}"/>"/>
+											
+											<label>Nouvelle unité d'enseignement :</label>
+											<select class="form-control select2" name="listeUe" id="listeUe" required>
+												<c:forEach var="ue" items="${modifierForm.ues}">
+													<option value="<c:out value="${ue.nom}"/>">
+													<c:out value="${ue.nom}" /></option>
+												</c:forEach>
+											</select>
+											
+											<br>
+											
+											<label>Nouvelle compétence associée :</label>
+											<select class="form-control select2" name="listeCompetence" id="listeCompetence" required>
+												<c:forEach var="competence" items="${modifierForm.competences}">
+													<option value="<c:out value="${competence.nom}"/>">
+													<c:out value="${competence.nom}" /></option>
+												</c:forEach>
+											</select>
+											
+											<br>
+											
+											<label>Nouveau niveau associé :</label>
+											<input class="form-control bfh-number" type="text" id="niveau" name="niveau" value="0" data-min="0" data-max="5" data-wrap="true" required> 
+											
+											<br>
+											
+											<button type="submit" class="btn btn-success btn-block" name="validerModification">Modifier l'association</button>
+											
+										</div>
+									</form>
+									<form method="get" action="ModifierAssocierCompetenceUE">
+										<button type="submit" class="btn btn-danger btn-block">Revenir aux associations</button>	
+									</form>
+									
+									<ul class="nav nav-list">
+										<li class="divider"></li>
+									</ul>
+
+									<div class="text-center">
+										<span class="glyphicon glyphicon-home"></span> <a href="<c:url value="/"/>"> Revenir à l'index</a>
+									</div>
+									
+									</div>
+								</c:if>
+
+							</div>
+	
+								</div>
+			
+							</div>
+							
+						</div>
+
+					<div class="clearfix"></div>
+					<!-- footer content -->
+					<jsp:include page="../footer.jsp"/>
+					<!-- /footer content -->
+				</div>
+				<!-- /page content -->
+			</div>
+		</div>
+
+
+		<div id="custom_notifications" class="custom-notifications dsp_none">
+			<ul class="list-unstyled notifications clearfix" data-tabbed_notifications="notif-group"></ul>
+		<div class="clearfix"></div>
+		<div id="notif-group" class="tabbed_notifications"></div>
+	</div>
+
+	<script src="<c:url value="/resources/js/bootstrap.min.js"/>"></script>
+	<script src="<c:url value="/resources/js/custom.js"/>"></script>
+	<script src="<c:url value="/resources/js/select/select2.full.js"/>"></script>
+	
+	<script>
+
+	$(document).ready(function () {
+
+	    (function ($) {
+	        $('#filter').keyup(function () {
+	            var rex = new RegExp($(this).val(), 'i');
+	            $('.searchable tr').hide();
+	            $('.searchable tr').filter(function () {
+	                return rex.test($(this).text());
+	            }).show();
+	        })
+	    }(jQuery));
+
+	});
+
+	</script>
+
+</body>
+
+</html>

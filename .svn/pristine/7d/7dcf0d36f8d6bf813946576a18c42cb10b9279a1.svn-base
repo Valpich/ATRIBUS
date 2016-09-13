@@ -1,0 +1,66 @@
+package fr.eseo.atribus.controller;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
+
+import org.mockito.MockitoAnnotations;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.servlet.view.InternalResourceViewResolver;
+
+import org.testng.annotations.BeforeTest;
+import org.testng.annotations.Test;
+
+public class MatiereControllerTest {
+  
+  public static final String VUE = "EnseignantRefMatiere/addMatiere";
+  
+  private MockMvc mockMvc;
+
+  /**
+   * Initialisation.
+   */
+  @BeforeTest
+  public void setup() {
+    
+    final MatiereController matiereController = new MatiereController();
+    InternalResourceViewResolver viewResolver = new InternalResourceViewResolver();
+    
+    viewResolver.setPrefix("/WEB-INF/");
+    viewResolver.setSuffix(".jsp");
+    MockitoAnnotations.initMocks(this);
+    
+    mockMvc = MockMvcBuilders.standaloneSetup(matiereController).setViewResolvers(viewResolver)
+        .build();
+    
+  }
+  
+  @Test
+  public void ajouterMatiereGet() throws Exception {
+    
+    mockMvc.perform(get("/EnseignantRefUE/AjouterMatiere")
+        .param("recherche", "NotNull")
+    )
+        .andExpect(status().isOk())
+        .andExpect(view().name(VUE));
+    
+  }
+  
+  @Test
+  public void ajouterMatierePost() throws Exception {
+    
+    mockMvc.perform(post("/EnseignantRefUE/AjouterMatiere")
+        .param("nom", "NotNull")
+        .param("coefficient_matiere", "1")
+        .param("listeSemestre", "1")
+        .param("listeUe", "Automatique")
+        .param("coefficient_matiere", "1")
+        .param("listeEnseignant", "Alexis")
+    )
+        .andExpect(view().name(VUE));
+    
+  }
+
+}

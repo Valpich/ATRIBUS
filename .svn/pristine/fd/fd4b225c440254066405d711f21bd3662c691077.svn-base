@@ -1,0 +1,137 @@
+package fr.eseo.atribus.controller;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
+
+import org.mockito.MockitoAnnotations;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.servlet.view.InternalResourceViewResolver;
+import org.testng.annotations.BeforeTest;
+import org.testng.annotations.Test;
+
+public class SimulerControllerTest {
+  
+  public static final String VUE = "simulerDroits";
+
+  private MockMvc mockMvc;
+  
+  /**
+   * Initialisation.
+   */
+  @BeforeTest
+  public void setup() {
+    
+    final SimulerController simulerController = new SimulerController();
+    
+    InternalResourceViewResolver viewResolver = new InternalResourceViewResolver();
+    
+    viewResolver.setPrefix("/WEB-INF/");
+    viewResolver.setSuffix(".jsp");
+    MockitoAnnotations.initMocks(this);
+    
+    mockMvc = MockMvcBuilders.standaloneSetup(simulerController).setViewResolvers(viewResolver)
+        .build();
+    
+  }
+  
+  @Test
+  public void simulationGet() throws Exception {
+    
+    mockMvc.perform(get("/AdministrateurSysteme/simuler"))
+        .andExpect(status().isOk())        
+        .andExpect(view().name(VUE));
+    
+  }
+
+  @Test
+  public void simulationPostAs() throws Exception {
+    
+    mockMvc.perform(post("/AdministrateurSysteme/simuler")
+        .param("choixDroit", "AS")
+    )
+        .andExpect(status().isOk())        
+        .andExpect(view().name(VUE));
+    
+  }
+  
+  @Test
+  public void simulationPostDe() throws Exception {
+    
+    mockMvc.perform(post("/AdministrateurSysteme/simuler")
+        .param("choixDroit", "DE")
+    )
+        .andExpect(status().isOk())        
+        .andExpect(view().name(VUE));
+    
+  }
+  
+  @Test
+  public void simulationPostEleve() throws Exception {
+    
+    mockMvc.perform(post("/simuler")
+        .param("choixDroit", "Eleve")
+    )
+        .andExpect(status().isOk())        
+        .andExpect(view().name(VUE));
+    
+  }
+  
+  @Test
+  public void simulationPostProf() throws Exception {
+    
+    mockMvc.perform(post("/AdministrateurSysteme/simuler")
+        .param("choixDroit", "Prof")
+    )
+        .andExpect(status().isOk())        
+        .andExpect(view().name(VUE));
+    
+  }
+  
+  @Test
+  public void simulationPostDP() throws Exception {
+    
+    mockMvc.perform(post("/AdministrateurSysteme/simuler")
+        .param("choixDroit", "DP")
+    )
+        .andExpect(status().isOk())        
+        .andExpect(view().name(VUE));
+    
+  }
+  
+  @Test
+  public void simulationPostEure() throws Exception {
+    
+    mockMvc.perform(post("/AdministrateurSysteme/simuler")
+        .param("choixDroit", "EURE")
+    )
+        .andExpect(status().isOk())        
+        .andExpect(view().name(VUE));
+    
+  }
+  
+  @Test
+  public void simulationPostErm() throws Exception {
+    
+    mockMvc.perform(post("/AdministrateurSysteme/simuler")
+        .param("choixDroit", "ERM")
+    )
+        .andExpect(status().isOk())        
+        .andExpect(view().name(VUE));
+    
+  }
+  
+  @Test
+  public void simulationPostDefault() throws Exception {
+    
+    mockMvc.perform(post("/AdministrateurSysteme/simuler")
+        .param("choixDroit", "Default")
+    )
+        .andExpect(status().isOk())        
+        .andExpect(view().name(VUE));
+    
+  }
+  
+}

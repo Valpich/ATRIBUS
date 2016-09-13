@@ -1,0 +1,145 @@
+package fr.eseo.atribus.forms;
+
+import fr.eseo.atribus.dao.CompetenceDao;
+import fr.eseo.atribus.dao.DaoException;
+import fr.eseo.atribus.dao.UeDao;
+import fr.eseo.atribus.entities.Competence;
+import fr.eseo.atribus.entities.UniteEnseignement;
+
+import org.springframework.beans.factory.access.BeanFactoryReference;
+import org.springframework.beans.factory.access.SingletonBeanFactoryLocator;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.servlet.http.HttpServletRequest;
+
+public class ModifierAssocierCompetenceUeForm extends UeFormMethods {
+
+  private static final Logger LOGGER =
+      Logger.getLogger(ModifierAssocierCompetenceUeForm.class.getName());
+  private static final String EXCEPTION = "Exception";
+
+  private static final String CHAMP_UE = "ue";
+  private static final String CHAMP_COMPETENCE = "comp";
+  private static final String CHAMP_ANCIENNE_UE = "nomAncienUe";
+  private static final String CHAMP_ANCIENNE_COMPETENCE = "nomAncienneCompetence";
+  private static final String CHAMP_NOUVELLE_UE = "listeUe";
+  private static final String CHAMP_NOUVELLE_COMPETENCE = "listeCompetence";
+  private static final String CHAMP_NIVEAU = "niveau";
+
+  private UeDao ueDao;
+  private CompetenceDao competenceDao;
+  private String resultat;
+  private final Map<String, String> erreurs = new HashMap<>();
+  private List<UniteEnseignement> listeDesUes;
+
+  /**
+   * Constructeur.
+   */
+  public ModifierAssocierCompetenceUeForm() {
+    final BeanFactoryReference bf =
+        SingletonBeanFactoryLocator.getInstance().useBeanFactory("beansDao");
+    this.ueDao = (UeDao) bf.getFactory().getBean("ueDao");
+    this.competenceDao = (CompetenceDao) bf.getFactory().getBean("competenceDao");
+  }
+
+  public List<UniteEnseignement> getListeDesUes() {
+    return listeDesUes;
+  }
+
+  public void setListeDesUes(List<UniteEnseignement> listeDesUes) {
+    this.listeDesUes = listeDesUes;
+  }
+
+  /**
+   * Méthode qui modifie une association.
+   * 
+   * @param request requete
+   */
+  public void modifierAssociationCompetenceUe(HttpServletRequest request) {
+
+    String ancienneUe =
+        UeFormMethods.getValeurChamp(request, ModifierAssocierCompetenceUeForm.CHAMP_ANCIENNE_UE);
+    String ancienneCompetence = UeFormMethods.getValeurChamp(request,
+        ModifierAssocierCompetenceUeForm.CHAMP_ANCIENNE_COMPETENCE);
+    String nouvelleUe =
+        UeFormMethods.getValeurChamp(request, ModifierAssocierCompetenceUeForm.CHAMP_NOUVELLE_UE);
+    String nouvelleCompetence = UeFormMethods.getValeurChamp(request,
+        ModifierAssocierCompetenceUeForm.CHAMP_NOUVELLE_COMPETENCE);
+    String niveau =
+        UeFormMethods.getValeurChamp(request, ModifierAssocierCompetenceUeForm.CHAMP_NIVEAU);
+
+    final Competence competence = new Competence();
+    final UniteEnseignement ue = new UniteEnseignement();
+
+    AssocierCompetenceUeForm form;
+
+    try {
+
+      form = new AssocierCompetenceUeForm();
+
+      form.traiterValeurs(ancienneCompetence, ancienneUe, niveau);
+      form.traiterValeurs(nouvelleCompetence, nouvelleUe, niveau);
+
+      if (this.data.getErreurs().isEmpty()) {
+
+        ue.setNom(nouvelleUe);
+        competence.setNom(nouvelleCompetence);
+        competence.setNiveau(Integer.parseInt(niveau));
+
+        this.ueDao.supprimerAssociationCompetenceUe(ancienneUe, ancienneCompetence);
+        this.competenceDao.associerCompetenceNiveauUe(competence, ue);
+        this.resultat = "successUpdate";
+
+      } else {
+        this.resultat = "echecUpdate";
+      }
+
+    } catch (final DaoException daoEx) {
+      this.resultat = "erreurDao";
+      ModifierAssocierCompetenceUeForm.LOGGER.log(Level.INFO, EXCEPTION, daoEx);
+    }
+
+
+  }
+
+  /**
+   * Méthode pour supprimer une association.
+   * 
+   * @param request Requête
+   */
+  public void supprimerAssociationCompetenceUe(HttpServletRequest request) {
+    
+    String nomUe = UeFormMethods.getValeurChamp(request, ModifierAssocierCompetenceUeForm.CHAMP_UE);
+    String nomCompetence =
+        UeFormMethods.getValeurChamp(request, ModifierAssocierCompetenceUeForm.CHAMP_COMPETENCE);
+
+    try {
+
+      if (nomUe != null && nomCompetence != null) {
+        this.ueDao.supprimerAssociationCompetenceUe(nomUe, nomCompetence);
+        this.resultat = "success";
+      }
+
+    } catch (final DaoException daoEx) {
+      this.resultat = "erreurDao";
+      ModifierAssocierCompetenceUeForm.LOGGER.log(Level.INFO, EXCEPTION, daoEx);
+    }
+
+  }
+
+  @Override
+  public String getResultat() {
+    return this.resultat;
+  }
+  
+  @Override
+  public Map<String, String> getErreurs() {
+    return this.erreurs;
+  }
+
+}

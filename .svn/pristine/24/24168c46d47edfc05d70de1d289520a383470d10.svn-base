@@ -1,0 +1,69 @@
+package fr.eseo.atribus.entities;
+
+import static org.testng.Assert.assertEquals;
+
+import fr.eseo.atribus.entities.Competence;
+import fr.eseo.atribus.entities.Matiere;
+import fr.eseo.atribus.entities.Ressource;
+import fr.eseo.atribus.entities.UniteEnseignement;
+
+import org.joda.time.DateTime;
+import org.testng.annotations.Test;
+
+import java.util.List;
+
+public class RessourceTest {
+  Ressource ressource = new Ressource();
+  String nom;
+  String type;
+  int id;
+  Matiere matiere;
+  List<Competence> competences;
+  String path;
+  DateTime datePublication;
+
+  @Test
+  public void getDatePublication() {
+    ressource.setDatePublication(datePublication);
+    assertEquals(ressource.getDatePublication(), datePublication);
+  }
+
+  @Test
+  public void getNom() {
+    ressource.setNom(nom);
+    assertEquals(ressource.getNom(), nom);
+  }
+
+  @Test
+  public void getType() {
+    ressource.setType(type);
+    assertEquals(ressource.getType(), type);
+  }
+
+  @Test
+  public void getMatiere() {
+    ressource.setMatiere(matiere);
+    assertEquals(ressource.getMatiere(), matiere);
+  }
+
+
+  @Test
+  public void getPath() {
+    ressource.setPath(path);
+    assertEquals(ressource.getPath(), path);
+  }
+ 
+  @Test
+  public void getCompetences() {
+    ressource.setCompetences(competences);
+    assertEquals(ressource.getCompetences(), competences);
+  }
+  
+  @Test
+  public void testtoString() {
+    String string = "Ressource [id=" + id + ", matiere=" + matiere + ", nom=" + nom + ", type=" + type
+        + ", path=" + path + ", datePublication=" + datePublication + ", competences=" + competences
+        + "]";
+    assertEquals(ressource.toString(), string);
+  }
+}

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>Examen.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Atribus</a> &gt; <a href="index.source.html" class="el_package">fr.eseo.atribus.entities</a> &gt; <span class="el_source">Examen.java</span></div><h1>Examen.java</h1><pre class="source lang-java linenums">package fr.eseo.atribus.entities;
+
+import java.io.Serializable;
+import java.util.List;
+
+<span class="nc" id="L6">public class Examen implements Serializable {</span>
+
+  private static final long serialVersionUID = -6123285159144541101L;
+
+  private int id;
+  private Matiere matiere;
+  private List&lt;Exercice&gt; exercices;
+  private String nom;
+  private Boolean autoEvaluation;
+
+  public int getId() {
+<span class="nc" id="L17">    return this.id;</span>
+  }
+
+  public void setId(int id) {
+<span class="nc" id="L21">    this.id = id;</span>
+<span class="nc" id="L22">  }</span>
+
+  public Matiere getMatiere() {
+<span class="nc" id="L25">    return this.matiere;</span>
+  }
+
+  public void setMatiere(Matiere matiere) {
+<span class="nc" id="L29">    this.matiere = matiere;</span>
+<span class="nc" id="L30">  }</span>
+
+  public List&lt;Exercice&gt; getExercices() {
+<span class="nc" id="L33">    return this.exercices;</span>
+  }
+
+  public void setExercices(List&lt;Exercice&gt; exercices) {
+<span class="nc" id="L37">    this.exercices = exercices;</span>
+<span class="nc" id="L38">  }</span>
+
+  public String getNom() {
+<span class="nc" id="L41">    return this.nom;</span>
+  }
+
+  public void setNom(String nom) {
+<span class="nc" id="L45">    this.nom = nom;</span>
+<span class="nc" id="L46">  }</span>
+
+  public Boolean getAutoEvaluation() {
+<span class="nc" id="L49">    return this.autoEvaluation;</span>
+  }
+
+  public void setAutoEvaluation(Boolean autoEvaluation) {
+<span class="nc" id="L53">    this.autoEvaluation = autoEvaluation;</span>
+<span class="nc" id="L54">  }</span>
+
+  @Override
+  public String toString() {
+<span class="nc" id="L58">    return &quot;Examen [id=&quot; + this.id + &quot;, matiere=&quot; + this.matiere + &quot;, exercices=&quot; + this.exercices</span>
+        + &quot;, nom=&quot; + this.nom + &quot;, autoEvaluation=&quot; + this.autoEvaluation + &quot;]&quot;;
+  }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.6.201602180812</span></div></body></html>

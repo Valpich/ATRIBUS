@@ -1,0 +1,49 @@
+package fr.eseo.atribus.entities;
+
+import java.io.Serializable;
+import java.util.UUID;
+
+public class CompetenceEleve extends Competence implements Serializable {
+
+  private static final long serialVersionUID = 7370585375285499336L;
+  
+  int niveauCompetenceEleve;
+  private UUID uniqueId;
+  
+  /**
+   * Constructeur.
+   * @param competence competence
+   */
+  public CompetenceEleve(Competence competence) {
+    this.setId(competence.getId());
+    this.setIdParent(competence.getIdParent());
+    this.setNiveau(competence.getNiveau());
+    this.setNom(competence.getNom());
+    this.setProfondeur(competence.getProfondeur());
+    this.setUe(competence.getUe());
+    this.setUniqueId(UUID.randomUUID());
+  }
+
+  public Integer getNiveauCompetenceEleve() {
+    return niveauCompetenceEleve;
+  }
+
+  public UUID getUniqueId() {
+    return uniqueId;
+  }
+
+  public void setNiveauCompetenceEleve(int niveauCompetenceEleve) {
+    this.niveauCompetenceEleve = niveauCompetenceEleve;
+  }
+
+  public void setUniqueId(UUID uniqueId) {
+    this.uniqueId = uniqueId;
+  }
+
+  @Override
+  public String toString() {
+    return "CompetenceEleve [niveau=" + niveauCompetenceEleve + ", uniqueId=" + uniqueId + ", toString()="
+        + super.toString() + "]";
+  }
+
+}

@@ -1,0 +1,434 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>RessourceDaoImpl.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Atribus</a> &gt; <a href="index.source.html" class="el_package">fr.eseo.atribus.dao</a> &gt; <span class="el_source">RessourceDaoImpl.java</span></div><h1>RessourceDaoImpl.java</h1><pre class="source lang-java linenums">package fr.eseo.atribus.dao;
+
+import fr.eseo.atribus.entities.Competence;
+import fr.eseo.atribus.entities.Matiere;
+import fr.eseo.atribus.entities.Ressource;
+import fr.eseo.atribus.entities.Utilisateur;
+
+import org.joda.time.DateTime;
+import org.springframework.beans.factory.access.BeanFactoryReference;
+import org.springframework.beans.factory.access.SingletonBeanFactoryLocator;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+public class RessourceDaoImpl implements RessourceDao {
+<span class="nc" id="L24">  private static final Logger LOGGER = Logger.getLogger(RessourceDaoImpl.class.getName());</span>
+  private final DaoFactory daoFactory;
+  private static final String SQL_DELETE = &quot;DELETE FROM ressource WHERE id = ?;&quot;;
+  private static final String SQL_INSERT =
+      &quot;INSERT INTO ressource (path, nom, type, date_publication,id_matiere) &quot;
+          + &quot;VALUES (?,?,?,?,?)&quot;;
+  private static final String SQL_UPDATE = &quot;UPDATE ressource SET nom = ? WHERE id = ?;&quot;;
+  private static final String SQL_GET_LINK =
+      &quot;SELECT * FROM ressource_associe_competence WHERE&quot; + &quot; id_ressource = ?&quot;;
+  private static final String SQL_INSERT_LINK =
+      &quot;INSERT INTO ressource_associe_competence (id_competence, id_ressource) &quot; + &quot;VALUES (?,?)&quot;;
+  private static final String SQL_ETOILE = &quot;SELECT * FROM ressource &quot;;
+  private static final String SQL_SELECT_PAR_NOM_MATIERE =
+      SQL_ETOILE + &quot;WHERE nom = ? AND id_matiere = ?&quot;;
+  private static final String SQL_SELECT_ALL = &quot;SELECT * FROM ressource&quot;;
+  private static final String SQL_SELECT_PAR_NOM_TYPE = SQL_ETOILE + &quot;WHERE nom = ? AND type = ?&quot;;
+  private static final String SQL_PATH_RESSOURCE = SQL_ETOILE + &quot;WHERE nom = ? AND type = ?&quot;;
+  private static final String SQL_HISTORIQUE_RESSOURCE =
+      &quot;INSERT INTO consultation_ressource (id_ressource, id_utilisateur) VALUES ( ?,?);&quot;;
+  private static final String SQL_SELECT_HISTORIQUE = &quot;SELECT * FROM consultation_ressource;&quot;;
+  private static final String EXCEPTION = &quot;Exception&quot;;
+
+<span class="nc" id="L46">  RessourceDaoImpl() {</span>
+    final BeanFactoryReference bf =
+<span class="nc" id="L48">        SingletonBeanFactoryLocator.getInstance().useBeanFactory(&quot;contextDao&quot;);</span>
+<span class="nc" id="L49">    this.daoFactory = (DaoFactory) bf.getFactory().getBean(&quot;daoFactory&quot;);</span>
+<span class="nc" id="L50">  }</span>
+
+  /* Implémentation de la méthode trouverParNomEtMatiere() définie dans l'interface ressourceDao */
+  @Override
+  public Ressource trouverParNomEtMatiere(String nom, String matiere) {
+<span class="nc" id="L55">    return this.trouver(RessourceDaoImpl.SQL_SELECT_PAR_NOM_MATIERE, nom, matiere);</span>
+  }
+
+
+  /* Implémentation de la méthode trouverParNomEtUe() définie dans l'interface ressourceDao */
+  @Override
+  public Ressource trouverParNomEtType(String nom, String type) {
+<span class="nc" id="L62">    return this.trouver(RessourceDaoImpl.SQL_SELECT_PAR_NOM_TYPE, nom, type);</span>
+  }
+
+  /*
+   * Implémentation de la méthode trouverToutesLesRessources() définie dans l'interface ressourceDao
+   */
+  @Override
+  public List&lt;Ressource&gt; trouverToutesLesRessources() {
+<span class="nc" id="L70">    return this.trouverToutes(RessourceDaoImpl.SQL_SELECT_ALL);</span>
+  }
+
+  /*
+   * Implémentation de la méthode trouverToutesLesRessourcesCompetence() définie dans l'interface
+   * ressourceDao
+   */
+  @Override
+  public List&lt;Ressource&gt; trouverToutesLesRessourcesCompetence(String competence) {
+<span class="nc" id="L79">    final List&lt;Ressource&gt; tmp = this.trouverToutes(RessourceDaoImpl.SQL_SELECT_ALL);</span>
+<span class="nc" id="L80">    final List&lt;Ressource&gt; trier = new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L81" title="All 2 branches missed.">    for (final Ressource ressource : tmp) {</span>
+<span class="nc bnc" id="L82" title="All 2 branches missed.">      for (final Competence comp : ressource.getCompetences()) {</span>
+<span class="nc bnc" id="L83" title="All 2 branches missed.">        if (comp.getNom().equals(competence)) {</span>
+<span class="nc" id="L84">          trier.add(ressource);</span>
+        }
+<span class="nc" id="L86">      }</span>
+<span class="nc" id="L87">    }</span>
+<span class="nc" id="L88">    return trier;</span>
+  }
+
+  /* Implémentation de la méthode trouverPath() définie dans l'interface ressourceDao */
+  @Override
+  public String trouverPath(Ressource ressource) {
+<span class="nc" id="L94">    return this.trouverPath(RessourceDaoImpl.SQL_PATH_RESSOURCE, ressource.getNom(),</span>
+<span class="nc" id="L95">        ressource.getType());</span>
+  }
+
+  /* Implémentation de la méthode définie dans l'interface ressourceDao */
+  @Override
+  public void supprimer(Ressource ressource) {
+<span class="nc" id="L101">    Connection connexion = null;</span>
+<span class="nc" id="L102">    PreparedStatement preparedStatement = null;</span>
+<span class="nc" id="L103">    final ResultSet valeursAutoGenerees = null;</span>
+    try {
+      /* Récupération d'une connexion depuis la Factory */
+<span class="nc" id="L106">      connexion = this.daoFactory.getConnection();</span>
+<span class="nc" id="L107">      preparedStatement = DaoUtilitaire.initialisationRequetePreparee(connexion,</span>
+<span class="nc" id="L108">          RessourceDaoImpl.SQL_DELETE, false, ressource.getId());</span>
+<span class="nc" id="L109">      final int statut = preparedStatement.executeUpdate();</span>
+      /* Analyse du statut retourné par la requête d'insertion */
+<span class="nc bnc" id="L111" title="All 2 branches missed.">      if (statut == 0) {</span>
+<span class="nc" id="L112">        throw new DaoException(</span>
+            &quot;Échec de la suppresion de la ressource, aucune ligne supprimée dans la table.&quot;);
+      }
+<span class="nc" id="L115">    } catch (final SQLException sqle) {</span>
+<span class="nc" id="L116">      RessourceDaoImpl.LOGGER.log(Level.INFO, EXCEPTION, sqle);</span>
+<span class="nc" id="L117">      throw new DaoException(sqle);</span>
+    } finally {
+<span class="nc" id="L119">      DaoUtilitaire.fermeturesSilencieuses(valeursAutoGenerees, preparedStatement, connexion);</span>
+<span class="nc" id="L120">    }</span>
+<span class="nc" id="L121">  }</span>
+
+  /* Implémentation de la méthode définie dans l'interface ressourceDao */
+  @Override
+  public Map&lt;Ressource, Integer&gt; listerConsultations() {
+<span class="nc" id="L126">    Connection connexion = null;</span>
+<span class="nc" id="L127">    PreparedStatement preparedStatement = null;</span>
+<span class="nc" id="L128">    final ResultSet valeursAutoGenerees = null;</span>
+<span class="nc" id="L129">    ResultSet resultSet = null;</span>
+<span class="nc" id="L130">    Map&lt;Ressource, Integer&gt; ressources = new HashMap&lt;&gt;();</span>
+    try {
+      /* Récupération d'une connexion depuis la Factory */
+<span class="nc" id="L133">      connexion = this.daoFactory.getConnection();</span>
+<span class="nc" id="L134">      preparedStatement = DaoUtilitaire.initialisationRequetePreparee(connexion,</span>
+          RessourceDaoImpl.SQL_SELECT_HISTORIQUE, false);
+<span class="nc" id="L136">      resultSet = preparedStatement.executeQuery();</span>
+      /* Parcours de la ligne de données retournée dans le ResultSet */
+<span class="nc" id="L138">      remplirMapConsultation(resultSet, ressources);</span>
+<span class="nc" id="L139">    } catch (final SQLException sqle) {</span>
+<span class="nc" id="L140">      RessourceDaoImpl.LOGGER.log(Level.INFO, EXCEPTION, sqle);</span>
+<span class="nc" id="L141">      throw new DaoException(sqle);</span>
+    } finally {
+<span class="nc" id="L143">      DaoUtilitaire.fermeturesSilencieuses(valeursAutoGenerees, preparedStatement, connexion);</span>
+<span class="nc" id="L144">    }</span>
+<span class="nc" id="L145">    return ressources;</span>
+  }
+
+  private void remplirMapConsultation(ResultSet resultSet, Map&lt;Ressource, Integer&gt; ressources)
+      throws SQLException {
+<span class="nc" id="L150">    List&lt;Ressource&gt; res = this.trouverToutesLesRessources();</span>
+<span class="nc bnc" id="L151" title="All 2 branches missed.">    while (resultSet.next()) {</span>
+<span class="nc bnc" id="L152" title="All 2 branches missed.">      for (Ressource re : res) {</span>
+<span class="nc" id="L153">        compterNombreConsultationRessource(resultSet, ressources, re);</span>
+<span class="nc" id="L154">      }</span>
+    }
+<span class="nc" id="L156">  }</span>
+
+  private void compterNombreConsultationRessource(ResultSet resultSet,
+      Map&lt;Ressource, Integer&gt; ressources, Ressource re) throws SQLException {
+<span class="nc bnc" id="L160" title="All 2 branches missed.">    if (re.getId() == resultSet.getInt(&quot;id_ressource&quot;)) {</span>
+<span class="nc bnc" id="L161" title="All 2 branches missed.">      if (ressources.get(re) == null) {</span>
+<span class="nc" id="L162">        ressources.put(re, 1);</span>
+      } else {
+<span class="nc" id="L164">        ressources.put(re, ressources.get(re) + 1);</span>
+      }
+    }
+<span class="nc" id="L167">  }</span>
+
+  /* Implémentation de la méthode définie dans l'interface ressourceDao */
+  @Override
+  public void consulter(Ressource ressource, Utilisateur utilisateur) {
+<span class="nc" id="L172">    Connection connexion = null;</span>
+<span class="nc" id="L173">    PreparedStatement preparedStatement = null;</span>
+<span class="nc" id="L174">    final ResultSet valeursAutoGenerees = null;</span>
+    try {
+      /* Récupération d'une connexion depuis la Factory */
+<span class="nc" id="L177">      connexion = this.daoFactory.getConnection();</span>
+<span class="nc" id="L178">      preparedStatement = DaoUtilitaire.initialisationRequetePreparee(connexion,</span>
+<span class="nc" id="L179">          RessourceDaoImpl.SQL_HISTORIQUE_RESSOURCE, false, ressource.getId(), utilisateur.getId());</span>
+<span class="nc" id="L180">      final int statut = preparedStatement.executeUpdate();</span>
+      /* Analyse du statut retourné par la requête d'insertion */
+<span class="nc bnc" id="L182" title="All 2 branches missed.">      if (statut == 0) {</span>
+<span class="nc" id="L183">        throw new DaoException(</span>
+            &quot;Échec de la mise à jour du nombre de consultations de la ressource.&quot;);
+      }
+<span class="nc" id="L186">    } catch (final SQLException sqle) {</span>
+<span class="nc" id="L187">      RessourceDaoImpl.LOGGER.log(Level.INFO, EXCEPTION, sqle);</span>
+<span class="nc" id="L188">      throw new DaoException(sqle);</span>
+    } finally {
+<span class="nc" id="L190">      DaoUtilitaire.fermeturesSilencieuses(valeursAutoGenerees, preparedStatement, connexion);</span>
+<span class="nc" id="L191">    }</span>
+<span class="nc" id="L192">  }</span>
+
+  /* Implémentation de la méthode définie dans l'interface ressourceDao */
+  @Override
+  public void modifier(Ressource ressource) {
+<span class="nc" id="L197">    Connection connexion = null;</span>
+<span class="nc" id="L198">    PreparedStatement preparedStatement = null;</span>
+<span class="nc" id="L199">    final ResultSet valeursAutoGenerees = null;</span>
+    try {
+      /* Récupération d'une connexion depuis la Factory */
+<span class="nc" id="L202">      connexion = this.daoFactory.getConnection();</span>
+<span class="nc" id="L203">      preparedStatement = DaoUtilitaire.initialisationRequetePreparee(connexion,</span>
+<span class="nc" id="L204">          RessourceDaoImpl.SQL_UPDATE, false, ressource.getNom(), ressource.getId());</span>
+<span class="nc" id="L205">      final int statut = preparedStatement.executeUpdate();</span>
+      /* Analyse du statut retourné par la requête d'insertion */
+<span class="nc bnc" id="L207" title="All 2 branches missed.">      if (statut == 0) {</span>
+<span class="nc" id="L208">        throw new DaoException(</span>
+            &quot;Échec de la modification de la ressource, aucune ligne modifiée dans la table.&quot;);
+      }
+<span class="nc" id="L211">    } catch (final SQLException sqle) {</span>
+<span class="nc" id="L212">      RessourceDaoImpl.LOGGER.log(Level.INFO, EXCEPTION, sqle);</span>
+<span class="nc" id="L213">      throw new DaoException(sqle);</span>
+    } finally {
+<span class="nc" id="L215">      DaoUtilitaire.fermeturesSilencieuses(valeursAutoGenerees, preparedStatement, connexion);</span>
+<span class="nc" id="L216">    }</span>
+<span class="nc" id="L217">  }</span>
+
+  /* Implémentation de la méthode définie dans l'interface ressourceDao */
+  @Override
+  public void ajouter(Ressource ressource, String path) {
+<span class="nc" id="L222">    Connection connexion = null;</span>
+<span class="nc" id="L223">    PreparedStatement preparedStatement = null;</span>
+<span class="nc" id="L224">    ResultSet valeursAutoGenerees = null;</span>
+    try {
+      /* Récupération d'une connexion depuis la Factory */
+<span class="nc" id="L227">      connexion = this.daoFactory.getConnection();</span>
+      final BeanFactoryReference bf =
+<span class="nc" id="L229">          SingletonBeanFactoryLocator.getInstance().useBeanFactory(&quot;beansDao&quot;);</span>
+<span class="nc" id="L230">      final MatiereDao matiereDao = (MatiereDao) bf.getFactory().getBean(&quot;matiereDao&quot;);</span>
+<span class="nc" id="L231">      preparedStatement = DaoUtilitaire.initialisationRequetePreparee(connexion,</span>
+<span class="nc" id="L232">          RessourceDaoImpl.SQL_INSERT, true, path, ressource.getNom(), ressource.getType(),</span>
+<span class="nc" id="L233">          ressource.getDatePublication().toDate(),</span>
+<span class="nc" id="L234">          matiereDao.trouverIdParNom(ressource.getMatiere().getNom()));</span>
+<span class="nc" id="L235">      final int statut = preparedStatement.executeUpdate();</span>
+      /* Analyse du statut retourné par la requête d'insertion */
+<span class="nc bnc" id="L237" title="All 2 branches missed.">      if (statut == 0) {</span>
+<span class="nc" id="L238">        throw new DaoException(</span>
+            &quot;Échec de la création de la ressource, aucune ligne ajoutée dans la table.&quot;);
+      }
+      /* Récupération de l'id auto-généré par la requête d'insertion */
+<span class="nc" id="L242">      valeursAutoGenerees = preparedStatement.getGeneratedKeys();</span>
+<span class="nc bnc" id="L243" title="All 2 branches missed.">      if (valeursAutoGenerees.next()) {</span>
+<span class="nc" id="L244">        ressource.setId(valeursAutoGenerees.getInt(1));</span>
+      } else {
+<span class="nc" id="L246">        throw new DaoException(</span>
+            &quot;Échec de la création de la ressource en base, aucun ID auto-généré retourné.&quot;);
+      }
+<span class="nc" id="L249">    } catch (final SQLException sqle) {</span>
+<span class="nc" id="L250">      RessourceDaoImpl.LOGGER.log(Level.INFO, EXCEPTION, sqle);</span>
+<span class="nc" id="L251">      throw new DaoException(sqle);</span>
+    } finally {
+<span class="nc" id="L253">      DaoUtilitaire.fermeturesSilencieuses(valeursAutoGenerees, preparedStatement, connexion);</span>
+<span class="nc" id="L254">    }</span>
+<span class="nc" id="L255">    this.ajouterLien(ressource);</span>
+<span class="nc" id="L256">  }</span>
+
+  private void ajouterLien(Ressource ressource) {
+<span class="nc" id="L259">    Connection connexion = null;</span>
+<span class="nc" id="L260">    PreparedStatement preparedStatement = null;</span>
+<span class="nc bnc" id="L261" title="All 2 branches missed.">    for (final Competence competence : ressource.getCompetences()) {</span>
+      try {
+        /* Récupération d'une connexion depuis la Factory */
+<span class="nc" id="L264">        connexion = this.daoFactory.getConnection();</span>
+<span class="nc" id="L265">        preparedStatement = DaoUtilitaire.initialisationRequetePreparee(connexion,</span>
+<span class="nc" id="L266">            RessourceDaoImpl.SQL_INSERT_LINK, true, competence.getId(), ressource.getId());</span>
+<span class="nc" id="L267">        final int statut = preparedStatement.executeUpdate();</span>
+        /* Analyse du statut retourné par la requête d'insertion */
+<span class="nc bnc" id="L269" title="All 2 branches missed.">        if (statut == 0) {</span>
+<span class="nc" id="L270">          throw new DaoException(</span>
+              &quot;Échec de la création de la ressource, aucune ligne ajoutée dans la table.&quot;);
+        }
+<span class="nc" id="L273">      } catch (final SQLException sqle) {</span>
+<span class="nc" id="L274">        RessourceDaoImpl.LOGGER.log(Level.INFO, EXCEPTION, sqle);</span>
+<span class="nc" id="L275">        throw new DaoException(sqle);</span>
+      } finally {
+<span class="nc" id="L277">        DaoUtilitaire.fermeturesSilencieuses(preparedStatement, connexion);</span>
+<span class="nc" id="L278">      }</span>
+<span class="nc" id="L279">    }</span>
+<span class="nc" id="L280">  }</span>
+
+  /*
+   * Méthode générique utilisée pour retourner un utilisateur depuis la base de données,
+   * correspondant à la requête SQL donnée prenant en paramètres les objets passés en argument.
+   */
+  private Ressource trouver(String sql, Object... objets) {
+<span class="nc" id="L287">    Connection connexion = null;</span>
+<span class="nc" id="L288">    PreparedStatement preparedStatement = null;</span>
+<span class="nc" id="L289">    ResultSet resultSet = null;</span>
+<span class="nc" id="L290">    Ressource ressource = null;</span>
+
+    try {
+      /* Récupération d'une connexion depuis la Factory */
+<span class="nc" id="L294">      connexion = this.daoFactory.getConnection();</span>
+      /*
+       * Préparation de la requête avec les objets passés en arguments (ici, uniquement un id) et
+       * exécution.
+       */
+<span class="nc" id="L299">      preparedStatement =</span>
+<span class="nc" id="L300">          DaoUtilitaire.initialisationRequetePreparee(connexion, sql, false, objets);</span>
+<span class="nc" id="L301">      resultSet = preparedStatement.executeQuery();</span>
+      /* Parcours de la ligne de données retournée dans le ResultSet */
+<span class="nc bnc" id="L303" title="All 2 branches missed.">      if (resultSet.next()) {</span>
+<span class="nc" id="L304">        ressource = this.map(resultSet);</span>
+      }
+<span class="nc" id="L306">    } catch (final SQLException sqle) {</span>
+<span class="nc" id="L307">      RessourceDaoImpl.LOGGER.log(Level.INFO, EXCEPTION, sqle);</span>
+<span class="nc" id="L308">      throw new DaoException(sqle);</span>
+    } finally {
+<span class="nc" id="L310">      DaoUtilitaire.fermeturesSilencieuses(resultSet, preparedStatement, connexion);</span>
+<span class="nc" id="L311">    }</span>
+<span class="nc" id="L312">    return ressource;</span>
+  }
+
+  /*
+   * Méthode générique utilisée pour retourner un utilisateur depuis la base de données,
+   * correspondant à la requête SQL donnée prenant en paramètres les objets passés en argument.
+   */
+  private String trouverPath(String sql, Object... objets) {
+<span class="nc" id="L320">    Connection connexion = null;</span>
+<span class="nc" id="L321">    PreparedStatement preparedStatement = null;</span>
+<span class="nc" id="L322">    ResultSet resultSet = null;</span>
+
+    try {
+      /* Récupération d'une connexion depuis la Factory */
+<span class="nc" id="L326">      connexion = this.daoFactory.getConnection();</span>
+      /*
+       * Préparation de la requête avec les objets passés en arguments (ici, uniquement un id) et
+       * exécution.
+       */
+<span class="nc" id="L331">      preparedStatement =</span>
+<span class="nc" id="L332">          DaoUtilitaire.initialisationRequetePreparee(connexion, sql, false, objets);</span>
+<span class="nc" id="L333">      resultSet = preparedStatement.executeQuery();</span>
+      /* Parcours de la ligne de données retournée dans le ResultSet */
+<span class="nc bnc" id="L335" title="All 2 branches missed.">      if (resultSet.next()) {</span>
+<span class="nc" id="L336">        return resultSet.getString(&quot;path&quot;);</span>
+      }
+<span class="nc" id="L338">    } catch (final SQLException sqle) {</span>
+<span class="nc" id="L339">      RessourceDaoImpl.LOGGER.log(Level.INFO, EXCEPTION, sqle);</span>
+<span class="nc" id="L340">      throw new DaoException(sqle);</span>
+    } finally {
+<span class="nc" id="L342">      DaoUtilitaire.fermeturesSilencieuses(resultSet, preparedStatement, connexion);</span>
+<span class="nc" id="L343">    }</span>
+<span class="nc" id="L344">    return null;</span>
+  }
+
+  /*
+   * Méthode générique utilisée pour retourner un examen depuis la base de données, correspondant à
+   * la requête SQL donnée prenant en paramètres les objets passés en argument.
+   */
+  private List&lt;Ressource&gt; trouverToutes(String sql) {
+<span class="nc" id="L352">    Connection connexion = null;</span>
+<span class="nc" id="L353">    PreparedStatement preparedStatement = null;</span>
+<span class="nc" id="L354">    ResultSet resultSet = null;</span>
+<span class="nc" id="L355">    List&lt;Ressource&gt; ressources = null;</span>
+    try {
+      /* Récupération d'une connexion depuis la Factory */
+<span class="nc" id="L358">      connexion = this.daoFactory.getConnection();</span>
+      /*
+       * Préparation de la requête avec les objets passés en arguments (ici, uniquement un id) et
+       * exécution.
+       */
+<span class="nc" id="L363">      preparedStatement = DaoUtilitaire.initialisationRequetePreparee(connexion, sql, false);</span>
+<span class="nc" id="L364">      resultSet = preparedStatement.executeQuery();</span>
+<span class="nc" id="L365">      ressources = new ArrayList&lt;&gt;();</span>
+      /* Parcours de la ligne de données retournée dans le ResultSet */
+<span class="nc bnc" id="L367" title="All 2 branches missed.">      while (resultSet.next()) {</span>
+<span class="nc" id="L368">        ressources.add(this.map(resultSet));</span>
+      }
+<span class="nc" id="L370">    } catch (final SQLException sqle) {</span>
+<span class="nc" id="L371">      RessourceDaoImpl.LOGGER.log(Level.INFO, EXCEPTION, sqle);</span>
+<span class="nc" id="L372">      throw new DaoException(sqle);</span>
+    } finally {
+<span class="nc" id="L374">      DaoUtilitaire.fermeturesSilencieuses(resultSet, preparedStatement, connexion);</span>
+<span class="nc" id="L375">    }</span>
+<span class="nc" id="L376">    return ressources;</span>
+  }
+
+  /*
+   * Simple méthode utilitaire permettant de faire la correspondance (le mapping) entre une ligne
+   * issue de la table des ressources (un ResultSet) et un bean Ressource.
+   */
+  private Ressource map(ResultSet resultSet) throws SQLException {
+<span class="nc" id="L384">    final Ressource ressource = new Ressource();</span>
+<span class="nc" id="L385">    ressource.setId(resultSet.getInt(&quot;id&quot;));</span>
+<span class="nc" id="L386">    ressource.setDatePublication(new DateTime(resultSet.getTimestamp(&quot;date_publication&quot;)));</span>
+<span class="nc" id="L387">    ressource.setNom(resultSet.getString(&quot;nom&quot;));</span>
+<span class="nc" id="L388">    ressource.setType(resultSet.getString(&quot;type&quot;));</span>
+<span class="nc" id="L389">    ressource.setPath(resultSet.getString(&quot;path&quot;));</span>
+    final BeanFactoryReference bf =
+<span class="nc" id="L391">        SingletonBeanFactoryLocator.getInstance().useBeanFactory(&quot;beansDao&quot;);</span>
+<span class="nc" id="L392">    final MatiereDao matiereDao = (MatiereDao) bf.getFactory().getBean(&quot;matiereDao&quot;);</span>
+<span class="nc" id="L393">    final Matiere matiere = matiereDao.trouverParId(resultSet.getInt(&quot;id_matiere&quot;));</span>
+<span class="nc" id="L394">    ressource.setMatiere(matiere);</span>
+<span class="nc" id="L395">    final CompetenceDao competenceDao = (CompetenceDao) bf.getFactory().getBean(&quot;competenceDao&quot;);</span>
+<span class="nc" id="L396">    ressource.setCompetences(new ArrayList&lt;&gt;());</span>
+<span class="nc bnc" id="L397" title="All 2 branches missed.">    for (final int idCompetence : this.trouverIdCompetencesLiee(RessourceDaoImpl.SQL_GET_LINK,</span>
+<span class="nc" id="L398">        ressource.getId())) {</span>
+<span class="nc" id="L399">      ressource.getCompetences().add(competenceDao.trouverParId(idCompetence));</span>
+<span class="nc" id="L400">    }</span>
+<span class="nc" id="L401">    return ressource;</span>
+  }
+
+  private List&lt;Integer&gt; trouverIdCompetencesLiee(String sql, int idRessource) {
+<span class="nc" id="L405">    Connection connexion = null;</span>
+<span class="nc" id="L406">    PreparedStatement preparedStatement = null;</span>
+<span class="nc" id="L407">    ResultSet resultSet = null;</span>
+<span class="nc" id="L408">    List&lt;Integer&gt; idCompetences = null;</span>
+    try {
+      /* Récupération d'une connexion depuis la Factory */
+<span class="nc" id="L411">      connexion = this.daoFactory.getConnection();</span>
+      /*
+       * Préparation de la requête avec les objets passés en arguments (ici, uniquement un id) et
+       * exécution.
+       */
+<span class="nc" id="L416">      preparedStatement =</span>
+<span class="nc" id="L417">          DaoUtilitaire.initialisationRequetePreparee(connexion, sql, false, idRessource);</span>
+<span class="nc" id="L418">      resultSet = preparedStatement.executeQuery();</span>
+<span class="nc" id="L419">      idCompetences = new ArrayList&lt;&gt;();</span>
+      /* Parcours de la ligne de données retournée dans le ResultSet */
+<span class="nc bnc" id="L421" title="All 2 branches missed.">      while (resultSet.next()) {</span>
+<span class="nc" id="L422">        idCompetences.add(resultSet.getInt(&quot;id_competence&quot;));</span>
+      }
+<span class="nc" id="L424">    } catch (final SQLException sqle) {</span>
+<span class="nc" id="L425">      RessourceDaoImpl.LOGGER.log(Level.INFO, EXCEPTION, sqle);</span>
+<span class="nc" id="L426">      throw new DaoException(sqle);</span>
+    } finally {
+<span class="nc" id="L428">      DaoUtilitaire.fermeturesSilencieuses(resultSet, preparedStatement, connexion);</span>
+<span class="nc" id="L429">    }</span>
+<span class="nc" id="L430">    return idCompetences;</span>
+  }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.6.201602180812</span></div></body></html>

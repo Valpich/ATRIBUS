@@ -1,0 +1,139 @@
+package fr.eseo.atribus.forms;
+
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
+
+import fr.eseo.atribus.dao.MatiereDao;
+import fr.eseo.atribus.dao.UeDao;
+import fr.eseo.atribus.entities.UniteEnseignement;
+
+import org.mockito.Mockito;
+import org.springframework.beans.factory.access.BeanFactoryReference;
+import org.springframework.beans.factory.access.SingletonBeanFactoryLocator;
+import org.testng.annotations.BeforeTest;
+import org.testng.annotations.Test;
+
+import javax.servlet.http.HttpServletRequest;
+
+public class ModifierUeFormTest {
+  
+  private static final String CHAMP_NOM_UE = "nomNouvelleUe";
+  private static final String CHAMP_ECTS = "ectsNouvelleUe";
+  private static final String CHAMP_NB_HEURES = "nbHeuresNouvelleUe";
+  private static final String CHAMP_SEMESTRE = "semestreNouvelleUe";
+  private static final String CHAMP_NOUVELLE_ENSEIGNANT = "enseignantNouvelleUe";
+  private static final String CHAMP_ID_ANCIENNE_UE = "idUe";
+  
+  ModifierUeForm form;
+  MatiereDao matiereDao;
+  UeDao ueDao;
+  
+  /**
+   * Initialisation effectué avant le test.
+   */
+  @BeforeTest
+  public void beforeTest() {
+    final BeanFactoryReference bf =
+        SingletonBeanFactoryLocator.getInstance().useBeanFactory("beansDao");
+    this.ueDao = (UeDao) bf.getFactory().getBean("ueDao");
+    this.matiereDao = (MatiereDao) bf.getFactory().getBean("matiereDao");
+    form = new ModifierUeForm();
+  }
+  
+  @Test
+  public void modifierBonUe() {
+    
+    final HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
+    final String nomNouvelleUe = "Mathématiques";
+    final String nbPointEcts = "5";
+    final String nbHeures = "2";
+    final String semestre = "1";
+    final String idNouvelleEnseignant = "3";
+    final String idAncienneUe = Integer.toString(this.ueDao.trouverIdParNom("Mathématiques"));
+    
+    Mockito.when(request.getParameter(ModifierUeFormTest.CHAMP_NOM_UE)).thenReturn(nomNouvelleUe);
+    Mockito.when(request.getParameter(ModifierUeFormTest.CHAMP_ECTS)).thenReturn(nbPointEcts);
+    Mockito.when(request.getParameter(ModifierUeFormTest.CHAMP_NB_HEURES)).thenReturn(nbHeures);
+    Mockito.when(request.getParameter(ModifierUeFormTest.CHAMP_SEMESTRE)).thenReturn(semestre);
+    Mockito.when(request.getParameter(ModifierUeFormTest.CHAMP_NOUVELLE_ENSEIGNANT))
+        .thenReturn(idNouvelleEnseignant);
+    Mockito.when(request.getParameter(ModifierUeFormTest.CHAMP_ID_ANCIENNE_UE))
+        .thenReturn(idAncienneUe);
+    
+    UniteEnseignement ue = form.modifierUe(request);
+    
+    assertNotNull(form);
+    assertEquals(ue.getNom(), nomNouvelleUe);
+    assertEquals(ue.getNbCreditsEcts(), Integer.parseInt(nbPointEcts));
+    assertEquals(ue.getNbHeures(), Integer.parseInt(nbHeures));
+    
+  }
+  
+  @Test
+  public void modifierMauvaisUe1() {
+    
+    final HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
+    final String nomNouvelleUe = "M";
+    final String nbPointEcts = "-1";
+    final String nbHeures = "-1";
+    final String semestre = "-1";
+    final String idNouvelleEnseignant = null;
+    final String idAncienneUe = Integer.toString(this.ueDao.trouverIdParNom("Mathématiques"));
+    
+    Mockito.when(request.getParameter(ModifierUeFormTest.CHAMP_NOM_UE)).thenReturn(nomNouvelleUe);
+    Mockito.when(request.getParameter(ModifierUeFormTest.CHAMP_ECTS)).thenReturn(nbPointEcts);
+    Mockito.when(request.getParameter(ModifierUeFormTest.CHAMP_NB_HEURES)).thenReturn(nbHeures);
+    Mockito.when(request.getParameter(ModifierUeFormTest.CHAMP_SEMESTRE)).thenReturn(semestre);
+    Mockito.when(request.getParameter(ModifierUeFormTest.CHAMP_NOUVELLE_ENSEIGNANT))
+        .thenReturn(idNouvelleEnseignant);
+    Mockito.when(request.getParameter(ModifierUeFormTest.CHAMP_ID_ANCIENNE_UE))
+        .thenReturn(idAncienneUe);
+    
+    form.modifierUe(request);
+    
+    assertNotNull(form.recupererErreurs());
+    assertNotNull(form.obtenirResultat());
+    
+  }
+  
+  @Test
+  public void modifierMauvaisUe2() {
+    
+    final HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
+    final String nomNouvelleUe = "M";
+    final String nbPointEcts = "ezfez";
+    final String nbHeures = "ezfez";
+    final String semestre = "efzef";
+    final String idNouvelleEnseignant = null;
+    final String idAncienneUe = Integer.toString(this.ueDao.trouverIdParNom("Mathématiques"));
+    
+    Mockito.when(request.getParameter(ModifierUeFormTest.CHAMP_NOM_UE)).thenReturn(nomNouvelleUe);
+    Mockito.when(request.getParameter(ModifierUeFormTest.CHAMP_ECTS)).thenReturn(nbPointEcts);
+    Mockito.when(request.getParameter(ModifierUeFormTest.CHAMP_NB_HEURES)).thenReturn(nbHeures);
+    Mockito.when(request.getParameter(ModifierUeFormTest.CHAMP_SEMESTRE)).thenReturn(semestre);
+    Mockito.when(request.getParameter(ModifierUeFormTest.CHAMP_NOUVELLE_ENSEIGNANT))
+        .thenReturn(idNouvelleEnseignant);
+    Mockito.when(request.getParameter(ModifierUeFormTest.CHAMP_ID_ANCIENNE_UE))
+        .thenReturn(idAncienneUe);
+    
+    form.modifierUe(request);
+    
+    assertNotNull(form.recupererErreurs());
+    assertNotNull(form.obtenirResultat());
+    
+  }
+  
+  @Test
+  public void recupererList() {
+    
+    form.setListeDesMatieres(this.matiereDao.trouverToutesLesMatieres());
+    form.setListeDesUes(this.ueDao.listerUe());
+    
+    assertNotNull(form.getListeDesMatieres());
+    assertNotNull(form.getListeDesUes());
+    
+  }
+  
+  
+  
+}

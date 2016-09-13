@@ -1,0 +1,508 @@
+package fr.eseo.atribus.beans;
+
+// TODO: Auto-generated Javadoc
+/** Classe destinnée à encapsuler les messages par défaut. */
+public class MessagesParDefaut {
+
+  /** La variable convocation de partie un. */
+  private String convocationDePartieUn;
+
+  /** La variable convocation de partie deux. */
+  private String convocationDePartieDeux;
+
+  /** La variable convocation de partie trois. */
+  private String convocationDePartieTrois;
+
+  /** La variable enseignant suggere competence un. */
+  private String enseignantSuggereCompetenceUn;
+
+  /** La variable enseignant suggere competence deux. */
+  private String enseignantSuggereCompetenceDeux;
+
+  /** La variable enseignant suggere competence trois. */
+  private String enseignantSuggereCompetenceTrois;
+
+  /** La variable enseignant suggere competence quatre. */
+  private String enseignantSuggereCompetenceQuatre;
+
+  /** La variable eure suggere competence un. */
+  private String eureSuggereCompetenceUn;
+
+  /** La variable eure suggere competence deux. */
+  private String eureSuggereCompetenceDeux;
+
+  /** La variable eure suggere competence trois. */
+  private String eureSuggereCompetenceTrois;
+
+  /** La variable eure suggere competence quatre. */
+  private String eureSuggereCompetenceQuatre;
+
+  /** La variable erm suggere competence un. */
+  private String ermSuggereCompetenceUn;
+
+  /** La variable erm suggere competence deux. */
+  private String ermSuggereCompetenceDeux;
+
+  /** La variable erm suggere competence trois. */
+  private String ermSuggereCompetenceTrois;
+
+  /** La variable erm suggere competence quatre. */
+  private String ermSuggereCompetenceQuatre;
+
+  /** La variable eleve suggere competence un. */
+  private String eleveSuggereCompetenceUn;
+
+  /** La variable eleve suggere competence deux. */
+  private String eleveSuggereCompetenceDeux;
+
+  /** La variable eleve suggere competence trois. */
+  private String eleveSuggereCompetenceTrois;
+
+  /** La variable eleve suggere competence quatre. */
+  private String eleveSuggereCompetenceQuatre;
+
+  /** La variable admin syst probleme un. */
+  private String adminSystProblemeUn;
+
+  /** La variable admin syst probleme deux. */
+  private String adminSystProblemeDeux;
+
+  /** La variable admin syst probleme trois. */
+  private String adminSystProblemeTrois;
+
+  /**
+   * Instancie un nouveau messages par defaut.
+   */
+  public MessagesParDefaut() {
+    super();
+  }
+
+  /**
+   * Accesseur en lecture sur le paramètre convocation de partie un.
+   *
+   * @return le paramètre convocation de partie un
+   */
+  public String getConvocationDePartieUn() {
+    return this.convocationDePartieUn;
+  }
+
+  /**
+   * Accesseur en écriture sur le paramètre convocation de partie un.
+   *
+   * @param convocationDePartieUn le nouveau paramètre convocation de partie un
+   */
+  public void setConvocationDePartieUn(String convocationDePartieUn) {
+    this.convocationDePartieUn = convocationDePartieUn;
+  }
+
+  /**
+   * Accesseur en lecture sur le paramètre convocation de partie deux.
+   *
+   * @return le paramètre convocation de partie deux
+   */
+  public String getConvocationDePartieDeux() {
+    return this.convocationDePartieDeux;
+  }
+
+  /**
+   * Accesseur en écriture sur le paramètre convocation de partie deux.
+   *
+   * @param convocationDePartieDeux le nouveau paramètre convocation de partie deux
+   */
+  public void setConvocationDePartieDeux(String convocationDePartieDeux) {
+    this.convocationDePartieDeux = convocationDePartieDeux;
+  }
+
+  /**
+   * Accesseur en lecture sur le paramètre convocation de partie trois.
+   *
+   * @return le paramètre convocation de partie trois
+   */
+  public String getConvocationDePartieTrois() {
+    return this.convocationDePartieTrois;
+  }
+
+  /**
+   * Accesseur en écriture sur le paramètre convocation de partie trois.
+   *
+   * @param convocationDePartieTrois le nouveau paramètre convocation de partie trois
+   */
+  public void setConvocationDePartieTrois(String convocationDePartieTrois) {
+    this.convocationDePartieTrois = convocationDePartieTrois;
+  }
+
+  /**
+   * Accesseur en lecture sur le paramètre enseignant suggere competence un.
+   *
+   * @return le paramètre enseignant suggere competence un
+   */
+  public String getEnseignantSuggereCompetenceUn() {
+    return this.enseignantSuggereCompetenceUn;
+  }
+
+  /**
+   * Accesseur en écriture sur le paramètre enseignant suggere competence un.
+   *
+   * @param enseignantSuggereCompetenceUn le nouveau paramètre enseignant suggere competence un
+   */
+  public void setEnseignantSuggereCompetenceUn(String enseignantSuggereCompetenceUn) {
+    this.enseignantSuggereCompetenceUn = enseignantSuggereCompetenceUn;
+  }
+
+  /**
+   * Accesseur en lecture sur le paramètre enseignant suggere competence deux.
+   *
+   * @return le paramètre enseignant suggere competence deux
+   */
+  public String getEnseignantSuggereCompetenceDeux() {
+    return this.enseignantSuggereCompetenceDeux;
+  }
+
+  /**
+   * Accesseur en écriture sur le paramètre enseignant suggere competence deux.
+   *
+   * @param enseignantSuggereCompetenceDeux le nouveau paramètre enseignant suggere competence deux
+   */
+  public void setEnseignantSuggereCompetenceDeux(String enseignantSuggereCompetenceDeux) {
+    this.enseignantSuggereCompetenceDeux = enseignantSuggereCompetenceDeux;
+  }
+
+  /**
+   * Accesseur en lecture sur le paramètre enseignant suggere competence trois.
+   *
+   * @return le paramètre enseignant suggere competence trois
+   */
+  public String getEnseignantSuggereCompetenceTrois() {
+    return this.enseignantSuggereCompetenceTrois;
+  }
+
+  /**
+   * Accesseur en écriture sur le paramètre enseignant suggere competence trois.
+   *
+   * @param enseignantSuggereCompetenceTrois le nouveau paramètre enseignant suggere competence
+   *        trois
+   */
+  public void setEnseignantSuggereCompetenceTrois(String enseignantSuggereCompetenceTrois) {
+    this.enseignantSuggereCompetenceTrois = enseignantSuggereCompetenceTrois;
+  }
+
+  /**
+   * Accesseur en lecture sur le paramètre enseignant suggere competence quatre.
+   *
+   * @return le paramètre enseignant suggere competence quatre
+   */
+  public String getEnseignantSuggereCompetenceQuatre() {
+    return this.enseignantSuggereCompetenceQuatre;
+  }
+
+  /**
+   * Accesseur en écriture sur le paramètre enseignant suggere competence quatre.
+   *
+   * @param enseignantSuggereCompetenceQuatre le nouveau paramètre enseignant suggere competence
+   *        quatre
+   */
+  public void setEnseignantSuggereCompetenceQuatre(String enseignantSuggereCompetenceQuatre) {
+    this.enseignantSuggereCompetenceQuatre = enseignantSuggereCompetenceQuatre;
+  }
+
+  /**
+   * Accesseur en lecture sur le paramètre eure suggere competence un.
+   *
+   * @return le paramètre eure suggere competence un
+   */
+  public String getEureSuggereCompetenceUn() {
+    return this.eureSuggereCompetenceUn;
+  }
+
+  /**
+   * Accesseur en écriture sur le paramètre eure suggere competence un.
+   *
+   * @param eureSuggereCompetenceUn le nouveau paramètre eure suggere competence un
+   */
+  public void setEureSuggereCompetenceUn(String eureSuggereCompetenceUn) {
+    this.eureSuggereCompetenceUn = eureSuggereCompetenceUn;
+  }
+
+  /**
+   * Accesseur en lecture sur le paramètre eure suggere competence deux.
+   *
+   * @return le paramètre eure suggere competence deux
+   */
+  public String getEureSuggereCompetenceDeux() {
+    return this.eureSuggereCompetenceDeux;
+  }
+
+  /**
+   * Accesseur en écriture sur le paramètre eure suggere competence deux.
+   *
+   * @param eureSuggereCompetenceDeux le nouveau paramètre eure suggere competence deux
+   */
+  public void setEureSuggereCompetenceDeux(String eureSuggereCompetenceDeux) {
+    this.eureSuggereCompetenceDeux = eureSuggereCompetenceDeux;
+  }
+
+  /**
+   * Accesseur en lecture sur le paramètre eure suggere competence trois.
+   *
+   * @return le paramètre eure suggere competence trois
+   */
+  public String getEureSuggereCompetenceTrois() {
+    return this.eureSuggereCompetenceTrois;
+  }
+
+  /**
+   * Accesseur en écriture sur le paramètre eure suggere competence trois.
+   *
+   * @param eureSuggereCompetenceTrois le nouveau paramètre eure suggere competence trois
+   */
+  public void setEureSuggereCompetenceTrois(String eureSuggereCompetenceTrois) {
+    this.eureSuggereCompetenceTrois = eureSuggereCompetenceTrois;
+  }
+
+  /**
+   * Accesseur en lecture sur le paramètre eure suggere competence quatre.
+   *
+   * @return le paramètre eure suggere competence quatre
+   */
+  public String getEureSuggereCompetenceQuatre() {
+    return this.eureSuggereCompetenceQuatre;
+  }
+
+  /**
+   * Accesseur en écriture sur le paramètre eure suggere competence quatre.
+   *
+   * @param eureSuggereCompetenceQuatre le nouveau paramètre eure suggere competence quatre
+   */
+  public void setEureSuggereCompetenceQuatre(String eureSuggereCompetenceQuatre) {
+    this.eureSuggereCompetenceQuatre = eureSuggereCompetenceQuatre;
+  }
+
+  /**
+   * Accesseur en lecture sur le paramètre erm suggere competence un.
+   *
+   * @return le paramètre erm suggere competence un
+   */
+  public String getErmSuggereCompetenceUn() {
+    return this.ermSuggereCompetenceUn;
+  }
+
+  /**
+   * Accesseur en écriture sur le paramètre erm suggere competence un.
+   *
+   * @param ermSuggereCompetenceUn le nouveau paramètre erm suggere competence un
+   */
+  public void setErmSuggereCompetenceUn(String ermSuggereCompetenceUn) {
+    this.ermSuggereCompetenceUn = ermSuggereCompetenceUn;
+  }
+
+  /**
+   * Accesseur en lecture sur le paramètre erm suggere competence deux.
+   *
+   * @return le paramètre erm suggere competence deux
+   */
+  public String getErmSuggereCompetenceDeux() {
+    return this.ermSuggereCompetenceDeux;
+  }
+
+  /**
+   * Accesseur en écriture sur le paramètre erm suggere competence deux.
+   *
+   * @param ermSuggereCompetenceDeux le nouveau paramètre erm suggere competence deux
+   */
+  public void setErmSuggereCompetenceDeux(String ermSuggereCompetenceDeux) {
+    this.ermSuggereCompetenceDeux = ermSuggereCompetenceDeux;
+  }
+
+  /**
+   * Accesseur en lecture sur le paramètre erm suggere competence trois.
+   *
+   * @return le paramètre erm suggere competence trois
+   */
+  public String getErmSuggereCompetenceTrois() {
+    return this.ermSuggereCompetenceTrois;
+  }
+
+  /**
+   * Accesseur en écriture sur le paramètre erm suggere competence trois.
+   *
+   * @param ermSuggereCompetenceTrois le nouveau paramètre erm suggere competence trois
+   */
+  public void setErmSuggereCompetenceTrois(String ermSuggereCompetenceTrois) {
+    this.ermSuggereCompetenceTrois = ermSuggereCompetenceTrois;
+  }
+
+  /**
+   * Accesseur en lecture sur le paramètre erm suggere competence quatre.
+   *
+   * @return le paramètre erm suggere competence quatre
+   */
+  public String getErmSuggereCompetenceQuatre() {
+    return this.ermSuggereCompetenceQuatre;
+  }
+
+  /**
+   * Accesseur en écriture sur le paramètre erm suggere competence quatre.
+   *
+   * @param ermSuggereCompetenceQuatre le nouveau paramètre erm suggere competence quatre
+   */
+  public void setErmSuggereCompetenceQuatre(String ermSuggereCompetenceQuatre) {
+    this.ermSuggereCompetenceQuatre = ermSuggereCompetenceQuatre;
+  }
+
+  /**
+   * Accesseur en lecture sur le paramètre eleve suggere competence un.
+   *
+   * @return le paramètre eleve suggere competence un
+   */
+  public String getEleveSuggereCompetenceUn() {
+    return this.eleveSuggereCompetenceUn;
+  }
+
+  /**
+   * Accesseur en écriture sur le paramètre eleve suggere competence un.
+   *
+   * @param eleveSuggereCompetenceUn le nouveau paramètre eleve suggere competence un
+   */
+  public void setEleveSuggereCompetenceUn(String eleveSuggereCompetenceUn) {
+    this.eleveSuggereCompetenceUn = eleveSuggereCompetenceUn;
+  }
+
+  /**
+   * Accesseur en lecture sur le paramètre eleve suggere competence deux.
+   *
+   * @return le paramètre eleve suggere competence deux
+   */
+  public String getEleveSuggereCompetenceDeux() {
+    return this.eleveSuggereCompetenceDeux;
+  }
+
+  /**
+   * Accesseur en écriture sur le paramètre eleve suggere competence deux.
+   *
+   * @param eleveSuggereCompetenceDeux le nouveau paramètre eleve suggere competence deux
+   */
+  public void setEleveSuggereCompetenceDeux(String eleveSuggereCompetenceDeux) {
+    this.eleveSuggereCompetenceDeux = eleveSuggereCompetenceDeux;
+  }
+
+  /**
+   * Accesseur en lecture sur le paramètre eleve suggere competence trois.
+   *
+   * @return le paramètre eleve suggere competence trois
+   */
+  public String getEleveSuggereCompetenceTrois() {
+    return this.eleveSuggereCompetenceTrois;
+  }
+
+  /**
+   * Accesseur en écriture sur le paramètre eleve suggere competence trois.
+   *
+   * @param eleveSuggereCompetenceTrois le nouveau paramètre eleve suggere competence trois
+   */
+  public void setEleveSuggereCompetenceTrois(String eleveSuggereCompetenceTrois) {
+    this.eleveSuggereCompetenceTrois = eleveSuggereCompetenceTrois;
+  }
+
+  /**
+   * Accesseur en lecture sur le paramètre eleve suggere competence quatre.
+   *
+   * @return le paramètre eleve suggere competence quatre
+   */
+  public String getEleveSuggereCompetenceQuatre() {
+    return this.eleveSuggereCompetenceQuatre;
+  }
+
+  /**
+   * Accesseur en écriture sur le paramètre eleve suggere competence quatre.
+   *
+   * @param eleveSuggereCompetenceQuatre le nouveau paramètre eleve suggere competence quatre
+   */
+  public void setEleveSuggereCompetenceQuatre(String eleveSuggereCompetenceQuatre) {
+    this.eleveSuggereCompetenceQuatre = eleveSuggereCompetenceQuatre;
+  }
+
+  /**
+   * Accesseur en lecture sur le paramètre admin syst probleme un.
+   *
+   * @return le paramètre admin syst probleme un
+   */
+  public String getAdminSystProblemeUn() {
+    return this.adminSystProblemeUn;
+  }
+
+  /**
+   * Accesseur en écriture sur le paramètre admin syst probleme un.
+   *
+   * @param adminSystProblemeUn le nouveau paramètre admin syst probleme un
+   */
+  public void setAdminSystProblemeUn(String adminSystProblemeUn) {
+    this.adminSystProblemeUn = adminSystProblemeUn;
+  }
+
+  /**
+   * Accesseur en lecture sur le paramètre admin syst probleme deux.
+   *
+   * @return le paramètre admin syst probleme deux
+   */
+  public String getAdminSystProblemeDeux() {
+    return this.adminSystProblemeDeux;
+  }
+
+  /**
+   * Accesseur en écriture sur le paramètre admin syst probleme deux.
+   *
+   * @param adminSystProblemeDeux le nouveau paramètre admin syst probleme deux
+   */
+  public void setAdminSystProblemeDeux(String adminSystProblemeDeux) {
+    this.adminSystProblemeDeux = adminSystProblemeDeux;
+  }
+
+  /**
+   * Accesseur en lecture sur le paramètre admin syst probleme trois.
+   *
+   * @return le paramètre admin syst probleme trois
+   */
+  public String getAdminSystProblemeTrois() {
+    return this.adminSystProblemeTrois;
+  }
+
+  /**
+   * Accesseur en écriture sur le paramètre admin syst probleme trois.
+   *
+   * @param adminSystProblemeTrois le nouveau paramètre admin syst probleme trois
+   */
+  public void setAdminSystProblemeTrois(String adminSystProblemeTrois) {
+    this.adminSystProblemeTrois = adminSystProblemeTrois;
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.lang.Object#toString()
+   */
+  @Override
+  public String toString() {
+    return "MessagesParDefaut [convocationDePartieUn=" + this.convocationDePartieUn
+        + ", convocationDePartieDeux=" + this.convocationDePartieDeux
+        + ", convocationDePartieTrois=" + this.convocationDePartieTrois
+        + ", enseignantSuggereCompetenceUn=" + this.enseignantSuggereCompetenceUn
+        + ", enseignantSuggereCompetenceDeux=" + this.enseignantSuggereCompetenceDeux
+        + ", enseignantSuggereCompetenceTrois=" + this.enseignantSuggereCompetenceTrois
+        + ", enseignantSuggereCompetenceQuatre=" + this.enseignantSuggereCompetenceQuatre
+        + ", eureSuggereCompetenceUn=" + this.eureSuggereCompetenceUn
+        + ", eureSuggereCompetenceDeux=" + this.eureSuggereCompetenceDeux
+        + ", eureSuggereCompetenceTrois=" + this.eureSuggereCompetenceTrois
+        + ", eureSuggereCompetenceQuatre=" + this.eureSuggereCompetenceQuatre
+        + ", ermSuggereCompetenceUn=" + this.ermSuggereCompetenceUn + ", ermSuggereCompetenceDeux="
+        + this.ermSuggereCompetenceDeux + ", ermSuggereCompetenceTrois="
+        + this.ermSuggereCompetenceTrois + ", ermSuggereCompetenceQuatre="
+        + this.ermSuggereCompetenceQuatre + ", eleveSuggereCompetenceUn="
+        + this.eleveSuggereCompetenceUn + ", eleveSuggereCompetenceDeux="
+        + this.eleveSuggereCompetenceDeux + ", eleveSuggereCompetenceTrois="
+        + this.eleveSuggereCompetenceTrois + ", eleveSuggereCompetenceQuatre="
+        + this.eleveSuggereCompetenceQuatre + ", adminSystProblemeUn=" + this.adminSystProblemeUn
+        + ", adminSystProblemeDeux=" + this.adminSystProblemeDeux + ", adminSystProblemeTrois="
+        + this.adminSystProblemeTrois + "]";
+  }
+
+}

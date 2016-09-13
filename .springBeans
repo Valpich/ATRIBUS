@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beansProjectDescription>
+	<version>1</version>
+	<pluginVersion><![CDATA[3.7.3.201602250914-RELEASE]]></pluginVersion>
+	<configSuffixes>
+		<configSuffix><![CDATA[xml]]></configSuffix>
+	</configSuffixes>
+	<enableImports><![CDATA[false]]></enableImports>
+	<configs>
+		<config>src/beanRefFactory.xml</config>
+		<config>src/spring-dao.xml</config>
+		<config>src/spring-daoBeans.xml</config>
+		<config>src/dispatcher-servlet.xml</config>
+	</configs>
+	<autoconfigs>
+		<config>java:fr.eseo.atribus.controller.LdapConfig</config>
+	</autoconfigs>
+	<configSets>
+	</configSets>
+</beansProjectDescription>

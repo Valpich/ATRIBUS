@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>UniteEnseignement.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Atribus</a> &gt; <a href="index.source.html" class="el_package">fr.eseo.atribus.entities</a> &gt; <span class="el_source">UniteEnseignement.java</span></div><h1>UniteEnseignement.java</h1><pre class="source lang-java linenums">package fr.eseo.atribus.entities;
+
+import java.io.Serializable;
+import java.util.Map;
+
+<span class="nc" id="L6">public class UniteEnseignement implements Serializable {</span>
+
+  private static final long serialVersionUID = 2235338214834313313L;
+
+  private int id;
+  private String nom;
+  private int nbCreditsEcts;
+  private int nbHeures;
+  private Semestre semestre;
+  private EnseignantRefUe enseignantRefUe;
+  private Map&lt;Long, CompetenceValidable&gt; competences;
+
+  public int getId() {
+<span class="nc" id="L19">    return this.id;</span>
+  }
+
+  public void setId(int id) {
+<span class="nc" id="L23">    this.id = id;</span>
+<span class="nc" id="L24">  }</span>
+
+  public String getNom() {
+<span class="nc" id="L27">    return this.nom;</span>
+  }
+
+  public int getNbCreditsEcts() {
+<span class="nc" id="L31">    return this.nbCreditsEcts;</span>
+  }
+
+  public int getNbHeures() {
+<span class="nc" id="L35">    return this.nbHeures;</span>
+  }
+
+  public EnseignantRefUe getEnseignantRefUe() {
+<span class="nc" id="L39">    return this.enseignantRefUe;</span>
+  }
+
+  public Semestre getSemestre() {
+<span class="nc" id="L43">    return this.semestre;</span>
+  }
+  
+  public Map&lt;Long, CompetenceValidable&gt; getCompetences() {
+<span class="nc" id="L47">    return this.competences;</span>
+  }
+
+  public void setNom(String nom) {
+<span class="nc" id="L51">    this.nom = nom;</span>
+<span class="nc" id="L52">  }</span>
+
+  public void setNbCreditsEcts(int nbCreditsEcts) {
+<span class="nc" id="L55">    this.nbCreditsEcts = nbCreditsEcts;</span>
+<span class="nc" id="L56">  }</span>
+
+  public void setNbHeures(int nbHeures) {
+<span class="nc" id="L59">    this.nbHeures = nbHeures;</span>
+<span class="nc" id="L60">  }</span>
+
+  public void setEnseignantRefUe(EnseignantRefUe enseignantRefUe) {
+<span class="nc" id="L63">    this.enseignantRefUe = enseignantRefUe;</span>
+<span class="nc" id="L64">  }</span>
+  
+  public void setSemestre(Semestre semestre) {
+<span class="nc" id="L67">    this.semestre = semestre;</span>
+<span class="nc" id="L68">  }</span>
+
+  public void setCompetences(Map&lt;Long, CompetenceValidable&gt; competences) {
+<span class="nc" id="L71">    this.competences = competences;</span>
+<span class="nc" id="L72">  }</span>
+
+  @Override
+  public String toString() {
+<span class="nc" id="L76">    return &quot;UniteEnseignement [id=&quot; + id + &quot;, nom=&quot; + nom + &quot;, nbCreditsEcts=&quot; + nbCreditsEcts</span>
+        + &quot;, nbHeures=&quot; + nbHeures + &quot;, semestre=&quot; + semestre + &quot;, enseignantRefUe=&quot;
+<span class="nc" id="L78">        + enseignantRefUe + &quot;, competences=&quot; + competences + &quot;, toString()=&quot; + super.toString()</span>
+        + &quot;]&quot;;
+  }
+
+
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.6.201602180812</span></div></body></html>

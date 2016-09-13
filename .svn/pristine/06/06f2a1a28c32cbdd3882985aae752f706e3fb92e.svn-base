@@ -1,0 +1,132 @@
+package fr.eseo.atribus.listeners;
+
+
+import fr.eseo.atribus.beans.Mail;
+import fr.eseo.atribus.beans.MessagesParDefaut;
+import fr.eseo.atribus.dao.AdminSystDao;
+import fr.eseo.atribus.entities.AdminSyst;
+import fr.eseo.atribus.entities.Utilisateur;
+
+import org.springframework.beans.factory.access.BeanFactoryReference;
+import org.springframework.beans.factory.access.SingletonBeanFactoryLocator;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+import java.sql.Driver;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.mail.MessagingException;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
+import javax.servlet.annotation.WebListener;
+
+
+/**
+ * Application Lifecycle Listener implementation class Startup
+ */
+@WebListener
+public class Startup implements ServletContextListener {
+  private ServletContext context = null;
+  private static final Logger LOGGER = Logger.getLogger(Startup.class.getName());
+
+  @Autowired
+  private Mail mail;
+  @Autowired
+  private MessagesParDefaut messages;
+
+  /**
+   * INITIALISATION DE L'APPLICATION
+   * 
+   * @see ServletContextListener#contextInitialized(ServletContextEvent)
+   */
+  @Override
+  public void contextInitialized(ServletContextEvent event) {
+    // Récupération du contexte de l'application
+    this.context = event.getServletContext();
+    /* Initilisation de l'atribut permettant de contrôler les utilisateurs dans l'application */
+    this.context.setAttribute("utilisateurs", new HashSet<Utilisateur>());
+    /*WebApplicationContextUtils
+    .getRequiredWebApplicationContext(sce.getServletContext())
+    .getAutowireCapableBeanFactory()
+    .autowireBean(this);*/
+    Startup.LOGGER.info("Application ATRIBUS online !");
+  }
+
+  /**
+   * FERMETURE DE L'APPLICATION
+   * 
+   * @see ServletContextListener#contextDestroyed(ServletContextEvent)
+   */
+  @Override
+  public void contextDestroyed(ServletContextEvent event) {
+    Startup.LOGGER.info("Debut de la destruction du contexte d'ATRIBUS");
+    this.mail = (Mail) springContext.getBean("mail");
+    this.messages = (MessagesParDefaut) springContext.getBean("messagesParDefaut");
+    /** new Thread(() -> prevenirLesAdministrateursArretAtribus()).start(); */
+    try {
+      Startup.LOGGER.info("Appel de la fonction permettant l'arrêt des connections sur MySQL.");
+      com.mysql.jdbc.AbandonedConnectionCleanupThread.shutdown();
+    } catch (final InterruptedException ie) {
+      Startup.LOGGER.info(
+          "Erreur lors de l'appel de la fonction permettant l'arrêt des connections sur MySQL.");
+      Thread.currentThread().interrupt();
+    }
+    final ClassLoader cl = Thread.currentThread().getContextClassLoader();
+    final Enumeration<Driver> drivers = DriverManager.getDrivers();
+    while (drivers.hasMoreElements()) {
+      final Driver driver = drivers.nextElement();
+      if (driver.getClass().getClassLoader() == cl) {
+        try {
+          Startup.LOGGER.info("Suppresion du driver JDBC");
+          DriverManager.deregisterDriver(driver);
+        } catch (final SQLException sqle) {
+          Startup.LOGGER.log(Level.INFO, "Exception", sqle);
+        }
+      } else {
+        Startup.LOGGER.info("Pas de driver à supprimer dans l'application.");
+      }
+    }
+    Startup.LOGGER.info("Application ATRIBUS offline !");
+  }
+
+  @SuppressWarnings("unused")
+  private void prevenirLesAdministrateursArretAtribus() {
+    final BeanFactoryReference bf =
+        SingletonBeanFactoryLocator.getInstance().useBeanFactory("beansDao");
+    final List<AdminSyst> adminSyst =
+        ((AdminSystDao) bf.getFactory().getBean("adminSystDao")).recupererListe();
+    for (final AdminSyst admin : adminSyst) {
+      try {
+        this.mail.mailAutomatiqueSsl(admin.getEmail(), "Avertissement !",
+            this.messages.getAdminSystProblemeTrois());
+      } catch (final MessagingException me) {
+        Startup.LOGGER.log(Level.INFO, "Exception", me);
+      }
+    }
+  }
+
+  public Mail getMail() {
+    return this.mail;
+  }
+
+  public void setMail(Mail mail) {
+    this.mail = mail;
+  }
+
+  public MessagesParDefaut getMessages() {
+    return this.messages;
+  }
+
+  public void setMessages(MessagesParDefaut messages) {
+    this.messages = messages;
+  }
+
+}

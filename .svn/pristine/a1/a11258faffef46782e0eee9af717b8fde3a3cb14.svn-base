@@ -1,0 +1,170 @@
+package fr.eseo.atribus.forms;
+
+import fr.eseo.atribus.dao.DirecteurProgrammesDao;
+import fr.eseo.atribus.dao.NotificationDao;
+import fr.eseo.atribus.entities.DirecteurProgrammes;
+import fr.eseo.atribus.entities.Eleve;
+import fr.eseo.atribus.entities.EnseignantRefUe;
+import fr.eseo.atribus.entities.Notification;
+import fr.eseo.atribus.entities.Utilisateur;
+
+import org.springframework.beans.factory.access.BeanFactoryReference;
+import org.springframework.beans.factory.access.SingletonBeanFactoryLocator;
+
+import java.util.List;
+import java.util.logging.Level;
+
+// TODO: Auto-generated Javadoc
+/**
+ * The Class SuggererNouvelleCompetenceForm.
+ */
+public class SuggererNouvelleCompetenceForm extends MailForm {
+
+  /** La variable directeur programmes dao. */
+  private final DirecteurProgrammesDao directeurProgrammesDao;
+
+  /** La variable notification dao. */
+  private final NotificationDao notificationDao;
+
+  /**
+   * Méthode d'instantiation.
+   */
+  public SuggererNouvelleCompetenceForm() {
+    final BeanFactoryReference bf =
+        SingletonBeanFactoryLocator.getInstance().useBeanFactory("beansDao");
+    /* Récupération d'une instance de notre DAO Directeur programmes */
+    this.directeurProgrammesDao =
+        (DirecteurProgrammesDao) bf.getFactory().getBean("directeurProgrammesDao");
+    /* Récupération d'une instance de notre DAO Notification */
+    this.notificationDao = (NotificationDao) bf.getFactory().getBean("notificationDao");
+  }
+
+  /**
+   * Suggestion de compétence d'un étudiant.
+   * 
+   * @param eleve L'éleve.
+   * @param competence La compétence.
+   * @param commentaire Le commentaire de l'eleve.
+   */
+  public void suggererCompetence(Eleve eleve, String competence, String commentaire) {
+    final String objet = "Suggestion de compétence de la part d'un étudiant.";
+    final String destinataire = "";
+    final List<DirecteurProgrammes> dps = this.directeurProgrammesDao.recupererListe();
+    for (final DirecteurProgrammes dp : dps) {
+      if (dp.isNotificationActive()) {
+        final Notification notification = new Notification();
+        notification.setDestinataire(dp.getId());
+        notification.setEmetteur(eleve.getId());
+        notification.setMessage(objet + " " + this.genererContenu(eleve, competence, commentaire));
+        try {
+          this.notificationDao.ajouter(notification);
+        } catch (final Exception exc) {
+          MailForm.LOGGER.log(Level.INFO, EXCEPTION, exc);
+          this.setErreur("erreurNotif", ERROR);
+        }
+      }
+      if (dp.isNotificationMail()) {
+        this.envoyerMail(objet, this.genererContenuMail(eleve, competence, commentaire),
+            destinataire);
+      }
+    }
+  }
+
+  /**
+   * Suggestion de compétence d'un enseignant ref ue.
+   * 
+   * @param eure L'enseignant ref ue.
+   * @param competence La compétence.
+   * @param commentaire Le commentaire de l'enseignant ref ue.
+   */
+  public void suggererCompetence(EnseignantRefUe eure, String competence, String commentaire) {
+    final String objet = "Suggestion de compétence de la part d'un enseignant ref ue.";
+    final String destinataire = "";
+    final List<DirecteurProgrammes> dps = this.directeurProgrammesDao.recupererListe();
+    for (final DirecteurProgrammes dp : dps) {
+      if (dp.isNotificationActive()) {
+        final Notification notification = new Notification();
+        notification.setDestinataire(dp.getId());
+        notification.setEmetteur(eure.getId());
+        notification.setMessage(objet + " " + this.genererContenu(eure, competence, commentaire));
+        try {
+          this.notificationDao.ajouter(notification);
+        } catch (final Exception exc) {
+          MailForm.LOGGER.log(Level.INFO, EXCEPTION, exc);
+          this.setErreur("erreurNotif", ERROR);
+        }
+      }
+      if (dp.isNotificationMail()) {
+        this.envoyerMail(objet, this.genererContenuMail(eure, competence, commentaire),
+            destinataire);
+      }
+    }
+  }
+
+  /**
+   * Generer contenu.
+   *
+   * @param utilisateur le utilisateur
+   * @param competence le competence
+   * @param commentaire le commentaire
+   * @return Le paramètre string
+   */
+  private String genererContenu(Utilisateur utilisateur, String competence, String commentaire) {
+    final StringBuilder convocation = new StringBuilder();
+    convocation.append(utilisateur.getNom() + " " + utilisateur.getPrenom());
+    convocation.append(" à souhaiter vous suggerer d'ajouter la compétence suivante : ");
+    convocation.append(competence);
+    if (!(".").equals(convocation.substring(convocation.length() - 1))) {
+      convocation.append(".");
+    }
+    convocation.append("Il vous a également ajouté le message suivant : ");
+    convocation.append(commentaire);
+    if (!(".").equals(convocation.substring(convocation.length() - 1))) {
+      convocation.append(". Cordialement.");
+    } else {
+      convocation.append(" Cordialement.");
+    }
+    return convocation.toString();
+  }
+
+  /**
+   * Generer contenu mail.
+   *
+   * @param eure le eure
+   * @param competence le competence
+   * @param commentaire le commentaire
+   * @return Le paramètre string
+   */
+  private String genererContenuMail(EnseignantRefUe eure, String competence, String commentaire) {
+    final StringBuilder convocation = new StringBuilder();
+    convocation.append(this.messages.getEureSuggereCompetenceUn());
+    convocation.append(eure.getNom() + " " + eure.getPrenom());
+    convocation.append(this.messages.getEureSuggereCompetenceDeux());
+    convocation.append(competence);
+    convocation.append(this.messages.getEureSuggereCompetenceTrois());
+    convocation.append(commentaire);
+    convocation.append(this.messages.getEureSuggereCompetenceQuatre());
+    return convocation.toString();
+  }
+
+  /**
+   * Generer contenu mail.
+   *
+   * @param eleve le eleve
+   * @param competence le competence
+   * @param commentaire le commentaire
+   * @return Le paramètre string
+   */
+  private String genererContenuMail(Eleve eleve, String competence, String commentaire) {
+    final StringBuilder convocation = new StringBuilder();
+    convocation.append(this.messages.getEleveSuggereCompetenceUn());
+    convocation.append(eleve.getNom() + " " + eleve.getPrenom());
+    convocation.append(this.messages.getEleveSuggereCompetenceDeux());
+    convocation.append(competence);
+    convocation.append(this.messages.getEleveSuggereCompetenceTrois());
+    convocation.append(commentaire);
+    convocation.append(this.messages.getEleveSuggereCompetenceQuatre());
+    return convocation.toString();
+  }
+}
+

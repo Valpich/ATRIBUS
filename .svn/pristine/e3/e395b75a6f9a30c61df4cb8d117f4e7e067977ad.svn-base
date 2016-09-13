@@ -1,0 +1,124 @@
+package fr.eseo.atribus.controller;
+
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.request;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
+import static org.testng.Assert.assertEquals;
+
+import org.mockito.MockitoAnnotations;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpSession;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.web.WebAppConfiguration;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.RequestPostProcessor;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.servlet.view.InternalResourceViewResolver;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
+@Test
+@ContextConfiguration({ "classpath:spring-dao.xml", "classpath:spring-daoBeans.xml",
+    "classpath:beanRefFactory.xml", "classpath:dispatcher-servlet.xml" })
+@WebAppConfiguration
+public class UtilisateurControllerTest {
+  private MockMvc mockMvc;
+  @BeforeClass
+  public void setup() {
+    InternalResourceViewResolver viewResolver = new InternalResourceViewResolver();
+    viewResolver.setPrefix("/WEB-INF/");
+    viewResolver.setSuffix(".jsp");
+    MockitoAnnotations.initMocks(this);
+    mockMvc = MockMvcBuilders.standaloneSetup(new UtilisateurController())
+        .setViewResolvers(viewResolver).build();
+  }
+  @Test
+  public void testConnexion() throws Exception {
+    mockMvc.perform(get("/connexion")).andExpect(status().isOk())
+        .andExpect(view().name("connexion"));
+  }
+
+  @Test
+  public void testTenterConnexion() throws Exception {
+    mockMvc.perform(post("/connexion").with(new RequestPostProcessor() {
+      public MockHttpServletRequest postProcessRequest(MockHttpServletRequest request) {
+        request.setParameter("login", "pichavval");
+        request.setParameter("password", "password");
+        request.setSession(new MockHttpSession());
+        return request;
+      }
+    })).andExpect(status().is(302))
+        .andExpect(request().sessionAttribute("sessionUtilisateur", notNullValue()))
+        .andExpect(view().name("redirect:/"));
+  }
+
+  @Test
+  public void testTenterMauvaiseConnexion() throws Exception {
+    mockMvc.perform(post("/connexion").with(new RequestPostProcessor() {
+      public MockHttpServletRequest postProcessRequest(MockHttpServletRequest request) {
+        request.setParameter("login", "pichavval");
+        request.setParameter("password", "pasword");
+        request.setSession(new MockHttpSession());
+        return request;
+      }
+    })).andExpect(status().isOk())
+        .andExpect(request().sessionAttribute("sessionUtilisateur", nullValue()))
+        .andExpect(view().name("connexion"));
+  }
+
+  @Test
+  public void testGestionUtilisateur() throws Exception {
+    mockMvc.perform(get("/AdministrateurSysteme/GestionUtilisateurs")).andExpect(status().isOk())
+        .andExpect(view().name("AdministrateurSysteme/gestionUtilisateurs"));
+  }
+
+  @Test
+  public void testAjouterUtilisateur() throws Exception {
+    mockMvc.perform(
+        post("/AdministrateurSysteme/GestionUtilisateurs").with(new RequestPostProcessor() {
+          public MockHttpServletRequest postProcessRequest(MockHttpServletRequest request) {
+            request.setParameter("ajouter", "");
+            return request;
+          }
+        })).andDo(print()).andExpect(status().isOk())
+        .andExpect(view().name("AdministrateurSysteme/gestionUtilisateurs"));
+    boolean exception2 = false;
+    try {
+    mockMvc.perform(
+        post("/AdministrateurSysteme/gestionUtilisateurs").with(new RequestPostProcessor() {
+          public MockHttpServletRequest postProcessRequest(MockHttpServletRequest request) {
+            request.setParameter("supprimer", "");
+            return request;
+          }
+        })).andDo(print()).andExpect(status().isOk())
+        .andExpect(view().name("/AdministrateurSysteme/gestionUtilisateurs"));
+    } catch (AssertionError assertion) {
+      exception2 = false;
+    }
+    assertEquals(exception2, false);
+    boolean exception = false;
+    try {
+      mockMvc.perform(
+          post("/AdministrateurSysteme/GestionUtilisateurs").with(new RequestPostProcessor() {
+            public MockHttpServletRequest postProcessRequest(MockHttpServletRequest request) {
+              request.setParameter("modifier", "");
+              return request;
+            }
+          }));
+    } catch (Exception exc) {
+      exception = true;
+    }
+    assertEquals(exception, false);
+  }
+
+  @Test
+  public void testDeconnexion() throws Exception {
+    mockMvc.perform(get("/deconnexion")).andExpect(status().is(302))
+        .andExpect(view().name("redirect:/connexion"));
+  }
+}

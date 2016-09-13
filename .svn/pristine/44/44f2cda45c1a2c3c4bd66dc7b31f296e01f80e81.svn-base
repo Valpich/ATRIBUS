@@ -1,0 +1,119 @@
+package fr.eseo.atribus.forms;
+
+import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertNull;
+
+import fr.eseo.atribus.dao.CompetenceDao;
+
+import org.mockito.Mockito;
+import org.springframework.beans.factory.access.BeanFactoryReference;
+import org.springframework.beans.factory.access.SingletonBeanFactoryLocator;
+import org.testng.annotations.BeforeTest;
+import org.testng.annotations.Test;
+
+import java.util.UUID;
+
+import javax.servlet.http.HttpServletRequest;
+
+public class AssocierCompetenceUeFormTest {
+
+  private static final String CHAMP_UE = "listeUe";
+  private static final String CHAMP_COMPETENCE = "listeCompetence";
+  private static final String CHAMP_NIVEAU = "niveau";
+  private CompetenceDao competenceDao;
+  private AssocierCompetenceUeForm form;
+
+  @BeforeTest
+  public void beforeTest() {
+    this.form = new AssocierCompetenceUeForm();
+    final BeanFactoryReference bf =
+        SingletonBeanFactoryLocator.getInstance().useBeanFactory("beansDao");
+    this.competenceDao = (CompetenceDao) bf.getFactory().getBean("competenceDao");
+  }
+
+  @Test
+  public void associerBonUeCompetence() {
+
+    final HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
+    final String nomUe = "Automatique";
+    final String nomCompetence = "Communication";
+    final String niveau = "3";
+
+    Mockito.when(request.getParameter(AssocierCompetenceUeFormTest.CHAMP_UE)).thenReturn(nomUe);
+    Mockito.when(request.getParameter(AssocierCompetenceUeFormTest.CHAMP_COMPETENCE))
+        .thenReturn(nomCompetence);
+    Mockito.when(request.getParameter(AssocierCompetenceUeFormTest.CHAMP_NIVEAU))
+        .thenReturn(niveau);
+
+    assertNotNull(this.form.associerUeCompetence(request));
+
+  }
+
+  @Test
+  public void associerMauvaisUeCompetence() {
+
+    final HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
+    final String nomUe = "mauvaisUe";
+    final String nomCompetence = "mauvaiseCompetence";
+    final String niveau = "-1";
+
+    Mockito.when(request.getParameter(AssocierCompetenceUeFormTest.CHAMP_UE)).thenReturn(nomUe);
+    Mockito.when(request.getParameter(AssocierCompetenceUeFormTest.CHAMP_COMPETENCE))
+        .thenReturn(nomCompetence);
+    Mockito.when(request.getParameter(AssocierCompetenceUeFormTest.CHAMP_NIVEAU))
+        .thenReturn(niveau);
+
+    assertNotNull(this.form.associerUeCompetence(request));
+
+  }
+
+  @Test
+  public void associerUeCompetenceSansParam() {
+    final HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
+    assertNotNull(this.form.getListCompetences());
+    assertNotNull(this.form.getListUe());
+    assertNotNull(this.form.associerUeCompetence(request));
+  }
+
+
+  @Test
+  public void modifierUeCompetences() {
+    final HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
+    final String nomCompetence = this.competenceDao.trouverParId(1).getNom();
+    final String niveau = "1";
+    Mockito.when(request.getParameter(AssocierCompetenceUeFormTest.CHAMP_COMPETENCE))
+        .thenReturn(nomCompetence);
+    Mockito.when(request.getParameter(AssocierCompetenceUeFormTest.CHAMP_NIVEAU))
+        .thenReturn(niveau);
+    this.form.modifierUeCompetence(request);
+  }
+
+
+  @Test
+  public void modifierUeCompetencesMauvais() {
+    final HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
+    final String nomCompetence = UUID.randomUUID().toString();
+    final String niveau = "-1";
+    Mockito.when(request.getParameter(AssocierCompetenceUeFormTest.CHAMP_COMPETENCE))
+        .thenReturn(nomCompetence);
+    Mockito.when(request.getParameter(AssocierCompetenceUeFormTest.CHAMP_NIVEAU))
+        .thenReturn(niveau);
+    this.form.modifierUeCompetence(request);
+  }
+
+  @Test
+  public void associerMauvaisUeCompetenceBis() {
+
+    final HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
+    Mockito.when(request.getParameter(AssocierCompetenceUeFormTest.CHAMP_UE)).thenReturn("sfsdfd");
+    Mockito.when(request.getParameter(AssocierCompetenceUeFormTest.CHAMP_COMPETENCE))
+        .thenReturn("esdrftvghbjnk");
+    Mockito.when(request.getParameter(AssocierCompetenceUeFormTest.CHAMP_NIVEAU)).thenReturn("");
+
+    assertNotNull(this.form.associerUeCompetence(request));
+    this.form.modifierUeCompetence(request);
+    ModifierAssocierCompetenceUeForm formDeux = new ModifierAssocierCompetenceUeForm();
+    assertNull(formDeux.getResultat());
+    assertNotNull(formDeux.getErreurs());
+  }
+}

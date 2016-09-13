@@ -1,0 +1,32 @@
+<h2>Methods run, sorted chronologically</h2><h3>&gt;&gt; means before, &lt;&lt; means after</h3><p/><br/><em>Default suite</em><p/><small><i>(Hover the method name to see the test class name)</i></small><p/>
+<table border="1">
+<tr><th>Time</th><th>Delta (ms)</th><th>Suite<br>configuration</th><th>Test<br>configuration</th><th>Class<br>configuration</th><th>Groups<br>configuration</th><th>Method<br>configuration</th><th>Test<br>method</th><th>Thread</th><th>Instances</th></tr>
+<tr bgcolor="6594e7">  <td>16/05/29 21:28:23</td>   <td>0</td> <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td title="CompetencesControllerTest.afficherAjouterCompetences()[pri:0, instance:fr.eseo.atribus.controller.CompetencesControllerTest@78226c36]">afficherAjouterCompetences</td> 
+  <td>main@5563134</td>   <td></td> </tr>
+<tr bgcolor="6594e7">  <td>16/05/29 21:28:24</td>   <td>893</td> <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td title="CompetencesControllerTest.afficherAssocierCompetencesUe()[pri:0, instance:fr.eseo.atribus.controller.CompetencesControllerTest@78226c36]">afficherAssocierCompetencesUe</td> 
+  <td>main@5563134</td>   <td></td> </tr>
+<tr bgcolor="6594e7">  <td>16/05/29 21:28:24</td>   <td>974</td> <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td title="CompetencesControllerTest.afficherMesCompetence()[pri:0, instance:fr.eseo.atribus.controller.CompetencesControllerTest@78226c36]">afficherMesCompetence</td> 
+  <td>main@5563134</td>   <td></td> </tr>
+<tr bgcolor="6594e7">  <td>16/05/29 21:28:24</td>   <td>1214</td> <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td title="CompetencesControllerTest.afficherModifierAssocierCompetencesUe()[pri:0, instance:fr.eseo.atribus.controller.CompetencesControllerTest@78226c36]">afficherModifierAssocierCompetencesUe</td> 
+  <td>main@5563134</td>   <td></td> </tr>
+<tr bgcolor="6594e7">  <td>16/05/29 21:28:24</td>   <td>1316</td> <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td title="CompetencesControllerTest.ajouterCompetence()[pri:0, instance:fr.eseo.atribus.controller.CompetencesControllerTest@78226c36]">ajouterCompetence</td> 
+  <td>main@5563134</td>   <td></td> </tr>
+<tr bgcolor="6594e7">  <td>16/05/29 21:28:24</td>   <td>1338</td> <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td title="CompetencesControllerTest.ajouterCompetencePost()[pri:0, instance:fr.eseo.atribus.controller.CompetencesControllerTest@78226c36]">ajouterCompetencePost</td> 
+  <td>main@5563134</td>   <td></td> </tr>
+<tr bgcolor="6594e7">  <td>16/05/29 21:28:24</td>   <td>1353</td> <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td title="CompetencesControllerTest.ajouterUneCompetenceGet()[pri:0, instance:fr.eseo.atribus.controller.CompetencesControllerTest@78226c36]">ajouterUneCompetenceGet</td> 
+  <td>main@5563134</td>   <td></td> </tr>
+<tr bgcolor="6594e7">  <td>16/05/29 21:28:24</td>   <td>1358</td> <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td title="CompetencesControllerTest.associerCompetenceUe()[pri:0, instance:fr.eseo.atribus.controller.CompetencesControllerTest@78226c36]">associerCompetenceUe</td> 
+  <td>main@5563134</td>   <td></td> </tr>
+<tr bgcolor="6594e7">  <td>16/05/29 21:28:24</td>   <td>1484</td> <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td title="CompetencesControllerTest.modifierAssocierCompetencesUe()[pri:0, instance:fr.eseo.atribus.controller.CompetencesControllerTest@78226c36]">modifierAssocierCompetencesUe</td> 
+  <td>main@5563134</td>   <td></td> </tr>
+<tr bgcolor="6594e7">  <td>16/05/29 21:28:25</td>   <td>1523</td> <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td title="CompetencesControllerTest.modifierCompetence()[pri:0, instance:fr.eseo.atribus.controller.CompetencesControllerTest@78226c36]">modifierCompetence</td> 
+  <td>main@5563134</td>   <td></td> </tr>
+<tr bgcolor="6594e7">  <td>16/05/29 21:28:19</td>   <td>-3701</td> <td>&nbsp;</td><td>&nbsp;</td><td title="&gt;&gt;CompetencesControllerTest.setup()[pri:0, instance:fr.eseo.atribus.controller.CompetencesControllerTest@78226c36]">&gt;&gt;setup</td> 
+<td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>  <td>main@5563134</td>   <td></td> </tr>
+<tr bgcolor="6594e7">  <td>16/05/29 21:28:25</td>   <td>1534</td> <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td title="CompetencesControllerTest.supprimerAssocierCompetencesUe()[pri:0, instance:fr.eseo.atribus.controller.CompetencesControllerTest@78226c36]">supprimerAssocierCompetencesUe</td> 
+  <td>main@5563134</td>   <td></td> </tr>
+<tr bgcolor="6594e7">  <td>16/05/29 21:28:25</td>   <td>1643</td> <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td title="CompetencesControllerTest.supprimerCompetence()[pri:0, instance:fr.eseo.atribus.controller.CompetencesControllerTest@78226c36]">supprimerCompetence</td> 
+  <td>main@5563134</td>   <td></td> </tr>
+<tr bgcolor="6594e7">  <td>16/05/29 21:28:25</td>   <td>1665</td> <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td title="CompetencesControllerTest.validerModifierAssocierCompetencesUe()[pri:0, instance:fr.eseo.atribus.controller.CompetencesControllerTest@78226c36]">validerModifierAssocierCompetencesUe</td> 
+  <td>main@5563134</td>   <td></td> </tr>
+</table>

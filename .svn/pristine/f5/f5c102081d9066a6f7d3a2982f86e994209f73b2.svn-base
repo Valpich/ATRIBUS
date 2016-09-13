@@ -1,0 +1,228 @@
+package fr.eseo.atribus.forms;
+
+import fr.eseo.atribus.beans.PasswordStorage;
+import fr.eseo.atribus.dao.AdminSystDao;
+import fr.eseo.atribus.dao.DaoException;
+import fr.eseo.atribus.dao.DirecteurEtudesDao;
+import fr.eseo.atribus.dao.DirecteurProgrammesDao;
+import fr.eseo.atribus.dao.EleveDao;
+import fr.eseo.atribus.dao.EnseignantDao;
+import fr.eseo.atribus.dao.UtilisateurDao;
+import fr.eseo.atribus.entities.AdminSyst;
+import fr.eseo.atribus.entities.DirecteurEtudes;
+import fr.eseo.atribus.entities.DirecteurProgrammes;
+import fr.eseo.atribus.entities.Eleve;
+import fr.eseo.atribus.entities.Enseignant;
+import fr.eseo.atribus.entities.EnseignantRefMatiere;
+import fr.eseo.atribus.entities.EnseignantRefUe;
+import fr.eseo.atribus.entities.Utilisateur;
+
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.servlet.http.HttpServletRequest;
+
+public class AddUserForm extends UtilisateurForm {
+  private static final Logger LOGGER = Logger.getLogger(AddUserForm.class.getName());
+
+  public AddUserForm() {
+    super();
+  }
+
+  public String getResultat() {
+    return this.resultat;
+  }
+
+  public Map<String, String> getErreurs() {
+    return this.erreurs;
+  }
+
+  public Utilisateur addUser(HttpServletRequest request) {
+    final String login = UtilisateurForm.getValeurChamp(request, UtilisateurForm.CHAMP_LOGIN);
+    final String password = UtilisateurForm.getValeurChamp(request, UtilisateurForm.CHAMP_PASS);
+    final String nom = UtilisateurForm.getValeurChamp(request, UtilisateurForm.CHAMP_NOM);
+    final String prenom = UtilisateurForm.getValeurChamp(request, UtilisateurForm.CHAMP_PRENOM);
+    final String email = UtilisateurForm.getValeurChamp(request, UtilisateurForm.CHAMP_EMAIL);
+    final String cbAdminSyst = UtilisateurForm.getValeurChamp(request, UtilisateurForm.CB_AS);
+    final String cbDirecteurEtudes = UtilisateurForm.getValeurChamp(request, UtilisateurForm.CB_DE);
+    final String cbDirecteurProgrammes =
+        UtilisateurForm.getValeurChamp(request, UtilisateurForm.CB_DP);
+    final String cbEnseignant = UtilisateurForm.getValeurChamp(request, UtilisateurForm.CB_EN);
+    final String cbEnseignantRefUe = ModifierUtilisateurForm.getValeurChamp(request, UtilisateurForm.CB_EURE); 
+    final String cbEnseignantRefMat = ModifierUtilisateurForm.getValeurChamp(request, UtilisateurForm.CB_ERM);
+    final String cbEleve = UtilisateurForm.getValeurChamp(request, UtilisateurForm.CB_EL);
+    
+
+
+    Utilisateur utilisateur = new Utilisateur();
+
+    try {
+      this.traiterLogin(login, utilisateur);
+      this.traiterPassword(password, utilisateur);
+      this.traiterNom(nom, utilisateur);
+      this.traiterPrenom(prenom, utilisateur);
+      this.traiterEmail(email, utilisateur);
+      if (this.erreurs.isEmpty()) {
+
+        utilisateur = this.utilisateurDao.ajouter(utilisateur);
+
+        if (cbAdminSyst != null) { // AS checké
+          final AdminSyst adminSyst = new AdminSyst(utilisateur);
+          this.adminSystDao.ajouter(adminSyst);
+        }
+
+        if (cbDirecteurEtudes != null) { // DE checké
+          final DirecteurEtudes directeurEtudes = new DirecteurEtudes(utilisateur);
+          this.directeurEtudesDao.ajouter(directeurEtudes);
+        }
+
+        if (cbDirecteurProgrammes != null) { // DP checké
+          final DirecteurProgrammes directeurProgrammes = new DirecteurProgrammes(utilisateur);
+          this.directeurProgrammesDao.ajouter(directeurProgrammes);
+        }
+
+        if (cbEnseignant != null) { // EN checké
+          final Enseignant enseignant = new Enseignant(utilisateur);
+          this.enseignantDao.ajouter(enseignant);
+          
+          /** TODO : compléter / refactoriser**/
+          if (cbEnseignantRefUe != null) { // EN checké
+            final EnseignantRefUe enseignantRefUe = new EnseignantRefUe(utilisateur);
+            this.enseignantRefUeDao.ajouter(enseignantRefUe);
+          }
+          
+          if (cbEnseignantRefMat != null) { // EN checké
+            final EnseignantRefMatiere enseignantRefMat = new EnseignantRefMatiere(utilisateur);
+            this.enseignantRefMatiereDao.ajouter(enseignantRefMat);
+          }
+          
+        } 
+        
+
+
+        if (cbEleve != null) { // EN checké
+          final Eleve eleve = new Eleve(utilisateur);
+
+
+          this.eleveDao.ajouter(eleve);
+        }
+
+
+
+        this.resultat = "Succès de l'inscription.";
+      } else {
+        this.resultat = "Échec de l'inscription.";
+      }
+    } catch (final DaoException bdde) {
+      AddUserForm.LOGGER.log(Level.INFO, "Exception", bdde);
+      this.resultat = "Échec de l'inscription : une erreur imprévue est survenue,"
+          + " merci de réessayer dans quelques instants.";
+    }
+
+    return utilisateur;
+  }
+
+  private void traiterLogin(String login, Utilisateur utilisateur) {
+    try {
+      this.validationLogin(login);
+    } catch (final FormValidationException fve) {
+      AddUserForm.LOGGER.log(Level.INFO, EXCEPTION, fve);
+      this.setErreur(UtilisateurForm.CHAMP_LOGIN, fve.getMessage());
+    }
+    utilisateur.setLogin(login);
+  }
+
+  private void traiterPassword(String password, Utilisateur utilisateur) {
+    try {
+      String passwordHash;
+      this.validationPassword(password);
+      passwordHash = PasswordStorage.createHash(password);
+      utilisateur.setPassword(passwordHash);
+    } catch (final FormValidationException fve) {
+      AddUserForm.LOGGER.log(Level.INFO, EXCEPTION, fve);
+      this.setErreur(UtilisateurForm.CHAMP_PASS, fve.getMessage());
+    } catch (final Exception exc) {
+      AddUserForm.LOGGER.log(Level.INFO, EXCEPTION, exc);
+      this.setErreur(UtilisateurForm.CHAMP_PASS, "Impossible de générer le hash du mot de passe.");
+    }
+  }
+
+  private void traiterNom(String nom, Utilisateur utilisateur) {
+    utilisateur.setNom(nom);
+  }
+
+  private void traiterPrenom(String prenom, Utilisateur utilisateur) {
+    utilisateur.setPrenom(prenom);
+  }
+
+  private void traiterEmail(String email, Utilisateur utilisateur) {
+    try {
+      this.validationEmail(email);
+      utilisateur.setEmail(email);
+    } catch (final Exception exc) {
+      AddUserForm.LOGGER.log(Level.INFO, EXCEPTION, exc);
+      this.setErreur(UtilisateurForm.CHAMP_EMAIL, exc.getMessage());
+    }
+  }
+
+
+  private void validationLogin(String login) throws FormValidationException {
+    if (login == null || login.length() < 5) {
+      throw new FormValidationException(
+          "Le nom d'utilisateur doit contenir au moins 5 caractères.");
+    } else if (this.utilisateurDao.trouverParLogin(login) != null) {
+      throw new FormValidationException(
+          "Ce login est déjà utilisée, merci d'en choisir une autre.");
+    }
+  }
+
+  private void validationPassword(String password) throws FormValidationException {
+    if (password != null) {
+      if (password.length() < 5) {
+        throw new FormValidationException(
+            "Les mots de passe doivent contenir au moins 5 caractères.");
+      }
+    } else {
+      throw new FormValidationException("Merci de saisir un mot de passe.");
+    }
+  }
+
+  private void validationEmail(String email) throws FormValidationException {
+    if (email == null) {
+      throw new FormValidationException("Merci de saisir une adresse mail.");
+    }
+    if (!email.matches("([^.@]+)(\\.[^.@]+)*@([^.@]+\\.)+([^.@]+)")) {
+      throw new FormValidationException("Merci de saisir une adresse mail valide.");
+    }
+  }
+
+  public UtilisateurDao getUtilisateurBdd() {
+    return this.utilisateurDao;
+  }
+
+  public AdminSystDao getAdminSystBdd() {
+    return this.adminSystDao;
+  }
+
+  public DirecteurEtudesDao getDirecteurEtudesBdd() {
+    return this.directeurEtudesDao;
+  }
+
+  public DirecteurProgrammesDao getDirecteurProgrammesBdd() {
+    return this.directeurProgrammesDao;
+  }
+
+  public EnseignantDao getEnseignantBdd() {
+    return this.enseignantDao;
+  }
+
+  public EleveDao getEleveBdd() {
+    return this.eleveDao;
+  }
+
+  public void setResultat(String resultat) {
+    this.resultat = resultat;
+  }
+}
+

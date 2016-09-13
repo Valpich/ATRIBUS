@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>Mail.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Atribus</a> &gt; <a href="index.source.html" class="el_package">fr.eseo.atribus.beans</a> &gt; <span class="el_source">Mail.java</span></div><h1>Mail.java</h1><pre class="source lang-java linenums">package fr.eseo.atribus.beans;
+
+import java.io.Serializable;
+import java.util.Properties;
+
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.PasswordAuthentication;
+import javax.mail.Session;
+import javax.mail.Transport;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
+
+/**
+ * Classe permettant d'envoyer des emails.
+ */
+public class Mail implements Serializable {
+
+  private static final long serialVersionUID = 5531174433277180725L;
+
+  private String from;
+  private String username;
+  private String password;
+  private String host;
+  private Properties propriete;
+
+  /**
+   * Instancie la classe Mail par defaut.
+   */
+  public Mail(String from, String username, String password, String host) {
+<span class="nc" id="L31">    super();</span>
+<span class="nc" id="L32">    this.setFrom(from);</span>
+<span class="nc" id="L33">    this.setPassword(password);</span>
+<span class="nc" id="L34">    this.setUsername(username);</span>
+<span class="nc" id="L35">    this.setHost(host);</span>
+<span class="nc" id="L36">    this.setPropriete(new Properties());</span>
+<span class="nc" id="L37">    this.getPropriete().put(&quot;mail.smtp.starttls.enable&quot;, false);</span>
+<span class="nc" id="L38">    this.getPropriete().put(&quot;mail.smtp.host&quot;, host);</span>
+<span class="nc" id="L39">    this.getPropriete().put(&quot;mail.smtp.port&quot;, &quot;25&quot;);</span>
+<span class="nc" id="L40">    this.getPropriete().put(&quot;mail.smtp.auth&quot;, false);</span>
+<span class="nc" id="L41">    this.getPropriete().put(&quot;mail.smtp.connectiontimeout&quot;, 3000);</span>
+<span class="nc" id="L42">  }</span>
+
+  /**
+   * Accesseur en lecture de l'adresse de connexion.
+   * 
+   * @return L'adresse.
+   */
+  public String getFrom() {
+<span class="nc" id="L50">    return this.from;</span>
+  }
+
+  /**
+   * Accesseur en lecture du nom d'utilisateur.
+   * 
+   * @return Le nom d'utilisateur.
+   */
+  public String getUsername() {
+<span class="nc" id="L59">    return this.username;</span>
+  }
+
+  /**
+   * Accesseur en lecture du mot de passe.
+   * 
+   * @return Le mot de passe.
+   */
+  public String getPassword() {
+<span class="nc" id="L68">    return this.password;</span>
+  }
+
+  /**
+   * Accesseur en ecriture de l'adresse de connexion.
+   * 
+   * @param value La nouvelle adresse.
+   */
+  public void setFrom(final String value) {
+<span class="nc" id="L77">    this.from = value;</span>
+<span class="nc" id="L78">  }</span>
+
+  /**
+   * Accesseur en ecriture du nom d'utilisateur.
+   * 
+   * @param value Le nouveau nom d'utilisateur.
+   */
+  public void setUsername(final String value) {
+<span class="nc" id="L86">    this.username = value;</span>
+<span class="nc" id="L87">  }</span>
+
+  /**
+   * Accesseur en ecriture du mot de passe.
+   * 
+   * @param value Le nouveau mot de passe.
+   */
+  public void setPassword(final String value) {
+<span class="nc" id="L95">    this.password = value;</span>
+<span class="nc" id="L96">  }</span>
+
+
+  /**
+   * Accesseur en lecture sur l'hote.
+   * 
+   * @return L'hote.
+   */
+  public String getHost() {
+<span class="nc" id="L105">    return this.host;</span>
+  }
+
+  /**
+   * Accesseur en ecriture de l'hote.
+   * 
+   * @param host Le nouvel hote.
+   */
+  public void setHost(String host) {
+<span class="nc" id="L114">    this.host = host;</span>
+<span class="nc" id="L115">  }</span>
+
+  /**
+   * Accesseur en lecture sur la propriete de connexion.
+   * 
+   * @return La propriete de connexion.
+   */
+  public Properties getPropriete() {
+<span class="nc" id="L123">    return this.propriete;</span>
+  }
+
+  /**
+   * Accesseur en ecriture sur la propriete de connexion.
+   * 
+   * @param propriete La nouvelle propriete de connexion.
+   */
+  public void setPropriete(final Properties propriete) {
+<span class="nc" id="L132">    this.propriete = propriete;</span>
+<span class="nc" id="L133">  }</span>
+
+  public void mailAutomatique(String receveur, String objet, String contenu)
+      throws MessagingException {
+<span class="nc" id="L137">    final Session session =</span>
+<span class="nc" id="L138">        Session.getInstance(this.getPropriete(), new javax.mail.Authenticator() {</span>
+          @Override
+          protected PasswordAuthentication getPasswordAuthentication() {
+<span class="nc" id="L141">            return new PasswordAuthentication(Mail.this.getUsername(), Mail.this.getPassword());</span>
+          }
+        });
+<span class="nc" id="L144">    final Message message = new MimeMessage(session);</span>
+<span class="nc" id="L145">    message.setFrom(new InternetAddress(this.getFrom()));</span>
+<span class="nc" id="L146">    message.addRecipients(Message.RecipientType.TO, InternetAddress.parse(receveur));</span>
+<span class="nc" id="L147">    message.setSubject(objet);</span>
+<span class="nc" id="L148">    message.setContent(contenu, &quot;text/html; charset=utf-8&quot;);</span>
+<span class="nc" id="L149">    Transport.send(message);</span>
+<span class="nc" id="L150">  }</span>
+
+  public void mailAutomatiqueSsl(String receveur, String objet, String contenu)
+      throws MessagingException {
+<span class="nc" id="L154">    final Properties props = new Properties();</span>
+<span class="nc" id="L155">    props.put(&quot;mail.smtp.user&quot;, this.from);</span>
+<span class="nc" id="L156">    props.put(&quot;mail.smtp.host&quot;, this.host);</span>
+<span class="nc" id="L157">    props.put(&quot;mail.smtp.port&quot;, &quot;465&quot;);</span>
+<span class="nc" id="L158">    props.put(&quot;mail.smtp.starttls.enable&quot;, &quot;true&quot;);</span>
+<span class="nc" id="L159">    props.put(&quot;mail.smtp.auth&quot;, &quot;true&quot;);</span>
+<span class="nc" id="L160">    props.put(&quot;mail.smtp.socketFactory.port&quot;, &quot;465&quot;);</span>
+<span class="nc" id="L161">    props.put(&quot;mail.smtp.socketFactory.class&quot;, &quot;javax.net.ssl.SSLSocketFactory&quot;);</span>
+<span class="nc" id="L162">    props.put(&quot;mail.smtp.socketFactory.fallback&quot;, &quot;false&quot;);</span>
+<span class="nc" id="L163">    final SmtpAuthenticator auth = new SmtpAuthenticator();</span>
+<span class="nc" id="L164">    final Session session = Session.getInstance(props, auth);</span>
+<span class="nc" id="L165">    final MimeMessage msg = new MimeMessage(session);</span>
+<span class="nc" id="L166">    msg.setSubject(objet);</span>
+<span class="nc" id="L167">    msg.setContent(contenu, &quot;text/html; charset=utf-8&quot;);</span>
+<span class="nc" id="L168">    msg.setFrom(new InternetAddress(this.from));</span>
+<span class="nc" id="L169">    msg.addRecipient(Message.RecipientType.TO, new InternetAddress(receveur));</span>
+<span class="nc" id="L170">    final Transport transport = session.getTransport(&quot;smtps&quot;);</span>
+<span class="nc" id="L171">    transport.connect(this.host, Integer.valueOf(&quot;465&quot;), this.from, this.password);</span>
+<span class="nc" id="L172">    transport.sendMessage(msg, msg.getAllRecipients());</span>
+<span class="nc" id="L173">    transport.close();</span>
+<span class="nc" id="L174">  }</span>
+
+<span class="nc" id="L176">  private class SmtpAuthenticator extends javax.mail.Authenticator {</span>
+    @Override
+    public PasswordAuthentication getPasswordAuthentication() {
+<span class="nc" id="L179">      return new PasswordAuthentication(Mail.this.from, Mail.this.password);</span>
+    }
+  }
+
+  @Override
+  public String toString() {
+<span class="nc" id="L185">    return &quot;Mail [from=&quot; + this.from + &quot;, username=&quot; + this.username + &quot;, password=&quot; + this.password</span>
+        + &quot;, host=&quot; + this.host + &quot;, propriete=&quot; + this.propriete + &quot;]&quot;;
+  }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.6.201602180812</span></div></body></html>

@@ -1,0 +1,76 @@
+package fr.eseo.atribus.entities;
+
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
+
+import fr.eseo.atribus.entities.Enseignant;
+import fr.eseo.atribus.entities.Matiere;
+import fr.eseo.atribus.entities.Utilisateur;
+
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class EnseignantTest {
+  
+  List<Matiere> listMatiere;
+  Enseignant enseignant;
+  Utilisateur utilisateur;
+  
+  /**
+   * Instanciation des variables avant les tests.
+   */
+  @BeforeClass
+  public void beforeClass() {
+    listMatiere = new ArrayList<>();
+    enseignant = new Enseignant(); 
+    utilisateur = new Utilisateur();
+  }
+
+  @Test
+  public void enseignantConstructeur() {   
+    assertNotNull(enseignant);  
+  }
+
+  @Test
+  public void enseignantUtilisateur() {   
+    assertNotNull(utilisateur);  
+  }
+
+  @Test
+  public void getEnseigneMatiere() {
+    enseignant.setEnseigneMatiere(listMatiere);
+    assertNotNull(enseignant.getEnseigneMatiere());
+  }
+
+  @Test
+  public void getIdEnseignant() {
+    enseignant.setId(5);
+    assertEquals(enseignant.getId(), 5);  
+  }
+
+  @Test
+  public void setEnseigneMatiere() {
+    enseignant.setEnseigneMatiere(listMatiere);
+    assertNotNull(enseignant.getEnseigneMatiere());
+  }
+
+  @Test
+  public void setIdEnseignant() {   
+    enseignant.setId(4);
+    assertEquals(enseignant.getId(), 4);  
+  }
+
+  @Test
+  public void enseignantToString() {
+    
+    final String toStringEnseignant = "Enseignant [idEnseignant=0, enseigneMatiere=null]";
+
+    enseignant = new Enseignant();
+    
+    assertEquals(enseignant.toString(), toStringEnseignant);
+    
+  }
+}

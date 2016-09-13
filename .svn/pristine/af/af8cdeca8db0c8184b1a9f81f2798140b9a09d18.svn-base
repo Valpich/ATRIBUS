@@ -1,0 +1,310 @@
+package fr.eseo.atribus.forms;
+
+import fr.eseo.atribus.dao.DaoException;
+import fr.eseo.atribus.dao.EnseignantRefMatiereDao;
+import fr.eseo.atribus.dao.MatiereDao;
+import fr.eseo.atribus.dao.SemestreDao;
+import fr.eseo.atribus.dao.UeDao;
+import fr.eseo.atribus.entities.EnseignantRefMatiere;
+import fr.eseo.atribus.entities.Matiere;
+import fr.eseo.atribus.entities.Semestre;
+import fr.eseo.atribus.entities.UniteEnseignement;
+import fr.eseo.atribus.entities.Utilisateur;
+
+import org.springframework.beans.factory.access.BeanFactoryReference;
+import org.springframework.beans.factory.access.SingletonBeanFactoryLocator;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+
+// TODO: Auto-generated Javadoc
+/**
+ * The Class AddMatiereForm.
+ */
+public class AddMatiereForm {
+
+  /** La constante LOGGER. */
+  private static final Logger LOGGER = Logger.getLogger(AddMatiereForm.class.getName());
+
+  /** La constante CHAMP_NOM. */
+  private static final String CHAMP_NOM = "nom";
+
+  /** La constante CHAMP_COEFFICIENT. */
+  private static final String CHAMP_COEFFICIENT = "coefficient_matiere";
+
+  /** La constante CHAMP_SEMESTRE. */
+  private static final String CHAMP_SEMESTRE = "listeSemestre";
+
+  /** La constante CHAMP_UE. */
+  private static final String CHAMP_UE = "listeUe";
+
+  /** La constante EXCEPTION. */
+  private static final String EXCEPTION = "Exception";
+
+  /** La constante CHAMP_ENSEIGNANT_REF. */
+  private static final String CHAMP_ENSEIGNANT_REF = "listeEnseignant";
+
+  /** La constante ATT_SESSION_USER. */
+  public static final String ATT_SESSION_USER = "sessionUtilisateur";
+
+  /** La variable resultat. */
+  private String resultat;
+
+  /** La variable erreurs. */
+  private final Map<String, String> erreurs = new HashMap<>();
+
+  /** La variable matiere dao. */
+  private final MatiereDao matiereDao;
+
+  /** La variable semestre dao. */
+  private final SemestreDao semestreDao;
+
+  /** La variable ue dao. */
+  private final UeDao ueDao;
+
+  /** La variable enseignant dao. */
+  private final EnseignantRefMatiereDao enseignantDao;
+
+
+  /**
+   * Constructeur.
+   */
+  public AddMatiereForm() {
+    final BeanFactoryReference bf =
+        SingletonBeanFactoryLocator.getInstance().useBeanFactory("beansDao");
+    /* Récupération d'une instance de notre DAO Matiere */
+    this.matiereDao = (MatiereDao) bf.getFactory().getBean("matiereDao");
+
+    /* Récupération d'une instance de notre DAO Semestre */
+    this.semestreDao = (SemestreDao) bf.getFactory().getBean("semestreDao");
+
+    /* Récupération d'une instance de notre DAO Ue */
+    this.ueDao = (UeDao) bf.getFactory().getBean("ueDao");
+
+    /* Récupération d'une instance de notre DAO EnseignantRefMatiere */
+    this.enseignantDao =
+        (EnseignantRefMatiereDao) bf.getFactory().getBean("enseignantRefMatiereDao");
+
+  }
+
+  /**
+   * Accesseur en lecture sur le paramètre resultat.
+   *
+   * @return le paramètre resultat
+   */
+  public String getResultat() {
+    return this.resultat;
+  }
+
+  /**
+   * Accesseur en lecture sur le paramètre erreurs.
+   *
+   * @return le paramètre erreurs
+   */
+  public Map<String, String> getErreurs() {
+    return this.erreurs;
+  }
+
+  /**
+   * Méthode qui permet l'ajout d'une matière en fonction des informations saisies.
+   * 
+   * @param request requête
+   * @return la matière créée
+   */
+  public Matiere addMatiere(HttpServletRequest request) {
+    final String nom = AddMatiereForm.getValeurChamp(request, AddMatiereForm.CHAMP_NOM);
+    final String coefficient =
+        AddMatiereForm.getValeurChamp(request, AddMatiereForm.CHAMP_COEFFICIENT);
+    final String semestre = AddMatiereForm.getValeurChamp(request, AddMatiereForm.CHAMP_SEMESTRE);
+    final String nomUe = AddMatiereForm.getValeurChamp(request, AddMatiereForm.CHAMP_UE);
+    AddMatiereForm.getValeurChamp(request, AddMatiereForm.CHAMP_ENSEIGNANT_REF);
+
+    final Matiere matiere = new Matiere();
+    EnseignantRefMatiere utilisateur = null;
+
+    final HttpServletRequest requete = request;
+    final HttpSession session = requete.getSession();
+    @SuppressWarnings("unchecked")
+    final List<Utilisateur> listeUtilisateur =
+        (List<Utilisateur>) session.getAttribute(ATT_SESSION_USER);
+    for (int i = 0; i < listeUtilisateur.size(); i++) {
+      if (listeUtilisateur.get(i).getClass().equals(EnseignantRefMatiere.class)) {
+        utilisateur = (EnseignantRefMatiere) listeUtilisateur.get(i);
+      }
+    }
+
+    try {
+      this.traiterNom(nom, matiere);
+      this.traiterSemestre(semestre, matiere);
+      this.traiterCoefficient(coefficient, matiere);
+      this.traiterUe(nomUe, matiere);
+
+
+      if (this.erreurs.isEmpty()) {
+        this.matiereDao.ajouter(matiere, utilisateur.getIdEnseignant());
+        this.resultat = "success";
+      } else {
+        this.resultat = "echec";
+      }
+    } catch (final DaoException bdde) {
+      this.resultat = "echecDao";
+      AddMatiereForm.LOGGER.log(Level.INFO, EXCEPTION, bdde);
+    }
+    return matiere;
+  }
+
+  /**
+   * Traiter ue.
+   *
+   * @param ue le ue
+   * @param matiere le matiere
+   */
+  private void traiterUe(String ue, Matiere matiere) {
+    try {
+      if (ue != null) {
+        matiere.setUe(this.ueDao.trouverUeParNom(ue));
+      } else {
+        matiere.setUe(null);
+      }
+    } catch (final Exception exc) {
+      AddMatiereForm.LOGGER.log(Level.INFO, EXCEPTION, exc);
+      this.setErreur("ue", exc.getMessage());
+    }
+  }
+
+  /**
+   * Traiter coefficient.
+   *
+   * @param coefficient le coefficient
+   * @param matiere le matiere
+   */
+  private void traiterCoefficient(String coefficient, Matiere matiere) {
+    try {
+      if (coefficient != null) {
+        matiere.setCoefficient(Float.parseFloat(coefficient));
+      } else {
+        matiere.setCoefficient(0);
+      }
+    } catch (final Exception exc) {
+      this.setErreur("coefficient_matiere", exc.getMessage());
+      AddMatiereForm.LOGGER.log(Level.INFO, EXCEPTION, exc);
+    }
+  }
+
+  /**
+   * Traiter nom.
+   *
+   * @param nom le nom
+   * @param matiere le matiere
+   */
+  private void traiterNom(String nom, Matiere matiere) {
+    try {
+      this.validationNom(nom);
+    } catch (final FormValidationException fve) {
+      this.setErreur(AddMatiereForm.CHAMP_NOM, fve.getMessage());
+      AddMatiereForm.LOGGER.log(Level.INFO, EXCEPTION, fve);
+    }
+    matiere.setNom(nom);
+  }
+
+  /**
+   * Validation nom.
+   *
+   * @param nom le nom
+   * @throws FormValidationException de type form validation exception
+   */
+  private void validationNom(String nom) throws FormValidationException {
+    if (nom == null) {
+      throw new FormValidationException(
+          "Le nom de la matière doit contenir au maximum 20 caractères.");
+    } else if (this.matiereDao.trouverParNom(nom) != null) {
+      throw new FormValidationException(
+          "Cette matière existe déjà, merci d'en choisir un autre nom.");
+    }
+  }
+
+  /**
+   * Traiter semestre.
+   *
+   * @param semestre le semestre
+   * @param matiere le matiere
+   */
+  private void traiterSemestre(String semestre, Matiere matiere) {
+    try {
+      if (this.semestreDao.trouverParNumero(Integer.parseInt(semestre)) == null) {
+        matiere.setSemestre(null);
+        throw new FormValidationException("Le semestre saisi n'existe pas");
+      }
+    } catch (final Exception exc) {
+      this.setErreur("semestre", exc.getMessage());
+      AddMatiereForm.LOGGER.log(Level.INFO, EXCEPTION, exc);
+
+    }
+  }
+
+  /**
+   * Sets the erreur.
+   *
+   * @param champ le champ
+   * @param message le message
+   */
+  /*
+   * Ajoute un message correspondant au champ spécifié à la map des erreurs.
+   */
+  private void setErreur(String champ, String message) {
+    this.erreurs.put(champ, message);
+  }
+
+  /**
+   * Accesseur en lecture sur le paramètre valeur champ.
+   *
+   * @param request le request
+   * @param nomChamp le nom champ
+   * @return le paramètre valeur champ
+   */
+  /*
+   * Méthode utilitaire qui retourne null si un champ est vide, et son contenu sinon.
+   */
+  private static String getValeurChamp(HttpServletRequest request, String nomChamp) {
+    final String valeur = request.getParameter(nomChamp);
+    if (valeur == null || valeur.trim().length() == 0) {
+      return null;
+    } else {
+      return valeur.trim();
+    }
+  }
+
+  /**
+   * Accesseur en lecture sur le paramètre list ue.
+   *
+   * @return le paramètre list ue
+   */
+  public List<UniteEnseignement> getListUe() {
+    return this.ueDao.listerUe();
+  }
+
+  /**
+   * Accesseur en lecture sur le paramètre list semestre.
+   *
+   * @return le paramètre list semestre
+   */
+  public List<Semestre> getListSemestre() {
+    return this.semestreDao.listerSemestre();
+  }
+
+  /**
+   * Accesseur en lecture sur le paramètre list enseignant ref.
+   *
+   * @return le paramètre list enseignant ref
+   */
+  public List<EnseignantRefMatiere> getListEnseignantRef() {
+    return this.enseignantDao.recupererListe();
+  }
+
+}

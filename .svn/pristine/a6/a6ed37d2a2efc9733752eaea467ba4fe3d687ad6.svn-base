@@ -1,0 +1,116 @@
+package fr.eseo.atribus.dao;
+
+import static org.testng.Assert.assertEquals;
+
+import fr.eseo.atribus.entities.Competence;
+import fr.eseo.atribus.entities.Examen;
+import fr.eseo.atribus.entities.Matiere;
+
+import org.testng.annotations.BeforeTest;
+import org.testng.annotations.Test;
+
+import java.util.UUID;
+
+public class ExamenDaoImplTest {
+
+  MatiereDaoImpl matiereDao;
+  ExamenDaoImpl examenDao;
+  CompetenceDaoImpl competenceDao;
+  Examen examen;
+  Competence competence;
+  String nom;
+  Matiere matiere;
+
+
+  /**
+   * Initialisation des variables.
+   */
+  @BeforeTest
+  public void beforeTest() {
+    matiereDao = new MatiereDaoImpl();
+    examenDao = new ExamenDaoImpl();
+    examen = new Examen();
+    competence = new Competence();
+    nom = UUID.randomUUID().toString();
+    matiere = this.matiereDao.trouverParId(1);
+  }
+
+  @Test(priority = 1)
+  public void ajouter() {
+    examen.setAutoEvaluation(true);
+    examen.setMatiere(matiere);
+    examen.setNom(nom);
+    this.examenDao.ajouter(examen, matiere);
+    Examen examenTrouve = this.examenDao.trouverParNom(nom);
+    assertEquals(examenTrouve.getAutoEvaluation().booleanValue(), true);
+    assertEquals(examenTrouve.getMatiere().getId(), matiere.getId());
+    assertEquals(examenTrouve.getNom(), nom);
+  }
+
+  @Test(priority = 2)
+  public void modifier() {
+    Examen examenTrouve = this.examenDao.trouverParNom(nom);
+    String ancienNom = examenTrouve.getNom();
+    nom = UUID.randomUUID().toString();
+    examenTrouve.setNom(nom);
+    this.examenDao.update(examenTrouve, ancienNom);
+    assertEquals(examenTrouve.getAutoEvaluation().booleanValue(), true);
+    assertEquals(examenTrouve.getMatiere().getId(), matiere.getId());
+    assertEquals(examenTrouve.getNom(), nom);
+  }
+
+  @Test(priority = 3)
+  public void supprimer() {
+    Examen examenTrouve = this.examenDao.trouverParNom(nom);;
+    this.examenDao.supprimer(examenTrouve);
+    assertEquals(examenTrouve.getAutoEvaluation().booleanValue(), true);
+    assertEquals(examenTrouve.getMatiere().getId(), matiere.getId());
+    assertEquals(examenTrouve.getNom(), nom);
+  }
+
+  @Test(priority = 4)
+  public void ajouterEchec() {
+    Examen examenTrouve = this.examenDao.trouverTousLesExamens().get(0);
+    this.examenDao.ajouter(examenTrouve, examenTrouve.getMatiere());
+    this.examenDao.ajouter(examenTrouve, examenTrouve.getMatiere());
+  }
+
+  @Test(priority = 5)
+  public void modifierEchec() {
+    Examen examenFaux = this.examenDao.trouverTousLesExamens().get(0);
+    examenFaux.setId(0);
+    examenFaux.setNom("fail");
+    boolean test = false;
+    examenFaux.setNom(UUID.randomUUID().toString());
+    try {
+      this.examenDao.update(examenFaux, UUID.randomUUID().toString());
+    } catch (Exception exc) {
+      test = true;
+    }
+    assertEquals(test, true);
+    examenFaux.setId(34567);
+    examenFaux.setNom(UUID.randomUUID().toString());
+    try {
+      this.examenDao.update(examenFaux, UUID.randomUUID().toString());
+    } catch (Exception exc) {
+      test = true;
+    }
+    assertEquals(test, true);
+  }
+
+  @Test(priority = 6)
+  public void supprimerEchech() {
+    Examen examenFaux = this.examenDao.trouverTousLesExamens().get(0);
+    examenFaux.setId(23456);
+    examenFaux.setNom("fail");
+    examenFaux.setNom(UUID.randomUUID().toString());
+    boolean test = false;
+    try {
+      this.examenDao.supprimer(examenFaux);
+    } catch (Exception exc) {
+      test = true;
+    }
+    assertEquals(test, true);
+  }
+
+}

@@ -1,0 +1,27 @@
+package fr.eseo.atribus.dao;
+
+import fr.eseo.atribus.entities.Semestre;
+
+import java.util.List;
+
+/**
+ * The Interface SemestreDao.
+ */
+public interface SemestreDao {
+
+  /**
+   * Lister semestre.
+   *
+   * @return Le paramètre list
+   */
+  List<Semestre> listerSemestre();
+
+  /**
+   * Trouver par numero.
+   *
+   * @param numeroSemestre le numero semestre
+   * @return Le paramètre semestre
+   */
+  Semestre trouverParNumero(int numeroSemestre);
+
+}

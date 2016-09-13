@@ -1,0 +1,158 @@
+package fr.eseo.atribus.forms;
+
+import fr.eseo.atribus.dao.CompetenceDao;
+import fr.eseo.atribus.dao.EnseignantDao;
+import fr.eseo.atribus.dao.SemestreDao;
+import fr.eseo.atribus.dao.UeDao;
+
+import java.util.Map;
+
+
+// TODO: Auto-generated Javadoc
+/**
+ * The Class UeFormData.
+ */
+public class UeFormData {
+
+  /** La variable resultat. */
+  private String resultat;
+
+  /** La variable erreurs. */
+  private Map<String, String> erreurs;
+
+  /** La variable ue bdd. */
+  private UeDao ueBdd;
+
+  /** La variable enseignant bdd. */
+  private EnseignantDao enseignantBdd;
+
+  /** La variable competence bdd. */
+  private CompetenceDao competenceBdd;
+
+  /** La variable semestre bdd. */
+  private SemestreDao semestreBdd;
+
+  /**
+   * Instancie un nouveau ue form data.
+   *
+   * @param erreurs le erreurs
+   */
+  public UeFormData(Map<String, String> erreurs) {
+    this.erreurs = erreurs;
+  }
+
+
+  /**
+   * Accesseur en lecture sur le paramètre resultat.
+   *
+   * @return le paramètre resultat
+   */
+  public String getResultat() {
+    return this.resultat;
+  }
+
+  /**
+   * Accesseur en écriture sur le paramètre resultat.
+   *
+   * @param resultat le nouveau paramètre resultat
+   */
+  public void setResultat(String resultat) {
+    this.resultat = resultat;
+  }
+
+
+  /**
+   * Accesseur en lecture sur le paramètre erreurs.
+   *
+   * @return le paramètre erreurs
+   */
+  public Map<String, String> getErreurs() {
+    return this.erreurs;
+  }
+
+  /**
+   * Sets the erreurs.
+   *
+   * @param erreurs le erreurs
+   */
+  public void setErreurs(Map<String, String> erreurs) {
+    this.erreurs = erreurs;
+  }
+
+
+  /**
+   * Accesseur en lecture sur le paramètre ue bdd.
+   *
+   * @return le paramètre ue bdd
+   */
+  public UeDao getUeBdd() {
+    return this.ueBdd;
+  }
+
+  /**
+   * Accesseur en écriture sur le paramètre ue bdd.
+   *
+   * @param ueBdd le nouveau paramètre ue bdd
+   */
+  public void setUeBdd(UeDao ueBdd) {
+    this.ueBdd = ueBdd;
+  }
+
+
+  /**
+   * Accesseur en lecture sur le paramètre enseignant bdd.
+   *
+   * @return le paramètre enseignant bdd
+   */
+  public EnseignantDao getEnseignantBdd() {
+    return this.enseignantBdd;
+  }
+
+  /**
+   * Accesseur en écriture sur le paramètre enseignant bdd.
+   *
+   * @param enseignantBdd le nouveau paramètre enseignant bdd
+   */
+  public void setEnseignantBdd(EnseignantDao enseignantBdd) {
+    this.enseignantBdd = enseignantBdd;
+  }
+
+
+  /**
+   * Accesseur en lecture sur le paramètre competence bdd.
+   *
+   * @return le paramètre competence bdd
+   */
+  public CompetenceDao getCompetenceBdd() {
+    return this.competenceBdd;
+  }
+
+  /**
+   * Accesseur en écriture sur le paramètre competence bdd.
+   *
+   * @param competenceBdd le nouveau paramètre competence bdd
+   */
+  public void setCompetenceBdd(CompetenceDao competenceBdd) {
+    this.competenceBdd = competenceBdd;
+  }
+
+
+  /**
+   * Accesseur en lecture sur le paramètre semestre bdd.
+   *
+   * @return le paramètre semestre bdd
+   */
+  public SemestreDao getSemestreBdd() {
+    return this.semestreBdd;
+  }
+
+  /**
+   * Accesseur en écriture sur le paramètre semestre bdd.
+   *
+   * @param semestreBdd le nouveau paramètre semestre bdd
+   */
+  public void setSemestreBdd(SemestreDao semestreBdd) {
+    this.semestreBdd = semestreBdd;
+  }
+
+}

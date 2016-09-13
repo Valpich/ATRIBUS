@@ -1,0 +1,159 @@
+package fr.eseo.atribus.beans;
+
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
+
+import org.testng.annotations.BeforeTest;
+import org.testng.annotations.Test;
+
+public class MessagesParDefautTest {
+  
+  private MessagesParDefaut message;
+  
+  @BeforeTest
+  public void init() {
+    message = new MessagesParDefaut();
+  }
+
+  @Test
+  public void messagesParDefaut() {
+    assertNotNull(message);
+  }
+
+  @Test
+  public void getSetAdminSystProblemeDeux() {
+    message.setAdminSystProblemeDeux("AdminSystProblemeDeux");
+    assertEquals(message.getAdminSystProblemeDeux(), "AdminSystProblemeDeux");
+  }
+
+  @Test
+  public void getSetAdminSystProblemeTrois() {
+    message.setAdminSystProblemeTrois("AdminSystProblemeTrois");
+    assertEquals(message.getAdminSystProblemeTrois(), "AdminSystProblemeTrois");
+  }
+
+  @Test
+  public void getSetAdminSystProblemeUn() {
+    message.setAdminSystProblemeUn("AdminSystProblemeUn");
+    assertEquals(message.getAdminSystProblemeUn(), "AdminSystProblemeUn");
+  }
+
+  @Test
+  public void getConvocationDePartieDeux() {
+    message.setConvocationDePartieDeux("ConvocationDePartieDeux");;
+    assertEquals(message.getConvocationDePartieDeux(), "ConvocationDePartieDeux");
+  }
+
+  @Test
+  public void getConvocationDePartieTrois() {
+    message.setConvocationDePartieTrois("ConvocationDePartieTrois");;
+    assertEquals(message.getConvocationDePartieTrois(), "ConvocationDePartieTrois");  
+  }
+
+  @Test
+  public void getConvocationDePartieUn() {
+    message.setConvocationDePartieUn("ConvocationDePartieUn");;
+    assertEquals(message.getConvocationDePartieUn(), "ConvocationDePartieUn");
+  }
+
+  @Test
+  public void getEleveSuggereCompetenceDeux() {
+    message.setEleveSuggereCompetenceDeux("EleveSuggereCompetenceDeux");;
+    assertEquals(message.getEleveSuggereCompetenceDeux(), "EleveSuggereCompetenceDeux");
+  }
+
+  @Test
+  public void getEleveSuggereCompetenceQuatre() {
+    message.setEleveSuggereCompetenceQuatre("EleveSuggereCompetenceQuatre");;
+    assertEquals(message.getEleveSuggereCompetenceQuatre(), "EleveSuggereCompetenceQuatre");
+  }
+
+  @Test
+  public void getEleveSuggereCompetenceTrois() {
+    message.setEleveSuggereCompetenceTrois("EleveSuggereCompetenceTrois");;
+    assertEquals(message.getEleveSuggereCompetenceTrois(), "EleveSuggereCompetenceTrois");
+  }
+
+  @Test
+  public void getEleveSuggereCompetenceUn() {
+    message.setEleveSuggereCompetenceUn("EleveSuggereCompetenceUn");;
+    assertEquals(message.getEleveSuggereCompetenceUn(), "EleveSuggereCompetenceUn");
+  }
+
+  @Test
+  public void getEnseignantSuggereCompetenceDeux() {
+    message.setEnseignantSuggereCompetenceDeux("EnseignantSuggereCompetenceDeux");;
+    assertEquals(message.getEnseignantSuggereCompetenceDeux(), "EnseignantSuggereCompetenceDeux");
+  }
+
+  @Test
+  public void getEnseignantSuggereCompetenceQuatre() {
+    message.setEnseignantSuggereCompetenceQuatre("EnseignantSuggereCompetenceDeux");;
+    assertEquals(message.getEnseignantSuggereCompetenceQuatre(), "EnseignantSuggereCompetenceDeux");
+  }
+
+  @Test
+  public void getEnseignantSuggereCompetenceTrois() {
+    message.setEnseignantSuggereCompetenceTrois("EnseignantSuggereCompetenceDeux");;
+    assertEquals(message.getEnseignantSuggereCompetenceTrois(), "EnseignantSuggereCompetenceDeux");
+  }
+
+  @Test
+  public void getEnseignantSuggereCompetenceUn() {
+    message.setEnseignantSuggereCompetenceUn("EnseignantSuggereCompetenceDeux");;
+    assertEquals(message.getEnseignantSuggereCompetenceUn(), "EnseignantSuggereCompetenceDeux");
+  }
+
+  @Test
+  public void getErmSuggereCompetenceDeux() {
+    message.setErmSuggereCompetenceDeux("ErmSuggereCompetenceDeux");;
+    assertEquals(message.getErmSuggereCompetenceDeux(), "ErmSuggereCompetenceDeux");
+  }
+
+  @Test
+  public void getErmSuggereCompetenceQuatre() {
+    message.setErmSuggereCompetenceQuatre("ErmSuggereCompetenceDeux");;
+    assertEquals(message.getErmSuggereCompetenceQuatre(), "ErmSuggereCompetenceDeux");
+  }
+
+  @Test
+  public void getErmSuggereCompetenceTrois() {
+    message.setErmSuggereCompetenceTrois("ErmSuggereCompetenceDeux");;
+    assertEquals(message.getErmSuggereCompetenceTrois(), "ErmSuggereCompetenceDeux");
+  }
+
+  @Test
+  public void getErmSuggereCompetenceUn() {
+    message.setErmSuggereCompetenceUn("ErmSuggereCompetenceDeux");;
+    assertEquals(message.getErmSuggereCompetenceUn(), "ErmSuggereCompetenceDeux");
+  }
+
+  @Test
+  public void getEureSuggereCompetenceDeux() {
+    message.setEureSuggereCompetenceDeux("EureSuggereCompetenceDeux");;
+    assertEquals(message.getEureSuggereCompetenceDeux(), "EureSuggereCompetenceDeux");
+  }
+
+  @Test
+  public void getEureSuggereCompetenceQuatre() {
+    message.setEureSuggereCompetenceQuatre("EureSuggereCompetenceDeux");;
+    assertEquals(message.getEureSuggereCompetenceQuatre(), "EureSuggereCompetenceDeux");
+  }
+
+  @Test
+  public void getEureSuggereCompetenceTrois() {
+    message.setEureSuggereCompetenceTrois("EureSuggereCompetenceTrois");;
+    assertEquals(message.getEureSuggereCompetenceTrois(), "EureSuggereCompetenceTrois");
+  }
+
+  @Test
+  public void getEureSuggereCompetenceUn() {
+    message.setEureSuggereCompetenceUn("EureSuggereCompetenceDeux");;
+    assertEquals(message.getEureSuggereCompetenceUn(), "EureSuggereCompetenceDeux");
+  }
+
+  @Test
+  public void toMethodeString() {
+    assertEquals(message.toString(), message.toString());
+  }
+}

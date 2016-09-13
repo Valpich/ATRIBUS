@@ -1,0 +1,162 @@
+package fr.eseo.atribus.entities;
+
+import java.io.Serializable;
+import java.util.Date;
+import java.util.List;
+
+public class Utilisateur implements Serializable {
+
+  private static final long serialVersionUID = -7064005782577919384L;
+
+  private int id;
+  private String login;
+  private String password;
+  private String nom;
+  private String prenom;
+  private String email;
+  private Date dateInscription;
+  private boolean notificationActive;
+  private boolean notificationMail;
+  private int frequenceNotificationMail;
+  private List<Notification> notifications;
+
+  
+  public Utilisateur() {
+    super();
+  }
+
+  /**
+   * @param utilisateur.
+   */
+  public Utilisateur(String login, String password, String nom, String prenom, String email,
+      Date dateInscription) {
+    super();
+    this.login = login;
+    this.password = password;
+    this.nom = nom;
+    this.prenom = prenom;
+    this.email = email;
+    this.dateInscription = dateInscription;
+  }
+
+  /**
+   * @param utilisateur.
+   */
+  public Utilisateur(Utilisateur utilisateur) {
+    super();
+    this.id = utilisateur.id;
+    this.login = utilisateur.login;
+    this.password = utilisateur.password;
+    this.nom = utilisateur.nom;
+    this.prenom = utilisateur.prenom;
+    this.email = utilisateur.email;
+    this.dateInscription = utilisateur.dateInscription;
+  }
+
+  public int getId() {
+    return this.id;
+  }
+
+  public void setId(int id) {
+    this.id = id;
+  }
+
+  public String getLogin() {
+    return this.login;
+  }
+
+  public void setLogin(String login) {
+    this.login = login;
+  }
+
+  public String getPassword() {
+    return this.password;
+  }
+
+  public void setPassword(String password) {
+    this.password = password;
+  }
+
+  public String getNom() {
+    return this.nom;
+  }
+
+  public void setNom(String nom) {
+    this.nom = nom;
+  }
+
+  public String getPrenom() {
+    return this.prenom;
+  }
+
+  public void setPrenom(String prenom) {
+    this.prenom = prenom;
+  }
+
+  public String getEmail() {
+    return this.email;
+  }
+
+  public void setEmail(String email) {
+    this.email = email;
+  }
+
+  public Date getDateInscription() {
+    return this.dateInscription;
+  }
+
+  public void setDateInscription(Date dateInscription) {
+    this.dateInscription = dateInscription;
+  }
+
+  public boolean isNotificationActive() {
+    return notificationActive;
+  }
+
+  public void setNotificationActive(boolean notificationActive) {
+    this.notificationActive = notificationActive;
+  }
+
+  public boolean isNotificationMail() {
+    return notificationMail;
+  }
+
+  public void setNotificationMail(boolean notificationMail) {
+    this.notificationMail = notificationMail;
+  }
+
+  public int getFrequenceNotificationMail() {
+    return frequenceNotificationMail;
+  }
+
+  public void setFrequenceNotificationMail(int frequenceNotificationMail) {
+    this.frequenceNotificationMail = frequenceNotificationMail;
+  }
+
+  public List<Notification> getNotifications() {
+    return notifications;
+  }
+
+  public void setNotifications(List<Notification> notifications) {
+    this.notifications = notifications;
+  }
+
+  @Override
+  public String toString() {
+    return "Utilisateur [id=" + id + ", login=" + login + ", password=" + password + ", nom=" + nom
+        + ", prenom=" + prenom + ", email=" + email + ", dateInscription=" + dateInscription
+        + ", notificationActive=" + notificationActive + ", notificationMail=" + notificationMail
+        + ", frequenceNotificationMail=" + frequenceNotificationMail + ", notifications="
+        + notifications + "]";
+  }
+
+  /**
+   * Fonction permettant de convertir le bean en JSON.
+   */
+  public String toJson() {
+    return "{ \"nom\" : \"" + this.nom + "\", \"prenom\" : \"" + this.prenom
+        + "\", \"separator\" : \"-\", \"login\" : \"" + this.login + "\", \"email\" : \""
+        + this.email + "\", \"children\" : []}";
+  }
+  
+}

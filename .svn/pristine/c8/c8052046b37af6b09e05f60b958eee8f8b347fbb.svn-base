@@ -1,0 +1,27 @@
+package fr.eseo.atribus.dao;
+
+import fr.eseo.atribus.entities.UniteEnseignement;
+
+import java.util.List;
+
+public interface UeDao {
+
+  void ajouterUe(UniteEnseignement ue);
+  
+  void supprimerUe(UniteEnseignement ue);
+
+  UniteEnseignement trouverUeParNom(String nomUe);
+
+  List<UniteEnseignement> listerUe();
+
+  int trouverIdParNom(String nom);
+
+  UniteEnseignement trouverUeParId(int idUe);
+
+  List<UniteEnseignement> listerUeAssociationCompetenceUe();
+  
+  void supprimerAssociationCompetenceUe(String nomUe, String nomCompetence);
+  
+  void supprimerAssociationMatiereUe(String nomUe, String nomMatiere); 
+  
+}

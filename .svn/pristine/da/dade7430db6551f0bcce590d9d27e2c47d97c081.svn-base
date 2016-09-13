@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>DaoUtilitaire.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Atribus</a> &gt; <a href="index.source.html" class="el_package">fr.eseo.atribus.dao</a> &gt; <span class="el_source">DaoUtilitaire.java</span></div><h1>DaoUtilitaire.java</h1><pre class="source lang-java linenums">package fr.eseo.atribus.dao;
+
+import org.springframework.beans.factory.access.BeanFactoryReference;
+import org.springframework.beans.factory.access.SingletonBeanFactoryLocator;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+public final class DaoUtilitaire {
+<span class="nc" id="L15">  private static final Logger LOGGER = Logger.getLogger(DaoUtilitaire.class.getName());</span>
+
+  /*
+   * Constructeur caché par défaut (car c'est une classe finale utilitaire, contenant uniquement des
+   * méthode appelées de manière statique)
+   */
+<span class="nc" id="L21">  private DaoUtilitaire() {}</span>
+
+  /**
+   * Initialise la requête préparée basée sur la connexion passée en argument, avec la requête SQL
+   * et les objets donnés.
+   */
+  public static PreparedStatement initialisationRequetePreparee(Connection connexion, String sql,
+      boolean returnGeneratedKeys, Object... objets) throws SQLException {
+    final BeanFactoryReference bf =
+<span class="nc" id="L30">        SingletonBeanFactoryLocator.getInstance().useBeanFactory(&quot;contextDao&quot;);</span>
+    Connection connection;
+    PreparedStatement preparedStatement;
+<span class="nc bnc" id="L33" title="All 4 branches missed.">    if (connexion == null || connexion.isClosed()) {</span>
+<span class="nc" id="L34">      connection = ((DaoFactory) bf.getFactory().getBean(&quot;daoFactory&quot;)).getConnection();</span>
+<span class="nc bnc" id="L35" title="All 2 branches missed.">      preparedStatement = connection.prepareStatement(sql,</span>
+          returnGeneratedKeys ? Statement.RETURN_GENERATED_KEYS : Statement.NO_GENERATED_KEYS);
+<span class="nc bnc" id="L37" title="All 2 branches missed.">      for (int i = 0; i &lt; objets.length; i++) {</span>
+<span class="nc" id="L38">        preparedStatement.setObject(i + 1, objets[i]);</span>
+      }
+    } else {
+<span class="nc bnc" id="L41" title="All 2 branches missed.">      preparedStatement = connexion.prepareStatement(sql,</span>
+          returnGeneratedKeys ? Statement.RETURN_GENERATED_KEYS : Statement.NO_GENERATED_KEYS);
+<span class="nc bnc" id="L43" title="All 2 branches missed.">      for (int i = 0; i &lt; objets.length; i++) {</span>
+<span class="nc" id="L44">        preparedStatement.setObject(i + 1, objets[i]);</span>
+      }
+    }
+<span class="nc" id="L47">    return preparedStatement;</span>
+  }
+
+  /** Fermeture silencieuse du resultset. **/
+  public static void fermetureSilencieuse(ResultSet resultSet) {
+<span class="nc bnc" id="L52" title="All 2 branches missed.">    if (resultSet != null) {</span>
+      try {
+<span class="nc" id="L54">        resultSet.close();</span>
+<span class="nc" id="L55">      } catch (final SQLException sqle) {</span>
+<span class="nc" id="L56">        DaoUtilitaire.LOGGER.log(Level.INFO,</span>
+<span class="nc" id="L57">            &quot;Échec de la fermeture du ResultSet : &quot; + sqle.getMessage(), sqle);</span>
+<span class="nc" id="L58">      }</span>
+    }
+<span class="nc" id="L60">  }</span>
+
+  /** Fermeture silencieuse du statement. **/
+  public static void fermetureSilencieuse(Statement statement) {
+<span class="nc bnc" id="L64" title="All 2 branches missed.">    if (statement != null) {</span>
+      try {
+<span class="nc" id="L66">        statement.close();</span>
+<span class="nc" id="L67">      } catch (final SQLException sqle) {</span>
+<span class="nc" id="L68">        DaoUtilitaire.LOGGER.log(Level.INFO,</span>
+<span class="nc" id="L69">            &quot;Échec de la fermeture du Statement : &quot; + sqle.getMessage(), sqle);</span>
+<span class="nc" id="L70">      }</span>
+    }
+<span class="nc" id="L72">  }</span>
+
+  /** Fermeture silencieuse de la connexion. **/
+  public static void fermetureSilencieuse(Connection connexion) {
+    /**
+     * if (connexion != null) { try { connexion.close(); } catch (final SQLException sqle) {
+     * DaoUtilitaire.LOGGER.log(Level.INFO, &quot;Échec de la fermeture de la connexion : &quot; +
+     * sqle.getMessage(), sqle); } }
+     */
+<span class="nc" id="L81">  }</span>
+
+  /* Fermetures silencieuses du statement et de la connexion */
+  public static void fermeturesSilencieuses(Statement statement, Connection connexion) {
+<span class="nc" id="L85">    DaoUtilitaire.fermetureSilencieuse(statement);</span>
+<span class="nc" id="L86">    DaoUtilitaire.fermetureSilencieuse(connexion);</span>
+<span class="nc" id="L87">  }</span>
+
+  /** Fermetures silencieuses du resultset, du statement et de la connexion. **/
+  public static void fermeturesSilencieuses(ResultSet resultSet, Statement statement,
+      Connection connexion) {
+<span class="nc" id="L92">    DaoUtilitaire.fermetureSilencieuse(resultSet);</span>
+<span class="nc" id="L93">    DaoUtilitaire.fermetureSilencieuse(statement);</span>
+<span class="nc" id="L94">    DaoUtilitaire.fermetureSilencieuse(connexion);</span>
+<span class="nc" id="L95">  }</span>
+
+  /**
+   * Méthode générique utilisée pour retourner une ID depuis la base de données, correspondant à la
+   * requête SQL donnée prenant en paramètres les objets passés en argument.
+   */
+  public static int trouverId(DaoFactory daoFactory, String sql, Object... objets) {
+<span class="nc" id="L102">    Connection connexion = null;</span>
+<span class="nc" id="L103">    PreparedStatement preparedStatement = null;</span>
+<span class="nc" id="L104">    ResultSet resultSet = null;</span>
+    try {
+      /* Récupération d'une connexion depuis la Factory */
+<span class="nc" id="L107">      connexion = daoFactory.getConnection();</span>
+      /*
+       * Préparation de la requête avec les objets passés en arguments (ici, uniquement un id) et
+       * exécution.
+       */
+<span class="nc" id="L112">      preparedStatement = initialisationRequetePreparee(connexion, sql, false, objets);</span>
+<span class="nc" id="L113">      resultSet = preparedStatement.executeQuery();</span>
+      /* Parcours de la ligne de données retournée dans le ResultSet */
+<span class="nc bnc" id="L115" title="All 2 branches missed.">      if (resultSet.next()) {</span>
+<span class="nc" id="L116">        return resultSet.getInt(&quot;id&quot;);</span>
+      }
+<span class="nc" id="L118">    } catch (final SQLException sqle) {</span>
+<span class="nc" id="L119">      throw new DaoException(sqle);</span>
+    } finally {
+<span class="nc" id="L121">      fermeturesSilencieuses(resultSet, preparedStatement, connexion);</span>
+<span class="nc" id="L122">    }</span>
+<span class="nc" id="L123">    return -1;</span>
+  }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.6.201602180812</span></div></body></html>

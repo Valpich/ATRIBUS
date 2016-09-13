@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testng-results skipped="0" failed="0" total="16" passed="16">
+  <reporter-output>
+  </reporter-output>
+  <suite name="Default suite" duration-ms="7883" started-at="2016-05-28T20:35:08Z" finished-at="2016-05-28T20:35:16Z">
+    <groups>
+    </groups>
+    <test name="Default test" duration-ms="7883" started-at="2016-05-28T20:35:08Z" finished-at="2016-05-28T20:35:16Z">
+      <class name="fr.eseo.atribus.controller.UeControllerTest">
+        <test-method status="PASS" signature="setup()[pri:0, instance:fr.eseo.atribus.controller.UeControllerTest@71b6d77f]" name="setup" is-config="true" duration-ms="5272" started-at="2016-05-28T22:35:08Z" finished-at="2016-05-28T22:35:13Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- setup -->
+        <test-method status="PASS" signature="afficherAssocierMatiereUe()[pri:0, instance:fr.eseo.atribus.controller.UeControllerTest@71b6d77f]" name="afficherAssocierMatiereUe" duration-ms="1239" started-at="2016-05-28T22:35:13Z" finished-at="2016-05-28T22:35:14Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- afficherAssocierMatiereUe -->
+        <test-method status="PASS" signature="afficherCompetenceMatiereGet()[pri:0, instance:fr.eseo.atribus.controller.UeControllerTest@71b6d77f]" name="afficherCompetenceMatiereGet" duration-ms="197" started-at="2016-05-28T22:35:14Z" finished-at="2016-05-28T22:35:15Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- afficherCompetenceMatiereGet -->
+        <test-method status="PASS" signature="afficherCompetenceMatierePost()[pri:0, instance:fr.eseo.atribus.controller.UeControllerTest@71b6d77f]" name="afficherCompetenceMatierePost" duration-ms="53" started-at="2016-05-28T22:35:15Z" finished-at="2016-05-28T22:35:15Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- afficherCompetenceMatierePost -->
+        <test-method status="PASS" signature="afficherCompetenceUeGet()[pri:0, instance:fr.eseo.atribus.controller.UeControllerTest@71b6d77f]" name="afficherCompetenceUeGet" duration-ms="64" started-at="2016-05-28T22:35:15Z" finished-at="2016-05-28T22:35:15Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- afficherCompetenceUeGet -->
+        <test-method status="PASS" signature="afficherCompetenceUePost()[pri:0, instance:fr.eseo.atribus.controller.UeControllerTest@71b6d77f]" name="afficherCompetenceUePost" duration-ms="15" started-at="2016-05-28T22:35:15Z" finished-at="2016-05-28T22:35:15Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- afficherCompetenceUePost -->
+        <test-method status="PASS" signature="afficherModifierUeSelectionUe()[pri:0, instance:fr.eseo.atribus.controller.UeControllerTest@71b6d77f]" name="afficherModifierUeSelectionUe" duration-ms="35" started-at="2016-05-28T22:35:15Z" finished-at="2016-05-28T22:35:15Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- afficherModifierUeSelectionUe -->
+        <test-method status="PASS" signature="affichersAsocierMatiereUe()[pri:0, instance:fr.eseo.atribus.controller.UeControllerTest@71b6d77f]" name="affichersAsocierMatiereUe" duration-ms="126" started-at="2016-05-28T22:35:15Z" finished-at="2016-05-28T22:35:15Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- affichersAsocierMatiereUe -->
+        <test-method status="PASS" signature="ajouterUeGet()[pri:0, instance:fr.eseo.atribus.controller.UeControllerTest@71b6d77f]" name="ajouterUeGet" duration-ms="174" started-at="2016-05-28T22:35:15Z" finished-at="2016-05-28T22:35:15Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- ajouterUeGet -->
+        <test-method status="PASS" signature="ajouterUePost()[pri:0, instance:fr.eseo.atribus.controller.UeControllerTest@71b6d77f]" name="ajouterUePost" duration-ms="179" started-at="2016-05-28T22:35:15Z" finished-at="2016-05-28T22:35:15Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- ajouterUePost -->
+        <test-method status="PASS" signature="modifierMatiereUe()[pri:0, instance:fr.eseo.atribus.controller.UeControllerTest@71b6d77f]" name="modifierMatiereUe" duration-ms="17" started-at="2016-05-28T22:35:15Z" finished-at="2016-05-28T22:35:15Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- modifierMatiereUe -->
+        <test-method status="PASS" signature="modifierModMatiereUe()[pri:0, instance:fr.eseo.atribus.controller.UeControllerTest@71b6d77f]" name="modifierModMatiereUe" duration-ms="37" started-at="2016-05-28T22:35:15Z" finished-at="2016-05-28T22:35:15Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- modifierModMatiereUe -->
+        <test-method status="PASS" signature="modifierUe()[pri:0, instance:fr.eseo.atribus.controller.UeControllerTest@71b6d77f]" name="modifierUe" duration-ms="127" started-at="2016-05-28T22:35:15Z" finished-at="2016-05-28T22:35:15Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- modifierUe -->
+        <test-method status="PASS" signature="supprimerMatiereUe()[pri:0, instance:fr.eseo.atribus.controller.UeControllerTest@71b6d77f]" name="supprimerMatiereUe" duration-ms="8" started-at="2016-05-28T22:35:15Z" finished-at="2016-05-28T22:35:15Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- supprimerMatiereUe -->
+        <test-method status="PASS" signature="validerCompetencesUeGet()[pri:0, instance:fr.eseo.atribus.controller.UeControllerTest@71b6d77f]" name="validerCompetencesUeGet" duration-ms="150" started-at="2016-05-28T22:35:15Z" finished-at="2016-05-28T22:35:16Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- validerCompetencesUeGet -->
+        <test-method status="PASS" signature="validerCompetencesUePost()[pri:0, instance:fr.eseo.atribus.controller.UeControllerTest@71b6d77f]" name="validerCompetencesUePost" duration-ms="21" started-at="2016-05-28T22:35:16Z" finished-at="2016-05-28T22:35:16Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- validerCompetencesUePost -->
+        <test-method status="PASS" signature="validerModifierModMatiereUe()[pri:0, instance:fr.eseo.atribus.controller.UeControllerTest@71b6d77f]" name="validerModifierModMatiereUe" duration-ms="87" started-at="2016-05-28T22:35:16Z" finished-at="2016-05-28T22:35:16Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- validerModifierModMatiereUe -->
+      </class> <!-- fr.eseo.atribus.controller.UeControllerTest -->
+    </test> <!-- Default test -->
+  </suite> <!-- Default suite -->
+</testng-results>

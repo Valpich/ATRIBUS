@@ -1,0 +1,16 @@
+package fr.eseo.atribus.dao;
+
+import fr.eseo.atribus.entities.EnseignantRefUe;
+
+import java.util.List;
+
+public interface EnseignantRefUeDao {
+  EnseignantRefUe trouverParLoginHash(String login, String hash);
+
+  EnseignantRefUe ajouter(EnseignantRefUe enseignant);
+
+  List<EnseignantRefUe> recupererListe();
+  
+  void supprimerEnseignantRefUeParId(EnseignantRefUe enseignantRefUe);
+  
+}

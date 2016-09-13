@@ -1,0 +1,59 @@
+package fr.eseo.atribus.dao;
+
+import fr.eseo.atribus.entities.Eleve;
+import fr.eseo.atribus.entities.Evaluation;
+import fr.eseo.atribus.entities.Examen;
+import fr.eseo.atribus.entities.Exercice;
+
+import java.util.List;
+import java.util.Map;
+
+/**
+ * L'Interface EvaluationDao.
+ */
+public interface EvaluationDao {
+
+  /**
+   * Repondre à un examen.
+   *
+   * @param eleve l'eleve
+   * @param reponses les reponses
+   * @param examen l'examen
+   * @param autoEvaluation le auto evaluation
+   */
+  void repondre(Eleve eleve, List<String> reponses, Examen examen, Boolean autoEvaluation);
+
+  /**
+   * Repondre.
+   *
+   * @param eleve l'eleve
+   * @param reponsesParser les reponses parser
+   * @param examen l'examen
+   * @param autoEvaluation l'auto evaluation
+   */
+  void repondre(Eleve eleve, Map<Exercice, List<String>> reponsesParser, Examen examen,
+      Boolean autoEvaluation);
+  
+  /**
+   * Trouver toutes les evaluations.
+   *
+   * @return Le paramètre list
+   */
+  List<Evaluation> trouverToutesLesEvaluations();
+
+  /**
+   * Mise à jour d'une evaluation.
+   *
+   * @param evaluations les evaluations
+   */
+  void majEvaluation(List<Evaluation> evaluations);
+
+  /**
+   * Trouver toutes les evaluations eleve.
+   *
+   * @param eleve l'eleve
+   * @return Le paramètre list
+   */
+  List<Evaluation> trouverToutesLesEvaluationsEleve(Eleve eleve);
+
+}

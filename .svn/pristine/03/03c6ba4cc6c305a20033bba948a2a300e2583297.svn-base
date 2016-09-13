@@ -1,0 +1,69 @@
+package fr.eseo.atribus.entities;
+
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
+
+import org.testng.annotations.BeforeTest;
+import org.testng.annotations.Test;
+
+public class UtilisateurLdapTest {
+  
+  UtilisateurLdap utilisateur;
+  
+  @BeforeTest
+  public void init() {
+    utilisateur = new UtilisateurLdap();
+  }
+
+  @Test
+  public void utilisateurLdap() {
+    assertNotNull(utilisateur);
+  }
+
+  @Test
+  public void getCn() {
+    utilisateur.setCn("cn");
+    assertEquals(utilisateur.getCn(), "cn");
+  }
+
+  @Test
+  public void getGivenName() {
+    utilisateur.setGivenName("givenName");
+    assertEquals(utilisateur.getGivenName(), "givenName");
+  }
+
+  @Test
+  public void getMail() {
+    utilisateur.setMail("mail");
+    assertEquals(utilisateur.getMail(), "mail");
+  }
+
+  @Test
+  public void getObjectClass() {
+    utilisateur.setObjectClass("objectClass");
+    assertEquals(utilisateur.getObjectClass(), "objectClass");
+  }
+
+  @Test
+  public void getSn() {
+    utilisateur.setSn("sn");
+    assertEquals(utilisateur.getSn(), "sn");
+  }
+
+  @Test
+  public void getUid() {
+    utilisateur.setUid("uid");
+    assertEquals(utilisateur.getUid(), "uid");
+  }
+
+  @Test
+  public void getUserpassword() {
+    utilisateur.setUserpassword("userpassword");
+    assertEquals(utilisateur.getUserpassword(), "userpassword");
+  }
+
+  @Test
+  public void methodToString() {
+    assertEquals(utilisateur.toString(), utilisateur.toString());
+  }
+}

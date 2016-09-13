@@ -1,0 +1,258 @@
+package fr.eseo.atribus.controller;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
+
+import fr.eseo.atribus.dao.EnseignantRefMatiereDao;
+import fr.eseo.atribus.dao.ExamenDao;
+import fr.eseo.atribus.entities.Utilisateur;
+
+import org.mockito.MockitoAnnotations;
+import org.springframework.beans.factory.access.BeanFactoryReference;
+import org.springframework.beans.factory.access.SingletonBeanFactoryLocator;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpSession;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.web.WebAppConfiguration;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.RequestPostProcessor;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.servlet.view.InternalResourceViewResolver;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+@Test
+@ContextConfiguration({ "classpath:spring-dao.xml", "classpath:spring-daoBeans.xml",
+    "classpath:beanRefFactory.xml",  "classpath:dispatcher-servlet.xml"})
+@WebAppConfiguration
+public class ExerciceControllerTest {
+
+  public static final String CONF_BDD_FACTORY = "DaoFactory";
+  public static final String ATT_EXERCICE = "exercice";
+  public static final String ATT_EXERCICES = "exercices";
+  public static final String ATT_FORM = "form";
+  public static final String ATT_COMPETENCES = "competences";
+  public static final String ATT_EXAMEN = "examen";
+  public static final String ATT_EXAMENS = "examens";
+  public static final String VUE_MODIFIER = "EnseignantRefMatiere/modifierExercice";
+  public static final String VUE_SUPPRIMER = "EnseignantRefMatiere/supprimerExercice";
+  public static final String VUE = "EnseignantRefMatiere/addExercice";
+  public static final String VUE_AUTO_EVAL = "EnseignantRefMatiere/ajouterAutoEval";
+  public static final String ATT_CHOIX_EXAMEN = "choixExamen";
+  public static final String ATT_SAVE_EXAMEN = "saveExamen";
+  public static final String ATT_SESSION_USER = "sessionUtilisateur";
+
+  private MockMvc mockMvc;
+  private EnseignantRefMatiereDao ermDao;
+  private ExamenDao examenDao;
+
+  @BeforeClass
+  public void setup() {
+    InternalResourceViewResolver viewResolver = new InternalResourceViewResolver();
+    viewResolver.setPrefix("/WEB-INF/");
+    viewResolver.setSuffix(".jsp");
+    MockitoAnnotations.initMocks(this);
+    ExerciceController exerciceController = new ExerciceController();
+    exerciceController.init();
+    mockMvc =
+        MockMvcBuilders.standaloneSetup(exerciceController).setViewResolvers(viewResolver).build();
+    final BeanFactoryReference bf =
+        SingletonBeanFactoryLocator.getInstance().useBeanFactory("beansDao");
+    /* Récupération d'une instance de notre DAO Enseignant Reférent Matiere */
+    this.ermDao = (EnseignantRefMatiereDao) bf.getFactory().getBean("enseignantRefMatiereDao");
+    /* Récupération d'une instance de notre DAO Examen */
+    this.examenDao = (ExamenDao) bf.getFactory().getBean("examenDao");
+  }
+
+  @Test
+  public void afficherAjouterExercice() throws Exception {
+    mockMvc.perform(get("/EnseignantRefMatiere/AjouterExercice")).andExpect(status().isOk())
+        .andExpect(view().name(VUE));
+  }
+
+  @Test
+  public void ajouterExercice() throws Exception {
+    mockMvc.perform(post("/EnseignantRefMatiere/AjouterExercice").with(new RequestPostProcessor() {
+      public MockHttpServletRequest postProcessRequest(MockHttpServletRequest request) {
+        List<String> reponses = new ArrayList<>();
+        reponses.add("Reponse1");
+        reponses.add("Reponse2");
+        List<String> competences = new ArrayList<>();
+        competences.add("Exploiter");
+        List<String> pourcentages = new ArrayList<>();
+        pourcentages.add("19");
+        Map<String, String[]> parameters = new HashMap<>();
+        String[] tmp = { "12" };
+        String[] tmpDeux = { "Exploiter" };
+        parameters.put("pourcentage1", tmp);
+        parameters.put("choixCompetence1", tmpDeux);
+        String point = "10";
+        String reponse = "Bonne réponse";
+        String question = "QuestionTest";
+        String examen = examenDao.trouverTousLesExamens().get(0).getNom();
+        request.addParameters(parameters);
+        request.setParameter("question", question);
+        request.setParameter("reponse", reponse);
+        request.setParameter("points", point);
+        request.setParameter("choixExamen", examen);
+        request.setSession(new MockHttpSession());
+        List<Utilisateur> utilisateur = new ArrayList<>();
+        utilisateur.add(ermDao.recupererListe().get(0));
+        request.getSession().setAttribute("sessionUtilisateur", utilisateur);
+        return request;
+      }
+    })).andExpect(status().isOk()).andExpect(view().name(VUE));
+  }
+
+  @Test
+  public void afficherModifierExercice() throws Exception {
+    mockMvc.perform(get("/EnseignantRefMatiere/ModifierExercice").with(new RequestPostProcessor() {
+      public MockHttpServletRequest postProcessRequest(MockHttpServletRequest request) {
+        List<Utilisateur> utilisateur = new ArrayList<>();
+        utilisateur.add(ermDao.recupererListe().get(0));
+        request.getSession().setAttribute("sessionUtilisateur", utilisateur);
+        return request;
+      }
+    })).andExpect(status().isOk()).andExpect(view().name(VUE_MODIFIER));
+  }
+
+  @Test
+  public void modifierExerciceAvantSauvegarde() throws Exception {
+    mockMvc.perform(post("/EnseignantRefMatiere/ModifierExercice").with(new RequestPostProcessor() {
+      public MockHttpServletRequest postProcessRequest(MockHttpServletRequest request) {
+        List<Utilisateur> utilisateur = new ArrayList<>();
+        utilisateur.add(ermDao.recupererListe().get(0));
+        request.getSession().setAttribute("sessionUtilisateur", utilisateur);
+        List<String> reponses = new ArrayList<>();
+        reponses.add("Reponse1");
+        reponses.add("Reponse2");
+        List<String> competences = new ArrayList<>();
+        competences.add("Exploiter");
+        List<String> pourcentages = new ArrayList<>();
+        pourcentages.add("19");
+        final Map<String, String[]> parameters = new HashMap<>();
+        String[] tmp = { "12" };
+        String[] tmpDeux = { "Exploiter qdqsd" };
+        String[] tmpTrois = { "1.2" };
+        String[] tmpQuatre = { "Question sdfsdf" };
+        String[] tmpCinq = { "Repons sffe" };
+        parameters.put("pourcentage1_1", tmp);
+        parameters.put("choixCompetence1_1", tmpDeux);
+        parameters.put("points1", tmpTrois);
+        parameters.put("question1", tmpQuatre);
+        parameters.put("reponse1", tmpCinq);
+        String examen = examenDao.trouverTousLesExamens().get(0).getNom();
+        request.addParameter("choixExamen", examen);
+        request.addParameters(parameters);
+        return request;
+      }
+    })).andExpect(status().isOk()).andExpect(view().name(VUE_MODIFIER));
+  }
+
+  @Test
+  public void modifierExerciceApresSauvegarde() throws Exception {
+    mockMvc.perform(post("/EnseignantRefMatiere/ModifierExercice").with(new RequestPostProcessor() {
+      public MockHttpServletRequest postProcessRequest(MockHttpServletRequest request) {
+        List<Utilisateur> utilisateur = new ArrayList<>();
+        utilisateur.add(ermDao.recupererListe().get(0));
+        request.getSession().setAttribute("sessionUtilisateur", utilisateur);
+        List<String> reponses = new ArrayList<>();
+        reponses.add("Reponse1");
+        reponses.add("Reponse2");
+        List<String> competences = new ArrayList<>();
+        competences.add("Exploiter");
+        List<String> pourcentages = new ArrayList<>();
+        pourcentages.add("19");
+        final Map<String, String[]> parameters = new HashMap<>();
+        String[] tmp = { "12" };
+        String[] tmpDeux = { "Exploiter qdqsd" };
+        String[] tmpTrois = { "1.2" };
+        String[] tmpQuatre = { "Question sdfsdf" };
+        String[] tmpCinq = { "Repons sffe" };
+        parameters.put("pourcentage1_1", tmp);
+        parameters.put("choixCompetence1_1", tmpDeux);
+        parameters.put("points1", tmpTrois);
+        parameters.put("question1", tmpQuatre);
+        parameters.put("reponse1", tmpCinq);
+        String examen = examenDao.trouverTousLesExamens().get(0).getNom();
+        request.getSession().setAttribute("examen", examenDao.trouverTousLesExamens().get(0));
+        request.getSession().setAttribute("saveExamen", examen);
+        request.addParameters(parameters);
+        return request;
+      }
+    })).andExpect(status().isOk()).andExpect(view().name(VUE_MODIFIER));
+  }
+
+
+  @Test
+  public void modifierExerciceApresSauvegardePerdue() throws Exception {
+    mockMvc.perform(post("/EnseignantRefMatiere/ModifierExercice").with(new RequestPostProcessor() {
+      public MockHttpServletRequest postProcessRequest(MockHttpServletRequest request) {
+        List<Utilisateur> utilisateur = new ArrayList<>();
+        utilisateur.add(ermDao.recupererListe().get(0));
+        request.getSession().setAttribute("sessionUtilisateur", utilisateur);
+        List<String> reponses = new ArrayList<>();
+        reponses.add("Reponse1");
+        reponses.add("Reponse2");
+        List<String> competences = new ArrayList<>();
+        competences.add("Exploiter");
+        List<String> pourcentages = new ArrayList<>();
+        pourcentages.add("19");
+        final Map<String, String[]> parameters = new HashMap<>();
+        String[] tmp = { "12" };
+        String[] tmpDeux = { "Exploiter qdqsd" };
+        String[] tmpTrois = { "1.2" };
+        String[] tmpQuatre = { "Question sdfsdf" };
+        String[] tmpCinq = { "Repons sffe" };
+        parameters.put("pourcentage1_1", tmp);
+        parameters.put("choixCompetence1_1", tmpDeux);
+        parameters.put("points1", tmpTrois);
+        parameters.put("question1", tmpQuatre);
+        parameters.put("reponse1", tmpCinq);
+        request.getSession().setAttribute("examen", examenDao.trouverTousLesExamens().get(0));
+        request.addParameters(parameters);
+        return request;
+      }
+    })).andExpect(status().isOk()).andExpect(view().name(VUE_MODIFIER));
+  }
+
+
+  @Test
+  public void afficherAjouterAutoEvaluation() throws Exception {
+    mockMvc.perform(get("/EnseignantRefMatiere/AjouterAutoEvaluation")).andExpect(status().isOk())
+        .andExpect(view().name(VUE_AUTO_EVAL));
+  }
+
+  @Test
+  public void ajouterAutoEvaluation() throws Exception {
+    mockMvc.perform(
+        post("/EnseignantRefMatiere/AjouterAutoEvaluation").with(new RequestPostProcessor() {
+          public MockHttpServletRequest postProcessRequest(MockHttpServletRequest request) {
+            List<Utilisateur> utilisateur = new ArrayList<>();
+            utilisateur.add(ermDao.recupererListe().get(0));
+            request.getSession().setAttribute("sessionUtilisateur", utilisateur);
+            String examen = examenDao.trouverTousLesExamens().get(0).getNom();
+            request.addParameter("choixExamen", examen);
+            String question = "QuestionTest";
+            request.addParameter("question", question);
+            String nbPoints = "1";
+            request.addParameter("points", nbPoints);
+            request.addParameter("reponses", "ReponseTest");
+            request.addParameter("choixCompetence", "ChoixCompetenceTest");
+            request.addParameter("pourcentages", "19");
+            String bonneReponses = "1";
+            request.addParameter("bonneReponses", bonneReponses);
+            return request;
+          }
+        })).andDo(print()).andExpect(status().isOk()).andExpect(view().name(VUE_AUTO_EVAL));
+  }
+
+}
